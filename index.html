@@ -206,6 +206,12 @@ select:focus,input:focus{outline:none;border-color:var(--dark);box-shadow:0 0 0 
           <label>Order Date</label>
           <input type="text" id="orderDate" readonly style="background:var(--cream);">
         </div>
+        <div class="form-group full">
+          <label>Route</label>
+          <select id="routeSelect" onchange="onRouteChange()">
+            <option value="">— Select your route —</option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
@@ -246,6 +252,7 @@ select:focus,input:focus{outline:none;border-color:var(--dark);box-shadow:0 0 0 
     </div>
     <div id="orderTableWrap"><div class="empty"><div class="ico">📭</div><p>No items yet.</p></div></div>
     <div class="status-bar hidden" id="orderBar">
+      <span class="pill blue"><span class="dot"></span><span id="barRoute">—</span></span>
       <span class="pill gold"><span class="dot"></span><span id="barLines">0</span> lines</span>
       <span class="pill green"><span class="dot"></span><span id="barKg">0</span> kg total</span>
     </div>
@@ -403,8 +410,21 @@ const CUSTOMERS = [
   {a:"501076",n:"MAJID AL FUTTAIM HYPERMARKETS-WA",ch:"CARREFOUR"},{a:"501079",n:"MAJID AL FUTTAIM PARKLANDS",ch:"CARREFOUR"},{a:"500853",n:"MAJID AL FUTTAIM MAASAI MALL",ch:"CARREFOUR"},{a:"500982",n:"MAJID AL FUTTAIM HYPERMARKETS-GT",ch:"CARREFOUR"},{a:"500532",n:"MAJID AL FUTTAIM HYPERMARKETS",ch:"CARREFOUR"},{a:"500664",n:"MAJID AL FUTTAIM SARIT CENTRE",ch:"CARREFOUR"},{a:"500639",n:"MAJID AL FUTTAIM JUNCTION",ch:"CARREFOUR"},{a:"500607",n:"CHANDARANA TWO RIVERS",ch:"CHANDARANA"},{a:"500891",n:"CHANDARANA THIGIRI",ch:"CHANDARANA"},{a:"500013",n:"CHANDARANA HIGHRIDGE",ch:"CHANDARANA"},{a:"500014",n:"CHANDARANA MUTHAIGA",ch:"CHANDARANA"},{a:"500296",n:"CHANDARANA KAREN",ch:"CHANDARANA"},{a:"500012",n:"CHANDARANA ABC",ch:"CHANDARANA"},{a:"500011",n:"CHANDARANA YAYA",ch:"CHANDARANA"},{a:"500197",n:"Chandarana Lavington",ch:"CHANDARANA"},{a:"501082",n:"CLEANSHELF RONGAI",ch:"CLEANSHELF"},{a:"500988",n:"CLEANSHELF NGONG",ch:"CLEANSHELF"},{a:"500478",n:"CLEANSHELF LANGATA",ch:"CLEANSHELF"},{a:"500286",n:"CLEANSHELFS KIAMBU",ch:"CLEANSHELF"},{a:"500917",n:"CLEANSHELF GREENPARK",ch:"CLEANSHELF"},{a:"500431",n:"EASTLEIGH MATTRESSES MWEA",ch:"EASTMATT"},{a:"500344",n:"EASTLEIGH MATTRESSES SECTION 3",ch:"EASTMATT"},{a:"500365",n:"EASTLEIGH MATTRESSES HQ",ch:"EASTMATT"},{a:"500993",n:"MAGUNAS KAKUZI",ch:"MAGUNAS"},{a:"500904",n:"MAGUNAS THIKA",ch:"MAGUNAS"},{a:"500902",n:"MAGUNAS PANGANI",ch:"MAGUNAS"},{a:"500565",n:"MAGUNAS KAHAWA",ch:"MAGUNAS"},{a:"500975",n:"MAGUNA KANGEMI",ch:"MAGUNAS"},{a:"500908",n:"MAGUNAS KENOL",ch:"MAGUNAS"},{a:"500021",n:"MATHAI MURANGA",ch:"MATHAI"},{a:"500533",n:"MATHAI THIKA",ch:"MATHAI"},{a:"500476",n:"MATHAI OTC",ch:"MATHAI"},{a:"500839",n:"MATHAI CHANIA",ch:"MATHAI"},{a:"500027",n:"NAIVAS LIMITED",ch:"NAIVAS"},{a:"500031",n:"NAIVAS RONALD NGALA",ch:"NAIVAS"},{a:"500252",n:"NAIVAS NGONG TOWN",ch:"NAIVAS"},{a:"500513",n:"NAIVAS LIMURU",ch:"NAIVAS"},{a:"500787",n:"NAIVAS KAHAWA WEST",ch:"NAIVAS"},{a:"500747",n:"NAIVAS KANGEMI",ch:"NAIVAS"},{a:"500594",n:"NAIVAS THIKA",ch:"NAIVAS"},{a:"500267",n:"NAIVAS WESTLANDS",ch:"NAIVAS"},{a:"500718",n:"NAIVAS LANGATA",ch:"NAIVAS"},{a:"500023",n:"NAIVAS EAST GATE",ch:"NAIVAS"},{a:"500030",n:"NAIVAS MACHAKOS",ch:"NAIVAS"},{a:"500263",n:"NAIVAS UMOJA",ch:"NAIVAS"},{a:"500434",n:"NAIVAS KITENGELA",ch:"NAIVAS"},{a:"500755",n:"NAIVAS TASSIA",ch:"NAIVAS"},{a:"500820",n:"NAIVAS WATERFRONT KAREN",ch:"NAIVAS"},{a:"500637",n:"NAIVAS SOUTH C",ch:"NAIVAS"},{a:"300582",n:"QUICK MART LTD",ch:"QUICKMART"},{a:"301687",n:"QUICK MART KAREN",ch:"QUICKMART"},{a:"301401",n:"QUICK MART WAIYAKI WAY",ch:"QUICKMART"},{a:"301660",n:"QUICK MART WESTLANDS",ch:"QUICKMART"},{a:"301562",n:"QUICK MART KIAMBU ROAD",ch:"QUICKMART"},{a:"301563",n:"QUICK MART LAVINGTON",ch:"QUICKMART"},{a:"301512",n:"QUICK MART KILIMANI",ch:"QUICKMART"},{a:"301454",n:"QUICK MART ROYSAMBU",ch:"QUICKMART"},{a:"301431",n:"QUICK MART PIPELINE",ch:"QUICKMART"},{a:"301432",n:"QUICK MART DONHOLM",ch:"QUICKMART"},{a:"501075",n:"KHETIAS RUIRU",ch:"KHETIA"},{a:"501077",n:"KHETIAS KAHAWA WEST",ch:"KHETIA"},{a:"500867",n:"KHETIA LIMURU",ch:"KHETIA"},{a:"500869",n:"KHETIA THIKA",ch:"KHETIA"},{a:"100039",n:"TRIPLE S TRADERS",ch:"DISTRIBUTOR"},{a:"100008",n:"MAGUNA-ANDU WHOLESALERS",ch:"DISTRIBUTOR"},{a:"100032",n:"GARISSA MERCHANTS",ch:"DISTRIBUTOR"},{a:"100111",n:"TWIGA FOODS LIMITED",ch:"DISTRIBUTOR"},{a:"200007",n:"Mt. Kenya Wholesalers",ch:"DISTRIBUTOR"},{a:"202290",n:"SHAWS SUPERMARKET",ch:"WHOLESALER"},{a:"202096",n:"SABA SUPERMARKET",ch:"WHOLESALER"},{a:"202132",n:"EMART SUPERMARKET",ch:"WHOLESALER"},{a:"200005",n:"KYULU AND SONS",ch:"WHOLESALER"},{a:"202024",n:"JAMBOMATT SUPERMARKET",ch:"WHOLESALER"},{a:"202072",n:"TRANSMART SUPERMARKET",ch:"WHOLESALER"},{a:"302098",n:"OPEN UNIVERSITY OF KENYA",ch:"INSTITUTION"},{a:"300125",n:"KENYATTA NAT. HOSPITAL",ch:"INSTITUTION"},{a:"300297",n:"STATE HOUSE",ch:"INSTITUTION"},{a:"800007",n:"GENERAL FOOD INTERNATIONAL",ch:"EXPORTS"},{a:"800140",n:"GLOBAL FOOD TRADING CO.",ch:"EXPORTS"}
 ];
 
+
+const ROUTES = [
+  "KIAMBU GT","KIAMBU MT","MURANGA","THIKA","HURUMA GT","RUARAKA","GITHURAI",
+  "KASARANI","HURLINGUM","NGONG ROAD","CBD UPPER","UPPER HILL","CBD CENTRAL",
+  "PARKLANDS","CBD 5","DAGORETI","WESTLANDS","RONGAI","KAREN","NAIROBI WEST",
+  "INDUSTRIAL","INSTITUTIONS SOUTH C","INSTITUTIONS KITENGELA MT",
+  "KITENGELA GT","NAMANGA GT","MACHAKOS","UMOJA GT","TALA","UMOJA MT",
+  "DANDORA","CENTEEN","UTAWALA MT","UTAWALA GT","PIPELINE","BURUBURU",
+  "EASTLEIGH GT","GARISSA FRESH","GARISSA","KITUI-MWINGI FERM","KITUI",
+  "MWINGI","MOMBASA RD DP","OLOITOKITOK","MOMBASA RD FERM","MUTOMO",
+  "WOTE","KATHIANI"
+];
+
 // ═══════════ STATE ═══════════
-let orderLines = [], currentSalesman = null;
+let orderLines = [], currentSalesman = null, currentRoute = null;
 let allData = [], filteredData = [];
 let activeSvSm = null, activeDashTab = 'overview';
 let charts = {};
@@ -429,6 +449,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const td = now.toISOString().split('T')[0];
   document.getElementById('dfrom').value = td;
   document.getElementById('dto').value = td;
+
+  // Populate routes
+  const rsel = document.getElementById('routeSelect');
+  ROUTES.forEach(r => {
+    const o = document.createElement('option'); o.value = r; o.textContent = r; rsel.appendChild(o);
+  });
 
   // Close dropdowns on outside click
   document.addEventListener('click', e => {
@@ -489,6 +515,7 @@ async function loadData() {
       timestamp: r.timestamp,
       salesman_payroll: r.salesman_payroll,
       salesman_name: r.salesman_name,
+      route: r.route,
       customer_acc: r.customer_acc,
       customer_name: r.customer_name,
       product_code: r.product_code,
@@ -508,6 +535,11 @@ async function loadData() {
 function onSalesmanChange() {
   const v = document.getElementById('salesmanSelect').value;
   currentSalesman = SALESMEN.find(s => s.p === v) || null;
+  checkReady();
+}
+
+function onRouteChange() {
+  currentRoute = document.getElementById('routeSelect').value || null;
   checkReady();
 }
 
@@ -566,6 +598,7 @@ function renderOrderTable() {
   document.getElementById('lineCountBadge').textContent = `${orderLines.length} line${orderLines.length!==1?'s':''}`;
   if (!orderLines.length) { w.innerHTML = '<div class="empty"><div class="ico">📭</div><p>No items yet.</p></div>'; document.getElementById('orderBar').classList.add('hidden'); return; }
   const tw = orderLines.reduce((s,l)=>s+parseFloat(l.totalWt),0);
+  document.getElementById('barRoute').textContent = currentRoute || '—';
   document.getElementById('barLines').textContent = orderLines.length;
   document.getElementById('barKg').textContent = tw.toFixed(2);
   document.getElementById('orderBar').classList.remove('hidden');
@@ -582,7 +615,7 @@ function renderOrderTable() {
     </tr>`).join('')}</tbody></table>`;
 }
 
-function checkReady() { document.getElementById('submitBtn').disabled = !(currentSalesman && orderLines.length); }
+function checkReady() { document.getElementById('submitBtn').disabled = !(currentSalesman && currentRoute && orderLines.length); }
 
 async function submitOrder() {
   if (!currentSalesman || !orderLines.length) return;
@@ -593,6 +626,7 @@ async function submitOrder() {
       timestamp: new Date().toISOString(),
       salesman_payroll: currentSalesman.p,
       salesman_name: currentSalesman.n,
+      route: currentRoute,
       customer_acc: line.customerAcc,
       customer_name: line.customerName,
       product_code: line.productCode,
@@ -656,15 +690,18 @@ function renderSvDetail(s) {
   document.getElementById('svDetailTitle').textContent = `${s.name} (${s.payroll})`;
   const tw = s.lines.reduce((sum,r)=>sum+(parseFloat(r.total_wt)||0),0);
   const uc = new Set(s.lines.map(r=>r.customer_acc)).size;
+  const routes = [...new Set(s.lines.map(r=>r.route).filter(Boolean))].join(', ') || '—';
   document.getElementById('svDetailBody').innerHTML = `
     <div style="padding:10px 20px;border-bottom:1px solid var(--border);background:var(--cream);display:flex;gap:12px;flex-wrap:wrap;">
       <span class="pill green"><span class="dot"></span>${s.lines.length} lines</span>
       <span class="pill gold"><span class="dot"></span>${tw.toFixed(2)} kg</span>
       <span class="pill blue"><span class="dot"></span>${uc} customers</span>
+      <span class="pill purple"><span class="dot"></span>${routes}</span>
     </div>
-    <table class="tbl"><thead><tr><th>Date/Time</th><th>Customer</th><th>Product</th><th>Qty</th><th>Total kg</th></tr></thead>
+    <table class="tbl"><thead><tr><th>Date/Time</th><th>Route</th><th>Customer</th><th>Product</th><th>Qty</th><th>Total kg</th></tr></thead>
     <tbody>${s.lines.map(r=>`<tr>
       <td style="font-size:.72rem;color:var(--muted);font-family:'DM Mono',monospace;">${r.timestamp?new Date(r.timestamp).toLocaleString('en-KE',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'—'}</td>
+      <td style="font-size:.78rem;font-weight:500">${r.route||'—'}</td>
       <td><div style="font-size:.8rem;font-weight:500">${r.customer_name||'—'}</div><span class="badge">${r.customer_acc||''}</span></td>
       <td><div style="font-size:.8rem">${r.product_desc||'—'}</div><span class="badge">${r.product_code||''}</span></td>
       <td style="font-family:'DM Mono',monospace;font-weight:600">${r.qty||''}</td>
