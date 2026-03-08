@@ -319,6 +319,8 @@ select:focus,input:focus{outline:none;border-color:var(--dark);box-shadow:0 0 0 
     <button class="itab" onclick="switchDashTab('salesman',this)">By Salesperson</button>
     <button class="itab" onclick="switchDashTab('products',this)">By Product</button>
     <button class="itab" onclick="switchDashTab('daily',this)">Daily Trend</button>
+    <button class="itab" onclick="switchDashTab('routes',this)">By Route</button>
+    <button class="itab" onclick="switchDashTab('export',this)">⬇ Export Excel</button>
   </div>
 
   <!-- TAB: OVERVIEW -->
@@ -391,6 +393,155 @@ select:focus,input:focus{outline:none;border-color:var(--dark);box-shadow:0 0 0 
   </div>
 </div>
 
+  <!-- TAB: BY ROUTE -->
+  <div id="dtRoutes" class="hidden">
+    <!-- Route filter -->
+    <div class="panel" style="margin-bottom:18px;">
+      <div class="panel-body" style="padding:14px 22px;">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <span style="font-size:.72rem;font-weight:600;color:var(--muted);">ROUTE:</span>
+          <select id="routeFilterSelect" onchange="renderRoutesTab()" style="width:220px;padding:7px 12px;font-size:.82rem;">
+            <option value="">All Routes</option>
+          </select>
+          <span style="color:var(--border);margin:0 4px;">|</span>
+          <span style="font-size:.72rem;font-weight:600;color:var(--muted);">PERIOD:</span>
+          <button class="fbt active" id="rfbt-today" onclick="setRouteFilter('today',this)">Today</button>
+          <button class="fbt" id="rfbt-week" onclick="setRouteFilter('week',this)">This Week</button>
+          <button class="fbt" id="rfbt-month" onclick="setRouteFilter('month',this)">This Month</button>
+          <button class="fbt" id="rfbt-all" onclick="setRouteFilter('all',this)">All Time</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Route KPIs -->
+    <div class="kpi-row" id="routeKpiRow">
+      <div class="kpi g"><div class="val" id="rKg">—</div><div class="lbl">Total kg</div></div>
+      <div class="kpi b"><div class="val" id="rLines">—</div><div class="lbl">Order Lines</div></div>
+      <div class="kpi o"><div class="val" id="rSalesmen">—</div><div class="lbl">Salespeople</div></div>
+      <div class="kpi p"><div class="val" id="rRoutes">—</div><div class="lbl">Routes Active</div></div>
+    </div>
+
+    <div class="g2">
+      <div class="panel">
+        <div class="panel-header"><h2>kg by Route</h2></div>
+        <div class="panel-body"><div class="chart-box tall"><canvas id="cRouteKg"></canvas></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><h2>Order Lines by Route</h2></div>
+        <div class="panel-body"><div class="chart-box tall"><canvas id="cRouteLines"></canvas></div></div>
+      </div>
+    </div>
+
+    <div class="g2">
+      <div class="panel">
+        <div class="panel-header"><h2>Product Mix by Route</h2></div>
+        <div class="panel-body"><div class="chart-box tall"><canvas id="cRouteProdMix"></canvas></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><h2>Daily kg Trend for Selected Route</h2></div>
+        <div class="panel-body"><div class="chart-box tall"><canvas id="cRouteDailyTrend"></canvas></div></div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:20px;">
+      <div class="panel-header"><h2>Route Detail — Products Ranked by kg</h2></div>
+      <div style="padding:0;" id="routeProdTable"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header"><h2>All Routes Summary</h2></div>
+      <div style="padding:0;" id="allRoutesTable"></div>
+    </div>
+  </div>
+
+</div>
+
+  <!-- TAB: EXPORT -->
+  <div id="dtExport" class="hidden">
+
+    <!-- Filters -->
+    <div class="panel" style="margin-bottom:18px;">
+      <div class="panel-header"><h2>Filter Orders to Export</h2></div>
+      <div class="panel-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+          <div class="form-group">
+            <label>Date From</label>
+            <input type="date" id="expDateFrom">
+          </div>
+          <div class="form-group">
+            <label>Date To</label>
+            <input type="date" id="expDateTo">
+          </div>
+          <div class="form-group">
+            <label>Salesperson</label>
+            <select id="expSalesman">
+              <option value="">All Salespeople</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Route</label>
+            <select id="expRoute">
+              <option value="">All Routes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Product Category</label>
+            <select id="expCategory">
+              <option value="">All Categories</option>
+              <option>TFA</option><option>TCA</option><option>ESL</option>
+              <option>TBA</option><option>WATER</option><option>MALA</option>
+              <option>YOGHURT</option><option>SHAKES</option><option>CHEESE</option>
+              <option>BUTTER</option><option>POWDER</option><option>GHEE</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Channel</label>
+            <select id="expChannel">
+              <option value="">All Channels</option>
+              <option>CARREFOUR</option><option>CHANDARANA</option><option>CLEANSHELF</option>
+              <option>EASTMATT</option><option>MAGUNAS</option><option>MATHAI</option>
+              <option>NAIVAS</option><option>QUICKMART</option><option>KHETIA</option>
+              <option>DISTRIBUTOR</option><option>WHOLESALER</option><option>INSTITUTION</option>
+              <option>EXPORTS</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="applyExportFilter()">🔍 Apply Filter</button>
+          <button class="btn btn-outline" onclick="clearExportFilter()">✕ Clear</button>
+          <span id="expResultCount" style="font-size:.8rem;color:var(--muted);margin-left:8px;"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview & Export -->
+    <div class="panel" style="margin-bottom:18px;">
+      <div class="panel-header">
+        <h2>Preview</h2>
+        <div style="margin-left:auto;display:flex;gap:10px;">
+          <button class="btn btn-success" style="width:auto;padding:9px 20px;" onclick="downloadExcel()">
+            ⬇ Download Excel (.xlsx)
+          </button>
+          <button class="btn btn-outline btn-sm" onclick="downloadCSVExport()">⬇ CSV</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto;" id="expPreviewWrap">
+        <div class="empty"><div class="ico">📊</div><p>Apply filters above and click Apply to preview data.</p></div>
+      </div>
+    </div>
+
+    <!-- Summary cards for filtered data -->
+    <div class="kpi-row" id="expKpiRow" style="display:none;">
+      <div class="kpi g"><div class="val" id="expTotalKg">—</div><div class="lbl">Total kg</div></div>
+      <div class="kpi b"><div class="val" id="expTotalLines">—</div><div class="lbl">Order Lines</div></div>
+      <div class="kpi o"><div class="val" id="expTotalSalesmen">—</div><div class="lbl">Salespeople</div></div>
+      <div class="kpi p"><div class="val" id="expTotalRoutes">—</div><div class="lbl">Routes</div></div>
+    </div>
+
+  </div>
+
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -456,6 +607,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const o = document.createElement('option'); o.value = r; o.textContent = r; rsel.appendChild(o);
   });
 
+  // Populate route filter dropdown
+  const rfsel = document.getElementById('routeFilterSelect');
+  ROUTES.forEach(r => {
+    const o = document.createElement('option'); o.value = r; o.textContent = r; rfsel.appendChild(o);
+  });
+
+  // Populate export dropdowns
+  const expSm = document.getElementById('expSalesman');
+  const expRt = document.getElementById('expRoute');
+  [...SALESMEN].sort((a,b)=>a.n.localeCompare(b.n)).forEach(s => {
+    const o = document.createElement('option'); o.value = s.p; o.textContent = `${s.n} (${s.p})`; expSm.appendChild(o);
+  });
+  ROUTES.forEach(r => {
+    const o = document.createElement('option'); o.value = r; o.textContent = r; expRt.appendChild(o);
+  });
+  // Set default dates for export
+  const nowD = new Date(), tdD = nowD.toISOString().split('T')[0];
+  document.getElementById('expDateFrom').value = '2020-01-01';
+  document.getElementById('expDateTo').value = tdD;
+
   // Close dropdowns on outside click
   document.addEventListener('click', e => {
     if (!e.target.closest('.dd-wrap')) {
@@ -478,7 +649,7 @@ function switchDashTab(tab, btn) {
   activeDashTab = tab;
   document.querySelectorAll('.itab').forEach(t => t.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  ['Overview','Salesman','Products','Daily'].forEach(t => {
+  ['Overview','Salesman','Products','Daily','Routes','Export'].forEach(t => {
     document.getElementById('dt'+t).classList.toggle('hidden', t.toLowerCase() !== tab);
   });
   renderDashboard();
@@ -797,6 +968,8 @@ function renderDashboard() {
   else if (activeDashTab==='salesman') renderSalesmanTab(data);
   else if (activeDashTab==='products') renderProductsTab(data);
   else if (activeDashTab==='daily') renderDailyTab(data);
+  else if (activeDashTab==='routes') renderRoutesTab();
+  else if (activeDashTab==='export') initExportTab();
 }
 
 function renderOverview(data) {
@@ -948,6 +1121,424 @@ function renderDailyTab(data) {
       <span style="font-family:'DM Mono',monospace;font-size:.8rem;font-weight:600;color:var(--green)">${totalKg.toFixed(2)} kg</span>
       <span style="font-family:'DM Mono',monospace;font-size:.8rem;color:var(--muted)">${daily.length} day${daily.length!==1?'s':''}</span>
     </div>`;
+}
+
+// ═══════════ ROUTES TAB ═══════════
+let routeDateFilter = 'today';
+
+function setRouteFilter(type, btn) {
+  routeDateFilter = type;
+  document.querySelectorAll('[id^="rfbt-"]').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderRoutesTab();
+}
+
+function getRouteDateRange() {
+  const now = new Date(), td = now.toISOString().split('T')[0];
+  if (routeDateFilter === 'today') return { from: new Date(td+'T00:00:00'), to: new Date(td+'T23:59:59') };
+  if (routeDateFilter === 'week') {
+    const m = new Date(now); m.setDate(now.getDate()-now.getDay()+1);
+    return { from: new Date(m.toISOString().split('T')[0]+'T00:00:00'), to: new Date(td+'T23:59:59') };
+  }
+  if (routeDateFilter === 'month') {
+    return { from: new Date(`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01T00:00:00`), to: new Date(td+'T23:59:59') };
+  }
+  return { from: new Date('2020-01-01T00:00:00'), to: new Date(td+'T23:59:59') };
+}
+
+function renderRoutesTab() {
+  const { from, to } = getRouteDateRange();
+  const selectedRoute = document.getElementById('routeFilterSelect').value;
+
+  // Filter data by date
+  let data = allData.filter(r => {
+    if (!r.timestamp) return false;
+    const d = new Date(r.timestamp);
+    return d >= from && d <= to;
+  });
+
+  // Update KPIs (before route filter for totals)
+  const allRoutes = [...new Set(data.map(r=>r.route).filter(Boolean))];
+  document.getElementById('rRoutes').textContent = allRoutes.length;
+  document.getElementById('rSalesmen').textContent = new Set(data.map(r=>r.salesman_payroll)).size;
+
+  // Apply route filter for detailed views
+  const routeData = selectedRoute ? data.filter(r => r.route === selectedRoute) : data;
+
+  const totalKg = routeData.reduce((s,r)=>s+(parseFloat(r.total_wt)||0),0);
+  document.getElementById('rKg').textContent = totalKg > 999 ? (totalKg/1000).toFixed(1)+'t' : totalKg.toFixed(1);
+  document.getElementById('rLines').textContent = routeData.length;
+
+  // Group by route for charts
+  const routeMap = {};
+  data.forEach(r => {
+    const route = r.route || 'Unknown';
+    if (!routeMap[route]) routeMap[route] = { kg: 0, lines: 0 };
+    routeMap[route].kg += parseFloat(r.total_wt)||0;
+    routeMap[route].lines++;
+  });
+  const routeEntries = Object.entries(routeMap).sort((a,b)=>b[1].kg-a[1].kg);
+
+  // Chart: kg by route
+  dc('cRouteKg');
+  const ctx1 = document.getElementById('cRouteKg').getContext('2d');
+  charts['cRouteKg'] = new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels: routeEntries.map(e=>e[0]),
+      datasets: [{ label:'kg', data: routeEntries.map(e=>+e[1].kg.toFixed(2)),
+        backgroundColor: routeEntries.map((_,i)=> selectedRoute && routeEntries[i][0]===selectedRoute ? '#1A7A4A' : COLORS[i%COLORS.length]+'99'),
+        borderRadius: 5 }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, indexAxis:'y',
+      plugins:{legend:{display:false}},
+      scales:{x:{beginAtZero:true,grid:{color:'#f0ede8'}},y:{grid:{display:false},ticks:{font:{size:10}}}}
+    }
+  });
+
+  // Chart: lines by route
+  dc('cRouteLines');
+  const ctx2 = document.getElementById('cRouteLines').getContext('2d');
+  charts['cRouteLines'] = new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: routeEntries.map(e=>e[0]),
+      datasets: [{ label:'Lines', data: routeEntries.map(e=>e[1].lines),
+        backgroundColor: routeEntries.map((_,i)=> selectedRoute && routeEntries[i][0]===selectedRoute ? '#C9941A' : COLORS[i%COLORS.length]+'88'),
+        borderRadius: 5 }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, indexAxis:'y',
+      plugins:{legend:{display:false}},
+      scales:{x:{beginAtZero:true,grid:{color:'#f0ede8'}},y:{grid:{display:false},ticks:{font:{size:10}}}}
+    }
+  });
+
+  // Chart: product mix for selected/all route
+  const prodKg = {};
+  routeData.forEach(r => {
+    const prod = PRODUCTS.find(p=>p.c===r.product_code);
+    const cat = prod ? prod.k : (r.product_desc||'Other').split(' ')[0];
+    prodKg[cat] = (prodKg[cat]||0) + (parseFloat(r.total_wt)||0);
+  });
+  const prodEntries = Object.entries(prodKg).sort((a,b)=>b[1]-a[1]);
+  dc('cRouteProdMix');
+  const ctx3 = document.getElementById('cRouteProdMix').getContext('2d');
+  charts['cRouteProdMix'] = new Chart(ctx3, {
+    type: 'doughnut',
+    data: { labels: prodEntries.map(e=>e[0]), datasets:[{ data: prodEntries.map(e=>+e[1].toFixed(2)), backgroundColor:COLORS, borderWidth:2, borderColor:'#fff' }] },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'right',labels:{font:{size:10}}}} }
+  });
+
+  // Chart: daily trend for selected route
+  const dailyRoute = {};
+  routeData.forEach(r => {
+    const k = dkey(r.timestamp); if(!k) return;
+    if (!dailyRoute[k]) dailyRoute[k] = { kg:0, lines:0 };
+    dailyRoute[k].kg += parseFloat(r.total_wt)||0;
+    dailyRoute[k].lines++;
+  });
+  const dailyEntries = Object.entries(dailyRoute).sort((a,b)=>a[0].localeCompare(b[0]));
+  const dlabels = dailyEntries.map(e=>new Date(e[0]).toLocaleDateString('en-KE',{day:'2-digit',month:'short'}));
+  dc('cRouteDailyTrend');
+  const ctx4 = document.getElementById('cRouteDailyTrend').getContext('2d');
+  charts['cRouteDailyTrend'] = new Chart(ctx4, {
+    type: 'line',
+    data: { labels: dlabels, datasets:[
+      { label:'kg', data:dailyEntries.map(e=>+e[1].kg.toFixed(2)), borderColor:'#1A7A4A', backgroundColor:'rgba(26,122,74,0.08)', fill:true, tension:0.4, pointRadius:4 }
+    ]},
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,grid:{color:'#f0ede8'}},x:{grid:{display:false}}} }
+  });
+
+  // Products ranked table for selected route
+  const prodRank = {};
+  routeData.forEach(r => {
+    const k = r.product_code||'?';
+    if (!prodRank[k]) prodRank[k] = { code:k, desc:r.product_desc||k, qty:0, kg:0 };
+    prodRank[k].qty += parseInt(r.qty)||0;
+    prodRank[k].kg += parseFloat(r.total_wt)||0;
+  });
+  const prodRankList = Object.values(prodRank).sort((a,b)=>b.kg-a.kg);
+  const maxKg = prodRankList[0]?.kg||1;
+  document.getElementById('routeProdTable').innerHTML = prodRankList.length ? `
+    <table class="tbl"><thead><tr><th>#</th><th>Product</th><th>Category</th><th>Qty</th><th>Total kg</th><th style="width:120px">Share</th></tr></thead>
+    <tbody>${prodRankList.map((p,i)=>{
+      const cat = PRODUCTS.find(x=>x.c===p.code)?.k||'—';
+      return `<tr>
+        <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:.72rem">${i+1}</td>
+        <td><div style="font-size:.8rem;font-weight:500">${p.desc}</div><span class="badge">${p.code}</span></td>
+        <td><span class="pill blue" style="font-size:.65rem;padding:2px 7px;">${cat}</span></td>
+        <td style="font-family:'DM Mono',monospace">${p.qty}</td>
+        <td style="font-family:'DM Mono',monospace;font-weight:600;color:var(--green)">${p.kg.toFixed(2)}</td>
+        <td><div class="rb"><div class="rb-fill" style="width:${(p.kg/maxKg*100).toFixed(1)}%;background:${COLORS[i%COLORS.length]};"></div></div></td>
+      </tr>`;
+    }).join('')}</tbody></table>` : '<div class="empty" style="padding:24px"><p>No data for this selection.</p></div>';
+
+  // All routes summary table
+  document.getElementById('allRoutesTable').innerHTML = routeEntries.length ? `
+    <table class="tbl"><thead><tr><th>#</th><th>Route</th><th>Lines</th><th>Total kg</th><th style="width:140px">Volume</th></tr></thead>
+    <tbody>${routeEntries.map((e,i)=>{
+      const pct = (e[1].kg / (routeEntries.reduce((s,x)=>s+x[1].kg,0)||1)*100).toFixed(1);
+      return `<tr style="${selectedRoute===e[0]?'background:#f0faf5;':''}">
+        <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:.72rem">${i+1}</td>
+        <td style="font-weight:${selectedRoute===e[0]?'700':'500'}">${e[0]}</td>
+        <td style="font-family:'DM Mono',monospace">${e[1].lines}</td>
+        <td style="font-family:'DM Mono',monospace;font-weight:600;color:var(--green)">${e[1].kg.toFixed(2)}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="rb" style="flex:1"><div class="rb-fill" style="width:${(e[1].kg/(routeEntries[0][1].kg||1)*100).toFixed(1)}%;background:${COLORS[i%COLORS.length]};"></div></div>
+            <span style="font-family:'DM Mono',monospace;font-size:.7rem;color:var(--muted);width:36px;">${pct}%</span>
+          </div>
+        </td>
+      </tr>`;
+    }).join('')}</tbody></table>
+    <div style="padding:10px 20px;background:var(--cream);border-top:1px solid var(--border);display:flex;gap:20px;">
+      <span style="font-size:.72rem;color:var(--muted);font-weight:600">TOTAL:</span>
+      <span style="font-family:'DM Mono',monospace;font-size:.8rem;font-weight:600">${routeEntries.reduce((s,e)=>s+e[1].lines,0)} lines</span>
+      <span style="font-family:'DM Mono',monospace;font-size:.8rem;font-weight:600;color:var(--green)">${routeEntries.reduce((s,e)=>s+e[1].kg,0).toFixed(2)} kg</span>
+      <span style="font-family:'DM Mono',monospace;font-size:.8rem;color:var(--muted)">${routeEntries.length} routes</span>
+    </div>` : '<div class="empty" style="padding:24px"><p>No data for this period.</p></div>';
+}
+
+// ═══════════ EXPORT TAB ═══════════
+let exportData = [];
+
+function initExportTab() {
+  applyExportFilter();
+}
+
+function getExportChannel(customerAcc) {
+  const c = CUSTOMERS.find(x => x.a === customerAcc);
+  return c ? c.ch : '—';
+}
+
+function applyExportFilter() {
+  const from = new Date((document.getElementById('expDateFrom').value||'2020-01-01')+'T00:00:00');
+  const to   = new Date((document.getElementById('expDateTo').value||new Date().toISOString().split('T')[0])+'T23:59:59');
+  const sm   = document.getElementById('expSalesman').value;
+  const rt   = document.getElementById('expRoute').value;
+  const cat  = document.getElementById('expCategory').value;
+  const ch   = document.getElementById('expChannel').value;
+
+  exportData = allData.filter(r => {
+    if (!r.timestamp) return false;
+    const d = new Date(r.timestamp);
+    if (d < from || d > to) return false;
+    if (sm && r.salesman_payroll !== sm) return false;
+    if (rt && r.route !== rt) return false;
+    if (cat) {
+      const prod = PRODUCTS.find(p => p.c === r.product_code);
+      if (!prod || prod.k !== cat) return false;
+    }
+    if (ch) {
+      const cust = CUSTOMERS.find(c => c.a === r.customer_acc);
+      if (!cust || cust.ch !== ch) return false;
+    }
+    return true;
+  });
+
+  // Update count
+  document.getElementById('expResultCount').textContent = `${exportData.length} rows matched`;
+
+  // KPI cards
+  const kpiRow = document.getElementById('expKpiRow');
+  if (exportData.length > 0) {
+    kpiRow.style.display = 'grid';
+    document.getElementById('expTotalKg').textContent = exportData.reduce((s,r)=>s+(parseFloat(r.total_wt)||0),0).toFixed(1);
+    document.getElementById('expTotalLines').textContent = exportData.length;
+    document.getElementById('expTotalSalesmen').textContent = new Set(exportData.map(r=>r.salesman_payroll)).size;
+    document.getElementById('expTotalRoutes').textContent = new Set(exportData.map(r=>r.route).filter(Boolean)).size;
+  } else {
+    kpiRow.style.display = 'none';
+  }
+
+  // Preview table (max 100 rows)
+  const wrap = document.getElementById('expPreviewWrap');
+  if (!exportData.length) {
+    wrap.innerHTML = '<div class="empty" style="padding:28px"><div class="ico">🔍</div><p>No data matches the selected filters.</p></div>';
+    return;
+  }
+  const preview = exportData.slice(0, 100);
+  wrap.innerHTML = `
+    <div style="padding:10px 16px;background:var(--cream);border-bottom:1px solid var(--border);font-size:.75rem;color:var(--muted);">
+      Showing ${preview.length} of ${exportData.length} rows. Download to get all data.
+    </div>
+    <table class="tbl" style="font-size:.78rem;">
+      <thead><tr>
+        <th>Date</th><th>Time</th><th>Salesperson</th><th>Route</th>
+        <th>Customer</th><th>ACC</th><th>Channel</th>
+        <th>Product</th><th>Code</th><th>Category</th>
+        <th>Qty</th><th>Unit kg</th><th>Total kg</th>
+      </tr></thead>
+      <tbody>${preview.map(r => {
+        const dt = r.timestamp ? new Date(r.timestamp) : null;
+        const ch = getExportChannel(r.customer_acc);
+        const prod = PRODUCTS.find(p => p.c === r.product_code);
+        return `<tr>
+          <td style="white-space:nowrap">${dt?dt.toLocaleDateString('en-KE',{day:'2-digit',month:'short',year:'numeric'}):'—'}</td>
+          <td style="font-family:'DM Mono',monospace;font-size:.7rem">${dt?dt.toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'}):'—'}</td>
+          <td style="font-weight:500">${r.salesman_name||'—'}</td>
+          <td><span class="pill blue" style="font-size:.65rem;padding:2px 6px;white-space:nowrap">${r.route||'—'}</span></td>
+          <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.customer_name||'—'}</td>
+          <td><span class="badge">${r.customer_acc||''}</span></td>
+          <td style="font-size:.72rem;color:var(--muted)">${ch}</td>
+          <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.product_desc||'—'}</td>
+          <td><span class="badge">${r.product_code||''}</span></td>
+          <td><span class="pill green" style="font-size:.65rem;padding:2px 6px">${prod?prod.k:'—'}</span></td>
+          <td style="font-family:'DM Mono',monospace;font-weight:600">${r.qty||''}</td>
+          <td style="font-family:'DM Mono',monospace">${parseFloat(r.unit_wt||0).toFixed(2)}</td>
+          <td style="font-family:'DM Mono',monospace;font-weight:600;color:var(--green)">${parseFloat(r.total_wt||0).toFixed(2)}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+}
+
+function clearExportFilter() {
+  document.getElementById('expDateFrom').value = '2020-01-01';
+  document.getElementById('expDateTo').value = new Date().toISOString().split('T')[0];
+  document.getElementById('expSalesman').value = '';
+  document.getElementById('expRoute').value = '';
+  document.getElementById('expCategory').value = '';
+  document.getElementById('expChannel').value = '';
+  applyExportFilter();
+}
+
+function downloadCSVExport() {
+  if (!exportData.length) return showToast('No data to export. Apply filters first.', 'error');
+  const headers = ['Date','Time','Salesperson','Payroll','Route','Customer ACC','Customer Name','Channel','Product Code','Product','Category','Packaging','Qty','Unit Wt (kg)','Total Wt (kg)'];
+  const rows = exportData.map(r => {
+    const dt = r.timestamp ? new Date(r.timestamp) : null;
+    const ch = getExportChannel(r.customer_acc);
+    const prod = PRODUCTS.find(p => p.c === r.product_code);
+    return [
+      dt?dt.toLocaleDateString('en-KE'):'',
+      dt?dt.toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'}):'',
+      r.salesman_name||'', r.salesman_payroll||'', r.route||'',
+      r.customer_acc||'', `"${r.customer_name||''}"`, ch,
+      r.product_code||'', `"${r.product_desc||''}"`, prod?prod.k:'', r.packaging||'',
+      r.qty||'', parseFloat(r.unit_wt||0).toFixed(2), parseFloat(r.total_wt||0).toFixed(2)
+    ].join(',');
+  });
+  const csv = [headers.join(','), ...rows].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+  a.download = `orders_export_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  showToast(`✅ Exported ${exportData.length} rows as CSV`, 'success');
+}
+
+function downloadExcel() {
+  if (!exportData.length) return showToast('No data to export. Apply filters first.', 'error');
+
+  // Build Excel XML (SpreadsheetML) - works without any library
+  const headers = ['Date','Time','Salesperson','Payroll','Route','Customer ACC','Customer Name','Channel','Product Code','Product Description','Category','Packaging','Qty','Unit Wt (kg)','Total Wt (kg)'];
+
+  const esc = v => String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  const headerRow = headers.map(h => `<Cell><Data ss:Type="String">${esc(h)}</Data></Cell>`).join('');
+
+  const dataRows = exportData.map(r => {
+    const dt = r.timestamp ? new Date(r.timestamp) : null;
+    const ch = getExportChannel(r.customer_acc);
+    const prod = PRODUCTS.find(p => p.c === r.product_code);
+    const cells = [
+      dt ? dt.toLocaleDateString('en-KE',{day:'2-digit',month:'short',year:'numeric'}) : '',
+      dt ? dt.toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'}) : '',
+      r.salesman_name||'', r.salesman_payroll||'', r.route||'',
+      r.customer_acc||'', r.customer_name||'', ch,
+      r.product_code||'', r.product_desc||'', prod?prod.k:'', r.packaging||'',
+      r.qty||'', parseFloat(r.unit_wt||0).toFixed(2), parseFloat(r.total_wt||0).toFixed(2)
+    ];
+    const cellXml = cells.map((c,i) => {
+      const type = (i>=12) ? 'Number' : 'String';
+      const val = (i>=12) ? parseFloat(c)||0 : esc(c);
+      return `<Cell><Data ss:Type="${type}">${val}</Data></Cell>`;
+    }).join('');
+    return `<Row>${cellXml}</Row>`;
+  }).join('');
+
+  // Summary sheet rows
+  const totalKg = exportData.reduce((s,r)=>s+(parseFloat(r.total_wt)||0),0);
+  const uniqueSm = new Set(exportData.map(r=>r.salesman_payroll)).size;
+  const uniqueRoutes = [...new Set(exportData.map(r=>r.route).filter(Boolean))];
+
+  // Route summary
+  const routeMap = {};
+  exportData.forEach(r => {
+    const rt = r.route||'Unknown';
+    if (!routeMap[rt]) routeMap[rt] = {lines:0,kg:0};
+    routeMap[rt].lines++; routeMap[rt].kg += parseFloat(r.total_wt)||0;
+  });
+  const routeSummaryRows = Object.entries(routeMap).sort((a,b)=>b[1].kg-a[1].kg).map(([rt,v]) =>
+    `<Row><Cell><Data ss:Type="String">${esc(rt)}</Data></Cell><Cell><Data ss:Type="Number">${v.lines}</Data></Cell><Cell><Data ss:Type="Number">${v.kg.toFixed(2)}</Data></Cell></Row>`
+  ).join('');
+
+  // Salesman summary
+  const smMap = {};
+  exportData.forEach(r => {
+    const k = r.salesman_payroll;
+    if (!smMap[k]) smMap[k] = {name:r.salesman_name||k, lines:0, kg:0};
+    smMap[k].lines++; smMap[k].kg += parseFloat(r.total_wt)||0;
+  });
+  const smSummaryRows = Object.values(smMap).sort((a,b)=>b.kg-a.kg).map(s =>
+    `<Row><Cell><Data ss:Type="String">${esc(s.name)}</Data></Cell><Cell><Data ss:Type="Number">${s.lines}</Data></Cell><Cell><Data ss:Type="Number">${s.kg.toFixed(2)}</Data></Cell></Row>`
+  ).join('');
+
+  // Product summary
+  const prodMap = {};
+  exportData.forEach(r => {
+    const k = r.product_code||'?';
+    if (!prodMap[k]) prodMap[k] = {desc:r.product_desc||k, qty:0, kg:0};
+    prodMap[k].qty += parseInt(r.qty)||0; prodMap[k].kg += parseFloat(r.total_wt)||0;
+  });
+  const prodSummaryRows = Object.values(prodMap).sort((a,b)=>b.kg-a.kg).map(p =>
+    `<Row><Cell><Data ss:Type="String">${esc(p.desc)}</Data></Cell><Cell><Data ss:Type="Number">${p.qty}</Data></Cell><Cell><Data ss:Type="Number">${p.kg.toFixed(2)}</Data></Cell></Row>`
+  ).join('');
+
+  const styleXml = `<Styles>
+    <Style ss:ID="header"><Font ss:Bold="1"/><Interior ss:Color="#1A1A1A" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style>
+    <Style ss:ID="subheader"><Font ss:Bold="1"/><Interior ss:Color="#C9941A" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style>
+    <Style ss:ID="green"><Font ss:Color="#1A7A4A" ss:Bold="1"/></Style>
+  </Styles>`;
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+  ${styleXml}
+  <Worksheet ss:Name="Orders">
+    <Table>
+      <Row>${headerRow}</Row>
+      ${dataRows}
+    </Table>
+  </Worksheet>
+  <Worksheet ss:Name="By Route">
+    <Table>
+      <Row><Cell><Data ss:Type="String">Route</Data></Cell><Cell><Data ss:Type="String">Order Lines</Data></Cell><Cell><Data ss:Type="String">Total kg</Data></Cell></Row>
+      ${routeSummaryRows}
+      <Row><Cell><Data ss:Type="String">TOTAL</Data></Cell><Cell><Data ss:Type="Number">${exportData.length}</Data></Cell><Cell><Data ss:Type="Number">${totalKg.toFixed(2)}</Data></Cell></Row>
+    </Table>
+  </Worksheet>
+  <Worksheet ss:Name="By Salesperson">
+    <Table>
+      <Row><Cell><Data ss:Type="String">Salesperson</Data></Cell><Cell><Data ss:Type="String">Order Lines</Data></Cell><Cell><Data ss:Type="String">Total kg</Data></Cell></Row>
+      ${smSummaryRows}
+    </Table>
+  </Worksheet>
+  <Worksheet ss:Name="By Product">
+    <Table>
+      <Row><Cell><Data ss:Type="String">Product</Data></Cell><Cell><Data ss:Type="String">Qty</Data></Cell><Cell><Data ss:Type="String">Total kg</Data></Cell></Row>
+      ${prodSummaryRows}
+    </Table>
+  </Worksheet>
+</Workbook>`;
+
+  const blob = new Blob([xml], {type:'application/vnd.ms-excel'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `orders_export_${new Date().toISOString().split('T')[0]}.xls`;
+  a.click();
+  showToast(`✅ Exported ${exportData.length} rows — 4 sheets included`, 'success');
 }
 
 // ═══════════ TOAST ═══════════
