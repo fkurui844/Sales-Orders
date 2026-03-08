@@ -388,7 +388,7 @@ select:focus,input:focus{outline:none;border-color:var(--dark);box-shadow:0 0 0 
 
 <script>
 // ═══════════ CONFIG ═══════════
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyxd4tCHfTvRz9x_Ey1AV-wEouxT0k2zQeYs4BLdYBcutkMCtn2f-0354fVWCUrh6onSA/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby560wLijPauUAw6dMkmyUueLXGKcS4g3-zU8Onr0cHauYNDdVf6M6Estpx26emATElfg/exec";
 
 // ═══════════ MASTER DATA ═══════════
 const SALESMEN = [
@@ -480,15 +480,28 @@ function dkey(ts) { return ts ? new Date(ts).toISOString().split('T')[0] : ''; }
 function fmt(ts) { return ts ? new Date(ts).toLocaleDateString('en-KE',{day:'2-digit',month:'short',year:'numeric'}) : '—'; }
 
 // ═══════════ LOAD DATA ═══════════
-async function loadData() {
-  try {
-    const r = await fetch(APPS_SCRIPT_URL+'?action=read');
-    const data = await r.json();
-    allData = data.rows || [];
-    applyFilter();
-    renderSupervisor();
-    renderDashboard();
-  } catch(e) { showToast('⚠️ Could not load data', 'error'); }
+function loadData() {
+  return new Promise((resolve) => {
+    const cbName = 'cb_' + Date.now();
+    const script = document.createElement('script');
+    window[cbName] = function(data) {
+      delete window[cbName];
+      document.body.removeChild(script);
+      allData = data.rows || [];
+      applyFilter();
+      renderSupervisor();
+      renderDashboard();
+      resolve();
+    };
+    script.onerror = function() {
+      delete window[cbName];
+      try { document.body.removeChild(script); } catch(e){}
+      showToast('⚠️ Could not load data', 'error');
+      resolve();
+    };
+    script.src = APPS_SCRIPT_URL + '?callback=' + cbName;
+    document.body.appendChild(script);
+  });
 }
 
 // ═══════════ ORDER FORM ═══════════
@@ -577,10 +590,17 @@ async function submitOrder() {
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Submitting…';
   const payload = { action:'submit', salesman_payroll:currentSalesman.p, salesman_name:currentSalesman.n, timestamp:new Date().toISOString(), lines:orderLines };
   try {
-    const r = await fetch(APPS_SCRIPT_URL, { method:'POST', body:JSON.stringify(payload), headers:{'Content-Type':'application/json'} });
-    if (r.ok) { showToast(`✅ Order submitted! ${orderLines.length} lines saved.`,'success'); orderLines=[]; renderOrderTable(); checkReady(); }
-    else throw new Error();
-  } catch(e) { showToast('⚠️ Could not reach server. Check Apps Script URL.','error'); }
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify(payload),
+      headers: {'Content-Type': 'text/plain'}
+    });
+    showToast(`✅ Order submitted! ${orderLines.length} lines saved.`,'success');
+    orderLines=[]; renderOrderTable(); checkReady();
+  } catch(e) {
+    showToast('⚠️ Network error. Check your internet connection.','error');
+  }
   btn.innerHTML = '🚀 Submit Order to Google Sheets'; btn.disabled = false;
 }
 
