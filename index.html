@@ -388,7 +388,7 @@ select:focus,input:focus{outline:none;border-color:var(--dark);box-shadow:0 0 0 
 
 <script>
 // ═══════════ CONFIG ═══════════
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPLBh9BCXpHbTrZCzqEM7haFnENIy2z2hsd_ezTMCTV_BM98l7PquVMG2AwklaIHz7Vw/exec";
+const SHEETDB_URL = "https://sheetdb.io/api/v1/k1zts6elnlkrm";
 
 // ═══════════ MASTER DATA ═══════════
 const SALESMEN = [
@@ -480,28 +480,28 @@ function dkey(ts) { return ts ? new Date(ts).toISOString().split('T')[0] : ''; }
 function fmt(ts) { return ts ? new Date(ts).toLocaleDateString('en-KE',{day:'2-digit',month:'short',year:'numeric'}) : '—'; }
 
 // ═══════════ LOAD DATA ═══════════
-function loadData() {
-  return new Promise((resolve) => {
-    const cbName = 'cb_' + Date.now();
-    const script = document.createElement('script');
-    window[cbName] = function(data) {
-      delete window[cbName];
-      document.body.removeChild(script);
-      allData = data.rows || [];
-      applyFilter();
-      renderSupervisor();
-      renderDashboard();
-      resolve();
-    };
-    script.onerror = function() {
-      delete window[cbName];
-      try { document.body.removeChild(script); } catch(e){}
-      showToast('⚠️ Could not load data', 'error');
-      resolve();
-    };
-    script.src = APPS_SCRIPT_URL + '?callback=' + cbName;
-    document.body.appendChild(script);
-  });
+async function loadData() {
+  try {
+    const response = await fetch(SHEETDB_URL);
+    const rows = await response.json();
+    // SheetDB returns array directly, map keys to match our format
+    allData = Array.isArray(rows) ? rows.map(r => ({
+      timestamp: r.timestamp,
+      salesman_payroll: r.salesman_payroll,
+      salesman_name: r.salesman_name,
+      customer_acc: r.customer_acc,
+      customer_name: r.customer_name,
+      product_code: r.product_code,
+      product_desc: r.product_desc,
+      packaging: r.packaging,
+      qty: r.qty,
+      unit_wt: r.unit_wt,
+      total_wt: r.total_wt
+    })) : [];
+    applyFilter();
+    renderSupervisor();
+    renderDashboard();
+  } catch(e) { showToast('⚠️ Could not load data', 'error'); }
 }
 
 // ═══════════ ORDER FORM ═══════════
@@ -584,33 +584,40 @@ function renderOrderTable() {
 
 function checkReady() { document.getElementById('submitBtn').disabled = !(currentSalesman && orderLines.length); }
 
-function submitOrder() {
+async function submitOrder() {
   if (!currentSalesman || !orderLines.length) return;
   const btn = document.getElementById('submitBtn');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Submitting…';
-  const payload = { action:'submit', salesman_payroll:currentSalesman.p, salesman_name:currentSalesman.n, timestamp:new Date().toISOString(), lines:orderLines };
-  const cbName = 'submit_cb_' + Date.now();
-  const script = document.createElement('script');
-  const encoded = encodeURIComponent(JSON.stringify(payload));
-  window[cbName] = function(response) {
-    delete window[cbName];
-    try { document.body.removeChild(script); } catch(e){}
-    if (response && response.status === 'ok') {
+  try {
+    const rows = orderLines.map(line => ({
+      timestamp: new Date().toISOString(),
+      salesman_payroll: currentSalesman.p,
+      salesman_name: currentSalesman.n,
+      customer_acc: line.customerAcc,
+      customer_name: line.customerName,
+      product_code: line.productCode,
+      product_desc: line.productDesc,
+      packaging: line.productPkg,
+      qty: line.qty,
+      unit_wt: line.unitWt,
+      total_wt: line.totalWt
+    }));
+    const response = await fetch(SHEETDB_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: rows })
+    });
+    const result = await response.json();
+    if (response.ok) {
       showToast(`✅ Order submitted! ${orderLines.length} lines saved.`, 'success');
       orderLines=[]; renderOrderTable(); checkReady();
     } else {
-      showToast('⚠️ Submission failed: ' + (response ? response.message : 'unknown error'), 'error');
+      throw new Error(JSON.stringify(result));
     }
-    btn.innerHTML = '🚀 Submit Order to Google Sheets'; btn.disabled = false;
-  };
-  script.onerror = function() {
-    delete window[cbName];
-    try { document.body.removeChild(script); } catch(e){}
-    showToast('⚠️ Network error. Check your internet connection.', 'error');
-    btn.innerHTML = '🚀 Submit Order to Google Sheets'; btn.disabled = false;
-  };
-  script.src = APPS_SCRIPT_URL + '?callback=' + cbName + '&data=' + encoded;
-  document.body.appendChild(script);
+  } catch(e) {
+    showToast('⚠️ Submission failed: ' + e.message, 'error');
+  }
+  btn.innerHTML = '🚀 Submit Order to Google Sheets'; btn.disabled = false;
 }
 
 // ═══════════ SUPERVISOR VIEW ═══════════
