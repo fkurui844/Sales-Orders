@@ -6,8 +6,6 @@
 <title>Sales Order System</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root {
   --cream: #F9F5EF;
@@ -225,18 +223,6 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 .share-drop-item:hover{background:var(--surface2);}
 .share-drop-item .wa-dot{width:22px;height:22px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .share-drop-item .pdf-dot{width:22px;height:22px;background:#E74C3C;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.share-drop-divider{height:1px;background:var(--bd);margin:3px 8px;}
-.share-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99990;display:flex;align-items:center;justify-content:center;padding:20px;}
-.share-modal{background:var(--surface);border-radius:16px;padding:20px;max-width:340px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);}
-.share-modal h3{font-family:"DM Serif Display",serif;font-size:1.1rem;margin-bottom:6px;color:var(--text);}
-.share-modal p{font-size:.8rem;color:var(--text-muted);margin-bottom:16px;line-height:1.5;}
-.share-modal-img{width:100%;border-radius:10px;border:1px solid var(--bd);margin-bottom:14px;display:block;}
-.share-modal-btns{display:flex;gap:10px;flex-wrap:wrap;}
-.share-modal-btns a,.share-modal-btns button{flex:1;min-width:120px;padding:11px 14px;border-radius:10px;font-size:.82rem;font-weight:700;text-align:center;cursor:pointer;text-decoration:none;border:none;display:flex;align-items:center;justify-content:center;gap:7px;}
-.smb-wa{background:#25D366;color:#fff;}
-.smb-dl{background:var(--surface2);color:var(--text);border:1.5px solid var(--bd)!important;}
-.smb-pdf{background:#E74C3C;color:#fff;}
-.smb-close{background:var(--surface2);color:var(--text-muted);border:1.5px solid var(--bd)!important;flex:0 0 auto;padding:11px 18px;}
 @media print{.no-print{display:none!important;}.print-only{display:block!important;}body{background:#fff;}.panel{box-shadow:none;border:1px solid #ddd;}}
 /* fade hint on right edge to indicate more tabs */
 .itabs-wrap::after{content:'';position:absolute;right:0;top:0;bottom:0;width:32px;background:linear-gradient(to right,transparent,var(--bg));border-radius:0 10px 10px 0;pointer-events:none;}
@@ -529,8 +515,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cDailyKg">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_cDailyKg')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_cDailyKg">
-            <button class="share-drop-item" onclick="shareItemCapture('cDailyKg','Daily Volume kg')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('cDailyKg','Daily Volume kg')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('cDailyKg','Daily Volume kg')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('cDailyKg','Daily Volume kg')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -540,8 +526,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cDailyLines">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_cDailyLines')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_cDailyLines">
-            <button class="share-drop-item" onclick="shareItemCapture('cDailyLines','Orders Per Day')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('cDailyLines','Orders Per Day')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('cDailyLines','Orders Per Day')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('cDailyLines','Orders Per Day')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -553,8 +539,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_rankSmKg">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_rankSmKg')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_rankSmKg">
-            <button class="share-drop-item" onclick="shareItemCapture('rankSmKg','Top Salespeople kg')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('rankSmKg','Top Salespeople kg')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('rankSmKg','Top Salespeople kg')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('rankSmKg','Top Salespeople kg')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -564,8 +550,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_rankProdQty">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_rankProdQty')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_rankProdQty">
-            <button class="share-drop-item" onclick="shareItemCapture('rankProdQty','Top Products Qty')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('rankProdQty','Top Products Qty')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('rankProdQty','Top Products Qty')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('rankProdQty','Top Products Qty')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -609,8 +595,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cAllSmKg">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_cAllSmKg')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_cAllSmKg">
-            <button class="share-drop-item" onclick="shareItemCapture('cAllSmKg','kg by Salesperson')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('cAllSmKg','kg by Salesperson')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('cAllSmKg','kg by Salesperson')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('cAllSmKg','kg by Salesperson')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -620,8 +606,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cAllSmLines">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_cAllSmLines')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_cAllSmLines">
-            <button class="share-drop-item" onclick="shareItemCapture('cAllSmLines','Lines by Salesperson')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('cAllSmLines','Lines by Salesperson')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('cAllSmLines','Lines by Salesperson')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('cAllSmLines','Lines by Salesperson')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -633,8 +619,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_allSmDetail">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_allSmDetail')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_allSmDetail">
-            <button class="share-drop-item" onclick="shareItemCapture('allSmDetail','All Salespeople Detail')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('allSmDetail','All Salespeople Detail')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('allSmDetail','All Salespeople Detail')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('allSmDetail','All Salespeople Detail')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -651,8 +637,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cProdKg">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_cProdKg')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_cProdKg">
-            <button class="share-drop-item" onclick="shareItemCapture('cProdKg','Top Products Total kg')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('cProdKg','Top Products Total kg')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('cProdKg','Top Products Total kg')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('cProdKg','Top Products Total kg')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -662,8 +648,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cCatMix">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_cCatMix')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_cCatMix">
-            <button class="share-drop-item" onclick="shareItemCapture('cCatMix','Category Mix')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('cCatMix','Category Mix')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('cCatMix','Category Mix')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('cCatMix','Category Mix')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -674,8 +660,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_allProdTable">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_allProdTable')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_allProdTable">
-            <button class="share-drop-item" onclick="shareItemCapture('allProdTable','All Products Ranked')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('allProdTable','All Products Ranked')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('allProdTable','All Products Ranked')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('allProdTable','All Products Ranked')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -690,8 +676,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cTrend">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_cTrend')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_cTrend">
-            <button class="share-drop-item" onclick="shareItemCapture('cTrend','Consolidated Daily Trend')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('cTrend','Consolidated Daily Trend')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('cTrend','Consolidated Daily Trend')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('cTrend','Consolidated Daily Trend')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -704,8 +690,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_dayBreakdown">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_dayBreakdown')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_dayBreakdown">
-            <button class="share-drop-item" onclick="shareItemCapture('dayBreakdown','Day by Day Breakdown')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('dayBreakdown','Day by Day Breakdown')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('dayBreakdown','Day by Day Breakdown')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('dayBreakdown','Day by Day Breakdown')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -750,8 +736,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cRouteKg">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_cRouteKg')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_cRouteKg">
-            <button class="share-drop-item" onclick="shareItemCapture('cRouteKg','kg by Route')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('cRouteKg','kg by Route')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('cRouteKg','kg by Route')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('cRouteKg','kg by Route')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -764,8 +750,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cRouteLines">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_cRouteLines')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_cRouteLines">
-            <button class="share-drop-item" onclick="shareItemCapture('cRouteLines','Order Lines by Route')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('cRouteLines','Order Lines by Route')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('cRouteLines','Order Lines by Route')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('cRouteLines','Order Lines by Route')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -781,8 +767,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cRouteProdMix">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_cRouteProdMix')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_cRouteProdMix">
-            <button class="share-drop-item" onclick="shareItemCapture('cRouteProdMix','Product Mix by Route')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('cRouteProdMix','Product Mix by Route')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('cRouteProdMix','Product Mix by Route')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('cRouteProdMix','Product Mix by Route')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -795,8 +781,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cRouteTrend">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_cRouteTrend')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_cRouteTrend">
-            <button class="share-drop-item" onclick="shareItemCapture('cRouteTrend','Daily kg Trend by Route')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('cRouteTrend','Daily kg Trend by Route')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('cRouteTrend','Daily kg Trend by Route')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('cRouteTrend','Daily kg Trend by Route')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -816,8 +802,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_allRoutes">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_allRoutes')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_allRoutes">
-            <button class="share-drop-item" onclick="shareItemCapture('allRoutes','All Routes Summary')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('allRoutes','All Routes Summary')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('allRoutes','All Routes Summary')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('allRoutes','All Routes Summary')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -863,8 +849,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cRvSm">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_cRvSm')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_cRvSm">
-            <button class="share-drop-item" onclick="shareItemCapture('cRvSm','Revenue by Salesperson')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('cRvSm','Revenue by Salesperson')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('cRvSm','Revenue by Salesperson')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('cRvSm','Revenue by Salesperson')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -877,8 +863,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cRvCat">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_cRvCat')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_cRvCat">
-            <button class="share-drop-item" onclick="shareItemCapture('cRvCat','Revenue by Category')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('cRvCat','Revenue by Category')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('cRvCat','Revenue by Category')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('cRvCat','Revenue by Category')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -893,8 +879,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cRvDaily">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_cRvDaily')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_cRvDaily">
-            <button class="share-drop-item" onclick="shareItemCapture('cRvDaily','Daily Revenue Trend')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('cRvDaily','Daily Revenue Trend')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('cRvDaily','Daily Revenue Trend')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('cRvDaily','Daily Revenue Trend')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -909,8 +895,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_rvRoute">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_rvRoute')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_rvRoute">
-            <button class="share-drop-item" onclick="shareItemCapture('rvRoute','Revenue by Route')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('rvRoute','Revenue by Route')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('rvRoute','Revenue by Route')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('rvRoute','Revenue by Route')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -927,8 +913,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
           <div class="share-menu-wrap no-print" id="smw_rvProdRev">
             <button class="share-icon-btn" onclick="toggleShareMenu('smw_rvProdRev')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
             <div class="share-dropdown" id="sd_rvProdRev">
-              <button class="share-drop-item" onclick="shareItemCapture('rvProductWrap','Top Products by Revenue')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-              <button class="share-drop-item" onclick="shareItemExportPDF('rvProductWrap','Top Products by Revenue')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+              <button class="share-drop-item" onclick="shareItemWA('rvProductWrap','Top Products by Revenue')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+              <button class="share-drop-item" onclick="shareItemPDF('rvProductWrap','Top Products by Revenue')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
             </div>
           </div>
           <select id="rvSmFilter" onchange="renderRevenueTab()" style="font-size:.8rem;padding:6px 12px;border-radius:8px;border:1.5px solid var(--bd);">
@@ -975,8 +961,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cHourDist">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_cHourDist')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_cHourDist">
-            <button class="share-drop-item" onclick="shareItemCapture('cHourDist','Orders by Hour')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('cHourDist','Orders by Hour')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('cHourDist','Orders by Hour')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('cHourDist','Orders by Hour')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -989,8 +975,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cDayDist">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_cDayDist')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_cDayDist">
-            <button class="share-drop-item" onclick="shareItemCapture('cDayDist','Orders by Day of Week')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('cDayDist','Orders by Day of Week')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('cDayDist','Orders by Day of Week')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('cDayDist','Orders by Day of Week')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       
@@ -1006,8 +992,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_timingTimeline">
           <button class="share-icon-btn" onclick="toggleShareMenu('smw_timingTimeline')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
           <div class="share-dropdown" id="sd_timingTimeline">
-            <button class="share-drop-item" onclick="shareItemCapture('timingTimeline','Salesperson Activity Timeline')" class="share-drop-item"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg></span>Save as Image / Share
-            <button class="share-drop-item" onclick="shareItemExportPDF('timingTimeline','Salesperson Activity Timeline')" class="share-drop-item"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF
+            <button class="share-drop-item" onclick="shareItemWA('timingTimeline','Salesperson Activity Timeline')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
+            <button class="share-drop-item" onclick="shareItemPDF('timingTimeline','Salesperson Activity Timeline')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
           </div>
         </div></div>
       </div>
@@ -8067,135 +8053,6 @@ function renderTimingTab() {
 
 // ═══════════ SHARE / PDF ═══════════
 
-// Close dropdowns on outside click
-document.addEventListener('click', e => {
-  if (!e.target.closest('.share-menu-wrap')) {
-    document.querySelectorAll('.share-dropdown.open').forEach(d => d.classList.remove('open'));
-  }
-}, true);
-
-function toggleShareMenu(wrapId) {
-  const wrap = document.getElementById(wrapId);
-  if (!wrap) return;
-  const dd = wrap.querySelector('.share-dropdown');
-  const wasOpen = dd.classList.contains('open');
-  document.querySelectorAll('.share-dropdown.open').forEach(d => d.classList.remove('open'));
-  if (!wasOpen) dd.classList.add('open');
-}
-
-// ── Capture panel as image using html2canvas ──
-async function capturePanel(panelId) {
-  const el = document.getElementById(panelId);
-  if (!el) return null;
-  const panel = el.closest('.panel') || el;
-  // Temporarily hide share buttons inside panel
-  panel.querySelectorAll('.share-menu-wrap').forEach(s => s.style.visibility = 'hidden');
-  try {
-    const canvas = await html2canvas(panel, {
-      scale: 2,
-      backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--surface').trim() || '#ffffff',
-      useCORS: true,
-      logging: false,
-    });
-    return canvas;
-  } finally {
-    panel.querySelectorAll('.share-menu-wrap').forEach(s => s.style.visibility = '');
-  }
-}
-
-// ── Show share modal with image preview ──
-async function shareItemCapture(panelId, title) {
-  document.querySelectorAll('.share-dropdown.open').forEach(d => d.classList.remove('open'));
-
-  // Show loading toast
-  showToast('Capturing chart…', 'info');
-
-  const canvas = await capturePanel(panelId);
-  if (!canvas) { showToast('Could not capture panel', 'error'); return; }
-
-  const imgDataUrl = canvas.toDataURL('image/png');
-  const fileName = title.replace(/[^a-z0-9]/gi, '_') + '_' + new Date().toLocaleDateString('en-KE').replace(/\//g,'-') + '.png';
-
-  // Build modal
-  const overlay = document.createElement('div');
-  overlay.className = 'share-modal-overlay no-print';
-  overlay.innerHTML = `
-    <div class="share-modal">
-      <h3>📤 Share: ${title}</h3>
-      <p>Your chart is ready. Download the image then share it on WhatsApp, or save as PDF.</p>
-      <img src="${imgDataUrl}" class="share-modal-img" alt="${title}">
-      <div class="share-modal-btns">
-        <a href="${imgDataUrl}" download="${fileName}" class="smb-dl" onclick="setTimeout(()=>showWAHint(),800)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Download Image
-        </a>
-        <button class="smb-pdf" onclick="shareModalPDF('${panelId}','${title}',this.closest('.share-modal-overlay'))">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>
-          Save PDF
-        </button>
-        <button class="smb-close" onclick="this.closest('.share-modal-overlay').remove()">✕</button>
-      </div>
-    </div>`;
-  document.body.appendChild(overlay);
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
-}
-
-function showWAHint() {
-  showToast('Image downloaded! Open WhatsApp and attach it from your gallery 📱', 'success');
-}
-
-// ── Export panel as PDF ──
-async function shareItemExportPDF(panelId, title) {
-  document.querySelectorAll('.share-dropdown.open').forEach(d => d.classList.remove('open'));
-  showToast('Generating PDF…', 'info');
-
-  const canvas = await capturePanel(panelId);
-  if (!canvas) { showToast('Could not capture panel', 'error'); return; }
-
-  const { jsPDF } = window.jspdf;
-  const imgData = canvas.toDataURL('image/png');
-  const imgW = canvas.width, imgH = canvas.height;
-
-  // A4 landscape if wide, portrait if tall
-  const isLandscape = imgW > imgH;
-  const pdf = new jsPDF({ orientation: isLandscape ? 'landscape' : 'portrait', unit: 'mm', format: 'a4' });
-  const pageW = pdf.internal.pageSize.getWidth();
-  const pageH = pdf.internal.pageSize.getHeight();
-  const margin = 12;
-  const usableW = pageW - margin * 2;
-  const usableH = pageH - margin * 2 - 14; // 14mm for title
-
-  // Add title
-  const now = new Date().toLocaleDateString('en-KE', {day:'2-digit',month:'short',year:'numeric'});
-  pdf.setFont('helvetica','bold');
-  pdf.setFontSize(13);
-  pdf.text(`KCC Sales — ${title}`, margin, margin + 6);
-  pdf.setFont('helvetica','normal');
-  pdf.setFontSize(9);
-  pdf.setTextColor(120);
-  pdf.text(now, margin, margin + 11);
-  pdf.setTextColor(0);
-
-  // Scale image to fit page
-  const scale = Math.min(usableW / (imgW / 3.7795), usableH / (imgH / 3.7795));
-  const drawW = (imgW / 3.7795) * scale;
-  const drawH = (imgH / 3.7795) * scale;
-  const x = (pageW - drawW) / 2;
-  const y = margin + 15;
-
-  pdf.addImage(imgData, 'PNG', x, y, drawW, drawH);
-  const fileName = title.replace(/[^a-z0-9]/gi, '_') + '_' + now.replace(/ /g,'-') + '.pdf';
-  pdf.save(fileName);
-  showToast('PDF saved! 📄', 'success');
-}
-
-async function shareModalPDF(panelId, title, overlay) {
-  if (overlay) overlay.remove();
-  await shareItemExportPDF(panelId, title);
-}
-
-
-
 // Close any open share dropdown when clicking outside
 document.addEventListener('click', e => {
   if (!e.target.closest('.share-menu-wrap')) {
@@ -8212,15 +8069,103 @@ function toggleShareMenu(wrapId) {
   if (!wasOpen) dd.classList.add('open');
 }
 
+function getPanelTitle(panelId) {
+  // Try to find the panel header h2 near the canvas/container
+  const el = document.getElementById(panelId);
+  if (!el) return panelId;
+  const panel = el.closest('.panel');
+  if (panel) {
+    const h2 = panel.querySelector('.panel-header h2');
+    if (h2) return h2.textContent.trim();
+  }
+  return panelId;
+}
 
+function getTableText(panelId, title) {
+  const el = document.getElementById(panelId);
+  if (!el) return `*${title}*\n(No data)`;
+  const rows = el.querySelectorAll('tr');
+  if (!rows.length) return `*${title}*\n(No data)`;
+  const lines = [`*${title}*`, ''];
+  rows.forEach((tr, i) => {
+    const cells = tr.querySelectorAll('th,td');
+    const vals = Array.from(cells).map(c => c.textContent.trim().replace(/\s+/g,' ')).filter(Boolean);
+    if (!vals.length) return;
+    if (i === 0) lines.push(vals.join(' | ')); // header
+    else lines.push(vals.join(' | '));
+  });
+  return lines.slice(0, 30).join('\n'); // cap at 30 rows for WA
+}
 
+function getChartText(canvasId, title) {
+  const chart = charts[canvasId];
+  if (!chart) return `*${title}*\n(Chart — no data text available)`;
+  const lines = [`*${title}*`, ''];
+  const labels = chart.data.labels || [];
+  const datasets = chart.data.datasets || [];
+  if (datasets.length === 0) return `*${title}*\n(No data)`;
+  const ds = datasets[0];
+  const data = ds.data || [];
+  labels.forEach((lbl, i) => {
+    const val = data[i];
+    if (val !== undefined && val !== null && val !== 0) {
+      lines.push(`  • ${lbl}: ${typeof val === 'number' && val > 999 ? val.toLocaleString() : val}`);
+    }
+  });
+  return lines.join('\n');
+}
 
+function shareItemWA(panelId, title) {
+  document.querySelectorAll('.share-dropdown.open').forEach(d => d.classList.remove('open'));
+  const el = document.getElementById(panelId);
+  let text = '';
+  const now = new Date().toLocaleDateString('en-KE',{day:'2-digit',month:'short',year:'numeric'});
 
+  if (el && el.tagName === 'CANVAS') {
+    // It's a chart canvas
+    text = getChartText(panelId, title);
+  } else if (el && (el.querySelector('table') || el.tagName === 'TABLE')) {
+    // It's a table container
+    text = getTableText(panelId, title);
+  } else {
+    // Try as chart first, then table
+    text = getChartText(panelId, title);
+  }
 
+  const full = `📊 *KCC Sales — ${title}*\n📅 ${now}\n\n${text}\n\n_KCC Sales App_`;
+  window.open('https://wa.me/?text=' + encodeURIComponent(full), '_blank');
+}
 
+function shareItemPDF(panelId, title) {
+  document.querySelectorAll('.share-dropdown.open').forEach(d => d.classList.remove('open'));
+  const el = document.getElementById(panelId);
+  if (!el) return;
 
+  // Find the parent panel
+  const panel = el.closest('.panel') || el;
+  
+  // Hide everything except this panel
+  const allPanels = document.querySelectorAll('.panel, .kpi-row, .g2, .itabs-wrap, .share-bar, header, nav, .mode-tabs, .date-strip');
+  const hidden = [];
+  allPanels.forEach(p => {
+    if (!panel.contains(p) && p !== panel) {
+      hidden.push({el: p, display: p.style.display});
+      p.style.display = 'none';
+    }
+  });
+  
+  // Hide share buttons inside the panel temporarily
+  panel.querySelectorAll('.share-menu-wrap').forEach(s => s.style.display = 'none');
 
+  const origTitle = document.title;
+  document.title = `KCC — ${title} — ${new Date().toLocaleDateString('en-KE')}`;
+  window.print();
+  document.title = origTitle;
 
+  // Restore everything
+  hidden.forEach(({el, display}) => el.style.display = display);
+  panel.querySelectorAll('.share-menu-wrap').forEach(s => s.style.display = '');
+}
 
 
 // ═══════════ TOAST ═══════════
