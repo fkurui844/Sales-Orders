@@ -219,8 +219,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 @media(min-width:900px){.itabs{flex-wrap:wrap;}.itabs-wrap::after{display:none;}}
 
 /* ── SEARCH DROPDOWNS ── */
-.dd-wrap{position:relative;}
-.dd-list{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1.5px solid var(--bd);border-top:none;border-radius:0 0 12px 12px;max-height:240px;overflow-y:auto;z-index:100;display:none;-webkit-overflow-scrolling:touch;}
+.dd-wrap{position:relative;z-index:9999;}
+.dd-list{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1.5px solid var(--bd);border-top:none;border-radius:0 0 12px 12px;max-height:280px;overflow-y:auto;z-index:9999;display:none;-webkit-overflow-scrolling:touch;box-shadow:0 8px 24px var(--shadow);}
 .dd-opt{padding:13px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:.84rem;gap:8px;min-height:48px;border-bottom:1px solid var(--bd);touch-action:manipulation;color:var(--text);}
 .dd-opt:last-child{border-bottom:none;}
 .dd-opt:active{background:var(--surface2);}
@@ -513,9 +513,9 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
   <!-- TAB: BY SALESPERSON -->
   <div id="dtSalesman" class="hidden">
     <!-- Salesperson selector for individual dash -->
-    <div class="panel" style="margin-bottom:18px;">
+    <div class="panel" style="margin-bottom:18px;overflow:visible;">
       <div class="panel-header"><h2>Select Salesperson Dashboard</h2></div>
-      <div class="panel-body">
+      <div class="panel-body" style="overflow:visible;">
         <div class="form-group" style="max-width:400px;">
           <label>Search by name or payroll number</label>
           <div class="dd-wrap" id="dashSmDdWrap">
