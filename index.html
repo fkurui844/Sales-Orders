@@ -214,23 +214,13 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 .itabs::-webkit-scrollbar{display:none;}
 .itab{padding:8px 12px;border-radius:8px;cursor:pointer;font-size:.74rem;font-weight:600;color:var(--muted);transition:all .2s;border:none;background:transparent;white-space:nowrap;min-height:40px;touch-action:manipulation;flex-shrink:0;}
 .itab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px var(--shadow);}
-.share-menu-wrap{position:relative;display:inline-flex;}
-.share-icon-btn{background:none;border:none;cursor:pointer;color:var(--text-muted);padding:4px 6px;border-radius:6px;display:flex;align-items:center;gap:4px;font-size:.7rem;font-weight:600;transition:all .15s;touch-action:manipulation;}
-.share-icon-btn:hover{background:var(--surface2);color:var(--text);}
-.share-dropdown{position:absolute;right:0;top:calc(100% + 4px);background:var(--surface);border:1.5px solid var(--bd);border-radius:10px;box-shadow:0 8px 24px var(--shadow);z-index:9999;min-width:160px;overflow:hidden;display:none;}
-.share-dropdown.open{display:block;}
-.share-drop-item{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;font-size:.8rem;font-weight:600;transition:background .15s;border:none;background:none;width:100%;text-align:left;color:var(--text);}
-.share-drop-item:hover{background:var(--surface2);}
-.share-drop-item .wa-dot{width:22px;height:22px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.share-drop-item .pdf-dot{width:22px;height:22px;background:#E74C3C;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-@media print{.no-print{display:none!important;}.print-only{display:block!important;}body{background:#fff;}.panel{box-shadow:none;border:1px solid #ddd;}}
 /* fade hint on right edge to indicate more tabs */
 .itabs-wrap::after{content:'';position:absolute;right:0;top:0;bottom:0;width:32px;background:linear-gradient(to right,transparent,var(--bg));border-radius:0 10px 10px 0;pointer-events:none;}
 @media(min-width:900px){.itabs{flex-wrap:wrap;}.itabs-wrap::after{display:none;}}
 
 /* ── SEARCH DROPDOWNS ── */
-.dd-wrap{position:relative;z-index:9999;}
-.dd-list{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1.5px solid var(--bd);border-top:none;border-radius:0 0 12px 12px;max-height:280px;overflow-y:auto;z-index:9999;display:none;-webkit-overflow-scrolling:touch;box-shadow:0 8px 24px var(--shadow);}
+.dd-wrap{position:relative;}
+.dd-list{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1.5px solid var(--bd);border-top:none;border-radius:0 0 12px 12px;max-height:240px;overflow-y:auto;z-index:100;display:none;-webkit-overflow-scrolling:touch;}
 .dd-opt{padding:13px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:.84rem;gap:8px;min-height:48px;border-bottom:1px solid var(--bd);touch-action:manipulation;color:var(--text);}
 .dd-opt:last-child{border-bottom:none;}
 .dd-opt:active{background:var(--surface2);}
@@ -296,7 +286,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
   <div class="header-right">
     <span class="header-badge" id="headerBadge">0</span>
     <button id="themeToggleBtn" onclick="toggleTheme()" style="background:rgba(255,255,255,0.1);border:none;color:white;width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:background .2s;touch-action:manipulation;" title="Toggle dark/light theme">🌙</button>
-    <div class="mode-tabs no-print">
+    <div class="mode-tabs">
       <button class="mode-tab active" onclick="switchMode('order')">📦 Place Order</button>
       <button class="mode-tab" onclick="switchMode('supervisor')">👥 Orders</button>
       <button class="mode-tab" onclick="switchMode('dashboard')">📊 Dashboard</button>
@@ -305,7 +295,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 </header>
 
 <!-- BOTTOM NAV -->
-<nav class="bottom-nav no-print">
+<nav class="bottom-nav">
   <button class="bnav-item active" id="bnav-order" onclick="switchMode('order')">
     <span class="bnav-icon">📦</span>
     <span class="bnav-label">Order</span>
@@ -495,7 +485,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
   </div>
 
   <!-- Inner Tabs -->
-  <div class="itabs-wrap no-print">
+  <div class="itabs-wrap">
   <div class="itabs">
     <button class="itab active" onclick="switchDashTab('overview',this)">Overview</button>
     <button class="itab" onclick="switchDashTab('salesman',this)">By Salesperson</button>
@@ -511,70 +501,26 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
   <!-- TAB: OVERVIEW -->
   <div id="dtOverview">
     <div class="g2">
-      <div class="panel"><div class="panel-header"><h2>Daily Volume (kg)</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cDailyKg">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_cDailyKg')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_cDailyKg">
-            <button class="share-drop-item" onclick="shareItemWA('cDailyKg','Daily Volume kg')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('cDailyKg','Daily Volume kg')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div><div class="panel-body"><div class="chart-box"><canvas id="cDailyKg"></canvas></div></div></div>
-      <div class="panel"><div class="panel-header"><h2>Orders Per Day</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cDailyLines">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_cDailyLines')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_cDailyLines">
-            <button class="share-drop-item" onclick="shareItemWA('cDailyLines','Orders Per Day')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('cDailyLines','Orders Per Day')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div><div class="panel-body"><div class="chart-box"><canvas id="cDailyLines"></canvas></div></div></div>
+      <div class="panel"><div class="panel-header"><h2>Daily Volume (kg)</h2></div><div class="panel-body"><div class="chart-box"><canvas id="cDailyKg"></canvas></div></div></div>
+      <div class="panel"><div class="panel-header"><h2>Orders Per Day</h2></div><div class="panel-body"><div class="chart-box"><canvas id="cDailyLines"></canvas></div></div></div>
     </div>
     <div class="g2">
-      <div class="panel"><div class="panel-header"><h2>Top Salespeople — kg</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_rankSmKg">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_rankSmKg')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_rankSmKg">
-            <button class="share-drop-item" onclick="shareItemWA('rankSmKg','Top Salespeople kg')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('rankSmKg','Top Salespeople kg')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div><div class="panel-body" id="rankSmKg"></div></div>
-      <div class="panel"><div class="panel-header"><h2>Top Products — Qty</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_rankProdQty">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_rankProdQty')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_rankProdQty">
-            <button class="share-drop-item" onclick="shareItemWA('rankProdQty','Top Products Qty')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('rankProdQty','Top Products Qty')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div><div class="panel-body" id="rankProdQty"></div></div>
+      <div class="panel"><div class="panel-header"><h2>Top Salespeople — kg</h2></div><div class="panel-body" id="rankSmKg"></div></div>
+      <div class="panel"><div class="panel-header"><h2>Top Products — Qty</h2></div><div class="panel-body" id="rankProdQty"></div></div>
     </div>
   </div>
 
   <!-- TAB: BY SALESPERSON -->
   <div id="dtSalesman" class="hidden">
     <!-- Salesperson selector for individual dash -->
-    <div class="panel" style="margin-bottom:18px;overflow:visible;">
+    <div class="panel" style="margin-bottom:18px;">
       <div class="panel-header"><h2>Select Salesperson Dashboard</h2></div>
-      <div class="panel-body" style="overflow:visible;">
-        <div class="form-group" style="max-width:400px;">
-          <label>Search by name or payroll number</label>
-          <div class="dd-wrap" id="dashSmDdWrap">
-            <input type="text" id="dashSmSearch" placeholder="🔍  Type name or payroll number…"
-              oninput="filterDashSm()" onfocus="filterDashSm();document.getElementById('dashSmDd').style.display='block'"
-              autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-            <div class="dd-list" id="dashSmDd"></div>
-          </div>
-          <input type="hidden" id="dashSmSelect">
+      <div class="panel-body">
+        <div class="form-group" style="max-width:360px;">
+          <label>Salesperson</label>
+          <select id="dashSmSelect" onchange="renderSalesmanDash()">
+            <option value="">— Choose salesperson —</option>
+          </select>
         </div>
       </div>
     </div>
@@ -591,41 +537,11 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
     <!-- All salesmen comparison -->
     <div class="g2" style="margin-top:20px;">
-      <div class="panel"><div class="panel-header"><h2>kg by Salesperson</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cAllSmKg">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_cAllSmKg')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_cAllSmKg">
-            <button class="share-drop-item" onclick="shareItemWA('cAllSmKg','kg by Salesperson')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('cAllSmKg','kg by Salesperson')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div><div class="panel-body"><div class="chart-box tall"><canvas id="cAllSmKg"></canvas></div></div></div>
-      <div class="panel"><div class="panel-header"><h2>Lines by Salesperson</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cAllSmLines">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_cAllSmLines')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_cAllSmLines">
-            <button class="share-drop-item" onclick="shareItemWA('cAllSmLines','Lines by Salesperson')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('cAllSmLines','Lines by Salesperson')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div><div class="panel-body"><div class="chart-box tall"><canvas id="cAllSmLines"></canvas></div></div></div>
+      <div class="panel"><div class="panel-header"><h2>kg by Salesperson</h2></div><div class="panel-body"><div class="chart-box tall"><canvas id="cAllSmKg"></canvas></div></div></div>
+      <div class="panel"><div class="panel-header"><h2>Lines by Salesperson</h2></div><div class="panel-body"><div class="chart-box tall"><canvas id="cAllSmLines"></canvas></div></div></div>
     </div>
     <div class="panel" style="margin-bottom:20px;">
-      <div class="panel-header"><h2>All Salespeople Detail</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_allSmDetail">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_allSmDetail')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_allSmDetail">
-            <button class="share-drop-item" onclick="shareItemWA('allSmDetail','All Salespeople Detail')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('allSmDetail','All Salespeople Detail')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div>
+      <div class="panel-header"><h2>All Salespeople Detail</h2></div>
       <div style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch;" id="allSmTable"></div>
     </div>
   </div>
@@ -633,70 +549,20 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
   <!-- TAB: BY PRODUCT -->
   <div id="dtProducts" class="hidden">
     <div class="g2">
-      <div class="panel"><div class="panel-header"><h2>Top Products — Total kg</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cProdKg">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_cProdKg')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_cProdKg">
-            <button class="share-drop-item" onclick="shareItemWA('cProdKg','Top Products Total kg')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('cProdKg','Top Products Total kg')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div><div class="panel-body"><div class="chart-box tall"><canvas id="cProdKg"></canvas></div></div></div>
-      <div class="panel"><div class="panel-header"><h2>Category Mix</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cCatMix">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_cCatMix')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_cCatMix">
-            <button class="share-drop-item" onclick="shareItemWA('cCatMix','Category Mix')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('cCatMix','Category Mix')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div><div class="panel-body"><div class="chart-box tall"><canvas id="cCatMix"></canvas></div></div></div>
+      <div class="panel"><div class="panel-header"><h2>Top Products — Total kg</h2></div><div class="panel-body"><div class="chart-box tall"><canvas id="cProdKg"></canvas></div></div></div>
+      <div class="panel"><div class="panel-header"><h2>Category Mix</h2></div><div class="panel-body"><div class="chart-box tall"><canvas id="cCatMix"></canvas></div></div></div>
     </div>
-    <div class="panel"><div class="panel-header"><h2>All Products Ranked</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_allProdTable">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_allProdTable')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_allProdTable">
-            <button class="share-drop-item" onclick="shareItemWA('allProdTable','All Products Ranked')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('allProdTable','All Products Ranked')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div><div style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch;" id="allProdTable"></div></div>
+    <div class="panel"><div class="panel-header"><h2>All Products Ranked</h2></div><div style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch;" id="allProdTable"></div></div>
   </div>
 
   <!-- TAB: DAILY TREND -->
   <div id="dtDaily" class="hidden">
     <div class="panel" style="margin-bottom:20px;">
-      <div class="panel-header"><h2>Consolidated Daily Trend</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cTrend">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_cTrend')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_cTrend">
-            <button class="share-drop-item" onclick="shareItemWA('cTrend','Consolidated Daily Trend')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('cTrend','Consolidated Daily Trend')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div>
+      <div class="panel-header"><h2>Consolidated Daily Trend</h2></div>
       <div class="panel-body"><div class="chart-box tall"><canvas id="cTrend"></canvas></div></div>
     </div>
     <div class="panel">
-      <div class="panel-header"><h2>Day-by-Day Breakdown</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_dayBreakdown">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_dayBreakdown')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_dayBreakdown">
-            <button class="share-drop-item" onclick="shareItemWA('dayBreakdown','Day by Day Breakdown')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('dayBreakdown','Day by Day Breakdown')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div>
+      <div class="panel-header"><h2>Day-by-Day Breakdown</h2></div>
       <div style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch;" id="dailyTable"></div>
     </div>
   </div>
@@ -732,62 +598,22 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
     <div class="g2">
       <div class="panel">
-        <div class="panel-header"><h2>kg by Route</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cRouteKg">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_cRouteKg')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_cRouteKg">
-            <button class="share-drop-item" onclick="shareItemWA('cRouteKg','kg by Route')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('cRouteKg','kg by Route')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div>
+        <div class="panel-header"><h2>kg by Route</h2></div>
         <div class="panel-body"><div class="chart-box tall"><canvas id="cRouteKg"></canvas></div></div>
       </div>
       <div class="panel">
-        <div class="panel-header"><h2>Order Lines by Route</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cRouteLines">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_cRouteLines')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_cRouteLines">
-            <button class="share-drop-item" onclick="shareItemWA('cRouteLines','Order Lines by Route')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('cRouteLines','Order Lines by Route')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div>
+        <div class="panel-header"><h2>Order Lines by Route</h2></div>
         <div class="panel-body"><div class="chart-box tall"><canvas id="cRouteLines"></canvas></div></div>
       </div>
     </div>
 
     <div class="g2">
       <div class="panel">
-        <div class="panel-header"><h2>Product Mix by Route</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cRouteProdMix">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_cRouteProdMix')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_cRouteProdMix">
-            <button class="share-drop-item" onclick="shareItemWA('cRouteProdMix','Product Mix by Route')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('cRouteProdMix','Product Mix by Route')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div>
+        <div class="panel-header"><h2>Product Mix by Route</h2></div>
         <div class="panel-body"><div class="chart-box tall"><canvas id="cRouteProdMix"></canvas></div></div>
       </div>
       <div class="panel">
-        <div class="panel-header"><h2>Daily kg Trend for Selected Route</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cRouteTrend">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_cRouteTrend')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_cRouteTrend">
-            <button class="share-drop-item" onclick="shareItemWA('cRouteTrend','Daily kg Trend by Route')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('cRouteTrend','Daily kg Trend by Route')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div>
+        <div class="panel-header"><h2>Daily kg Trend for Selected Route</h2></div>
         <div class="panel-body"><div class="chart-box tall"><canvas id="cRouteDailyTrend"></canvas></div></div>
       </div>
     </div>
@@ -798,17 +624,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
     </div>
 
     <div class="panel">
-      <div class="panel-header"><h2>All Routes Summary</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_allRoutes">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_allRoutes')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_allRoutes">
-            <button class="share-drop-item" onclick="shareItemWA('allRoutes','All Routes Summary')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('allRoutes','All Routes Summary')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div>
+      <div class="panel-header"><h2>All Routes Summary</h2></div>
       <div style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch;" id="allRoutesTable"></div>
     </div>
   </div>
@@ -845,63 +661,23 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
     <!-- Charts row -->
     <div class="g2">
       <div class="panel">
-        <div class="panel-header"><h2>Revenue by Salesperson</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cRvSm">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_cRvSm')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_cRvSm">
-            <button class="share-drop-item" onclick="shareItemWA('cRvSm','Revenue by Salesperson')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('cRvSm','Revenue by Salesperson')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div>
+        <div class="panel-header"><h2>Revenue by Salesperson</h2></div>
         <div class="panel-body"><div class="chart-box"><canvas id="cRvSm"></canvas></div></div>
       </div>
       <div class="panel">
-        <div class="panel-header"><h2>Revenue by Product Category</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cRvCat">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_cRvCat')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_cRvCat">
-            <button class="share-drop-item" onclick="shareItemWA('cRvCat','Revenue by Category')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('cRvCat','Revenue by Category')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div>
+        <div class="panel-header"><h2>Revenue by Product Category</h2></div>
         <div class="panel-body"><div class="chart-box"><canvas id="cRvCat"></canvas></div></div>
       </div>
     </div>
 
     <div class="panel" style="margin-bottom:18px;">
-      <div class="panel-header"><h2>Daily Revenue Trend</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cRvDaily">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_cRvDaily')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_cRvDaily">
-            <button class="share-drop-item" onclick="shareItemWA('cRvDaily','Daily Revenue Trend')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('cRvDaily','Daily Revenue Trend')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div>
+      <div class="panel-header"><h2>Daily Revenue Trend</h2></div>
       <div class="panel-body"><div class="chart-box" style="height:220px;"><canvas id="cRvDaily"></canvas></div></div>
     </div>
 
     <!-- Revenue by Route -->
     <div class="panel" style="margin-bottom:18px;">
-      <div class="panel-header"><h2>Revenue by Route</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_rvRoute">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_rvRoute')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_rvRoute">
-            <button class="share-drop-item" onclick="shareItemWA('rvRoute','Revenue by Route')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('rvRoute','Revenue by Route')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div>
+      <div class="panel-header"><h2>Revenue by Route</h2></div>
       <div style="padding:0;overflow-x:auto;" id="rvRouteWrap"></div>
     </div>
 
@@ -909,14 +685,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
     <div class="panel">
       <div class="panel-header">
         <h2>Top Products by Revenue</h2>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
-          <div class="share-menu-wrap no-print" id="smw_rvProdRev">
-            <button class="share-icon-btn" onclick="toggleShareMenu('smw_rvProdRev')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-            <div class="share-dropdown" id="sd_rvProdRev">
-              <button class="share-drop-item" onclick="shareItemWA('rvProductWrap','Top Products by Revenue')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-              <button class="share-drop-item" onclick="shareItemPDF('rvProductWrap','Top Products by Revenue')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-            </div>
-          </div>
+        <div style="margin-left:auto;">
           <select id="rvSmFilter" onchange="renderRevenueTab()" style="font-size:.8rem;padding:6px 12px;border-radius:8px;border:1.5px solid var(--bd);">
             <option value="">All Salespeople</option>
           </select>
@@ -957,46 +726,18 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
     <!-- Charts row -->
     <div class="g2">
       <div class="panel">
-        <div class="panel-header"><h2>Orders by Hour of Day</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cHourDist">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_cHourDist')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_cHourDist">
-            <button class="share-drop-item" onclick="shareItemWA('cHourDist','Orders by Hour')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('cHourDist','Orders by Hour')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div>
+        <div class="panel-header"><h2>Orders by Hour of Day</h2></div>
         <div class="panel-body"><div class="chart-box"><canvas id="cHourDist"></canvas></div></div>
       </div>
       <div class="panel">
-        <div class="panel-header"><h2>Orders by Day of Week</h2>
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_cDayDist">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_cDayDist')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_cDayDist">
-            <button class="share-drop-item" onclick="shareItemWA('cDayDist','Orders by Day of Week')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('cDayDist','Orders by Day of Week')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      
-        <div style="margin-left:auto;">
-      </div>
+        <div class="panel-header"><h2>Orders by Day of Week</h2></div>
         <div class="panel-body"><div class="chart-box"><canvas id="cDayDist"></canvas></div></div>
       </div>
     </div>
 
     <!-- Salesperson first/last order timeline -->
     <div class="panel" style="margin-bottom:18px;">
-      <div class="panel-header"><h2>Salesperson Activity Timeline</h2
-        <div style="margin-left:auto;"><div class="share-menu-wrap no-print" id="smw_timingTimeline">
-          <button class="share-icon-btn" onclick="toggleShareMenu('smw_timingTimeline')" title="Share"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</button>
-          <div class="share-dropdown" id="sd_timingTimeline">
-            <button class="share-drop-item" onclick="shareItemWA('timingTimeline','Salesperson Activity Timeline')"><span class="wa-dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span>Send via WhatsApp</button>
-            <button class="share-drop-item" onclick="shareItemPDF('timingTimeline','Salesperson Activity Timeline')"><span class="pdf-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg></span>Save as PDF</button>
-          </div>
-        </div></div>
-      </div>
+      <div class="panel-header"><h2>Salesperson Activity Timeline</h2>
         <span style="font-size:.72rem;color:var(--muted);margin-left:8px;">First → Last order per day</span>
       </div>
       <div style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch;" id="timingTimelineWrap"></div>
@@ -6498,7 +6239,10 @@ const COLORS = ['#1A7A4A','#C9941A','#1A4A7A','#C0392B','#6C3483','#16A085','#E6
 document.addEventListener('DOMContentLoaded', () => {
   // Salesman dropdowns (dashboard select only)
   const sorted = [...SALESMEN].sort((a,b) => a.n.localeCompare(b.n));
-  // dashSmSelect is now a hidden input, populated via filterDashSm()
+  const dsel = document.getElementById('dashSmSelect');
+  sorted.forEach(s => {
+    const o = document.createElement('option'); o.value = s.p; o.textContent = `${s.n} (${s.p})`; dsel.appendChild(o);
+  });
 
   // Dates
   const now = new Date();
@@ -6660,47 +6404,6 @@ async function loadData() {
 }
 
 // ═══════════ ORDER FORM ═══════════
-function filterDashSm() {
-  const q = document.getElementById('dashSmSearch').value.toLowerCase().trim();
-  const dd = document.getElementById('dashSmDd');
-  dd.style.display = 'block';
-  const results = [...SALESMEN]
-    .filter(s => s.n.toLowerCase().includes(q) || s.p.includes(q))
-    .sort((a,b) => {
-      if (a.p === q) return -1; if (b.p === q) return 1;
-      const as = a.n.toLowerCase().startsWith(q)||a.p.startsWith(q);
-      const bs = b.n.toLowerCase().startsWith(q)||b.p.startsWith(q);
-      if (as && !bs) return -1; if (bs && !as) return 1;
-      return a.n.localeCompare(b.n);
-    })
-    .slice(0, 50);
-  if (!results.length) {
-    dd.innerHTML = '<div class="dd-opt" style="color:var(--text-muted);cursor:default;">No results found</div>';
-    return;
-  }
-  dd.innerHTML = results.map(s =>
-    `<div class="dd-opt" onclick="selectDashSm('${s.p}','${s.n}')">
-      <span style="font-weight:600">${s.n}</span>
-      <span class="badge" style="font-family:'DM Mono',monospace">${s.p}</span>
-    </div>`
-  ).join('');
-}
-
-function selectDashSm(payroll, name) {
-  document.getElementById('dashSmSearch').value = `${name} (${payroll})`;
-  document.getElementById('dashSmSelect').value = payroll;
-  document.getElementById('dashSmDd').style.display = 'none';
-  renderSalesmanDash();
-}
-
-// Close dashboard SM dropdown on outside click
-document.addEventListener('click', e => {
-  if (!e.target.closest('#dashSmDdWrap')) {
-    const dd = document.getElementById('dashSmDd');
-    if (dd) dd.style.display = 'none';
-  }
-}, true);
-
 function filterSm() {
   const q = document.getElementById('smSearch').value.toLowerCase().trim();
   const dd = document.getElementById('smDd');
@@ -8050,123 +7753,6 @@ function renderTimingTab() {
     ${logSorted.length} orders shown
   </div>`;
 }
-
-// ═══════════ SHARE / PDF ═══════════
-
-// Close any open share dropdown when clicking outside
-document.addEventListener('click', e => {
-  if (!e.target.closest('.share-menu-wrap')) {
-    document.querySelectorAll('.share-dropdown.open').forEach(d => d.classList.remove('open'));
-  }
-}, true);
-
-function toggleShareMenu(wrapId) {
-  const wrap = document.getElementById(wrapId);
-  if (!wrap) return;
-  const dd = wrap.querySelector('.share-dropdown');
-  const wasOpen = dd.classList.contains('open');
-  document.querySelectorAll('.share-dropdown.open').forEach(d => d.classList.remove('open'));
-  if (!wasOpen) dd.classList.add('open');
-}
-
-function getPanelTitle(panelId) {
-  // Try to find the panel header h2 near the canvas/container
-  const el = document.getElementById(panelId);
-  if (!el) return panelId;
-  const panel = el.closest('.panel');
-  if (panel) {
-    const h2 = panel.querySelector('.panel-header h2');
-    if (h2) return h2.textContent.trim();
-  }
-  return panelId;
-}
-
-function getTableText(panelId, title) {
-  const el = document.getElementById(panelId);
-  if (!el) return `*${title}*\n(No data)`;
-  const rows = el.querySelectorAll('tr');
-  if (!rows.length) return `*${title}*\n(No data)`;
-  const lines = [`*${title}*`, ''];
-  rows.forEach((tr, i) => {
-    const cells = tr.querySelectorAll('th,td');
-    const vals = Array.from(cells).map(c => c.textContent.trim().replace(/\s+/g,' ')).filter(Boolean);
-    if (!vals.length) return;
-    if (i === 0) lines.push(vals.join(' | ')); // header
-    else lines.push(vals.join(' | '));
-  });
-  return lines.slice(0, 30).join('\n'); // cap at 30 rows for WA
-}
-
-function getChartText(canvasId, title) {
-  const chart = charts[canvasId];
-  if (!chart) return `*${title}*\n(Chart — no data text available)`;
-  const lines = [`*${title}*`, ''];
-  const labels = chart.data.labels || [];
-  const datasets = chart.data.datasets || [];
-  if (datasets.length === 0) return `*${title}*\n(No data)`;
-  const ds = datasets[0];
-  const data = ds.data || [];
-  labels.forEach((lbl, i) => {
-    const val = data[i];
-    if (val !== undefined && val !== null && val !== 0) {
-      lines.push(`  • ${lbl}: ${typeof val === 'number' && val > 999 ? val.toLocaleString() : val}`);
-    }
-  });
-  return lines.join('\n');
-}
-
-function shareItemWA(panelId, title) {
-  document.querySelectorAll('.share-dropdown.open').forEach(d => d.classList.remove('open'));
-  const el = document.getElementById(panelId);
-  let text = '';
-  const now = new Date().toLocaleDateString('en-KE',{day:'2-digit',month:'short',year:'numeric'});
-
-  if (el && el.tagName === 'CANVAS') {
-    // It's a chart canvas
-    text = getChartText(panelId, title);
-  } else if (el && (el.querySelector('table') || el.tagName === 'TABLE')) {
-    // It's a table container
-    text = getTableText(panelId, title);
-  } else {
-    // Try as chart first, then table
-    text = getChartText(panelId, title);
-  }
-
-  const full = `📊 *KCC Sales — ${title}*\n📅 ${now}\n\n${text}\n\n_KCC Sales App_`;
-  window.open('https://wa.me/?text=' + encodeURIComponent(full), '_blank');
-}
-
-function shareItemPDF(panelId, title) {
-  document.querySelectorAll('.share-dropdown.open').forEach(d => d.classList.remove('open'));
-  const el = document.getElementById(panelId);
-  if (!el) return;
-
-  // Find the parent panel
-  const panel = el.closest('.panel') || el;
-  
-  // Hide everything except this panel
-  const allPanels = document.querySelectorAll('.panel, .kpi-row, .g2, .itabs-wrap, .share-bar, header, nav, .mode-tabs, .date-strip');
-  const hidden = [];
-  allPanels.forEach(p => {
-    if (!panel.contains(p) && p !== panel) {
-      hidden.push({el: p, display: p.style.display});
-      p.style.display = 'none';
-    }
-  });
-  
-  // Hide share buttons inside the panel temporarily
-  panel.querySelectorAll('.share-menu-wrap').forEach(s => s.style.display = 'none');
-
-  const origTitle = document.title;
-  document.title = `KCC — ${title} — ${new Date().toLocaleDateString('en-KE')}`;
-  window.print();
-  document.title = origTitle;
-
-  // Restore everything
-  hidden.forEach(({el, display}) => el.style.display = display);
-  panel.querySelectorAll('.share-menu-wrap').forEach(s => s.style.display = '');
-}
-
 
 // ═══════════ TOAST ═══════════
 function showToast(msg, type='success') {
