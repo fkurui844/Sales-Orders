@@ -457,6 +457,7 @@ select:focus,input:focus{outline:none;border-color:var(--dark);box-shadow:0 0 0 
     <button class="itab" onclick="switchDashTab('daily',this)">Daily Trend</button>
     <button class="itab" onclick="switchDashTab('routes',this)">By Route</button>
     <button class="itab" onclick="switchDashTab('export',this)">⬇ Export Excel</button>
+    <button class="itab" onclick="switchDashTab('timing',this)">⏱ Order Timing</button>
   </div>
 
   <!-- TAB: OVERVIEW -->
@@ -591,6 +592,68 @@ select:focus,input:focus{outline:none;border-color:var(--dark);box-shadow:0 0 0 
   </div>
 
 </div>
+
+  <!-- TAB: TIMING -->
+  <div id="dtTiming" class="hidden">
+
+    <div class="panel" style="margin-bottom:18px;">
+      <div class="panel-body" style="padding:14px 22px;">
+        <div class="date-strip">
+          <span style="font-size:.72rem;font-weight:600;color:var(--muted);">DATE:</span>
+          <button class="fbt active" id="tfbt-today" onclick="setTimingFilter('today',this)">Today</button>
+          <button class="fbt" id="tfbt-week" onclick="setTimingFilter('week',this)">This Week</button>
+          <button class="fbt" id="tfbt-month" onclick="setTimingFilter('month',this)">This Month</button>
+          <button class="fbt" id="tfbt-all" onclick="setTimingFilter('all',this)">All Time</button>
+          <span style="color:var(--border);margin:0 4px;">|</span>
+          <input type="date" id="tDateFrom" onchange="setTimingFilter('custom',null)" style="width:140px;">
+          <span style="font-size:.75rem;color:var(--muted);">to</span>
+          <input type="date" id="tDateTo" onchange="setTimingFilter('custom',null)" style="width:140px;">
+        </div>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-row">
+      <div class="kpi g"><div class="val" id="tEarliest">—</div><div class="lbl">Earliest Order</div></div>
+      <div class="kpi o"><div class="val" id="tLatest">—</div><div class="lbl">Latest Order</div></div>
+      <div class="kpi b"><div class="val" id="tAvgTime">—</div><div class="lbl">Avg Order Time</div></div>
+      <div class="kpi p"><div class="val" id="tPeakHour">—</div><div class="lbl">Peak Hour</div></div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="g2">
+      <div class="panel">
+        <div class="panel-header"><h2>Orders by Hour of Day</h2></div>
+        <div class="panel-body"><div class="chart-box"><canvas id="cHourDist"></canvas></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><h2>Orders by Day of Week</h2></div>
+        <div class="panel-body"><div class="chart-box"><canvas id="cDayDist"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- Salesperson first/last order timeline -->
+    <div class="panel" style="margin-bottom:18px;">
+      <div class="panel-header"><h2>Salesperson Activity Timeline</h2>
+        <span style="font-size:.72rem;color:var(--muted);margin-left:8px;">First → Last order per day</span>
+      </div>
+      <div style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch;" id="timingTimelineWrap"></div>
+    </div>
+
+    <!-- Detailed order log per salesperson -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2>Order Time Log</h2>
+        <div style="margin-left:auto;">
+          <select id="timingSmFilter" onchange="renderTimingTab()" style="font-size:.8rem;padding:6px 12px;border-radius:8px;border:1.5px solid var(--border);">
+            <option value="">All Salespeople</option>
+          </select>
+        </div>
+      </div>
+      <div style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch;" id="timingLogWrap"></div>
+    </div>
+
+  </div>
 
   <!-- TAB: EXPORT -->
   <div id="dtExport" class="hidden">
@@ -749,6 +812,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const o = document.createElement('option'); o.value = r; o.textContent = r; rfsel.appendChild(o);
   });
 
+  // Populate timing salesman filter
+  const tSmF = document.getElementById('timingSmFilter');
+  [...SALESMEN].sort((a,b)=>a.n.localeCompare(b.n)).forEach(s => {
+    const o = document.createElement('option'); o.value = s.p; o.textContent = `${s.n} (${s.p})`; tSmF.appendChild(o);
+  });
+
+  // Init timing date inputs
+  const nowT = new Date(), tdT = nowT.toISOString().split('T')[0];
+  document.getElementById('tDateFrom').value = tdT;
+  document.getElementById('tDateTo').value = tdT;
+
   // Populate export dropdowns
   const expSm = document.getElementById('expSalesman');
   const expRt = document.getElementById('expRoute');
@@ -788,7 +862,7 @@ function switchDashTab(tab, btn) {
   activeDashTab = tab;
   document.querySelectorAll('.itab').forEach(t => t.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  ['Overview','Salesman','Products','Daily','Routes','Export'].forEach(t => {
+  ['Overview','Salesman','Products','Daily','Routes','Export','Timing'].forEach(t => {
     document.getElementById('dt'+t).classList.toggle('hidden', t.toLowerCase() !== tab);
   });
   renderDashboard();
@@ -1185,6 +1259,7 @@ function renderDashboard() {
   else if (activeDashTab==='daily') renderDailyTab(data);
   else if (activeDashTab==='routes') renderRoutesTab();
   else if (activeDashTab==='export') initExportTab();
+  else if (activeDashTab==='timing') renderTimingTab();
 }
 
 function renderOverview(data) {
@@ -1754,6 +1829,219 @@ function downloadExcel() {
   a.download = `orders_export_${new Date().toISOString().split('T')[0]}.xls`;
   a.click();
   showToast(`✅ Exported ${exportData.length} rows — 4 sheets included`, 'success');
+}
+
+// ═══════════ TIMING TAB ═══════════
+let timingDateFilter = 'today';
+
+function setTimingFilter(type, btn) {
+  timingDateFilter = type;
+  document.querySelectorAll('[id^="tfbt-"]').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const now = new Date(), td = now.toISOString().split('T')[0];
+  if (type === 'today') { document.getElementById('tDateFrom').value = td; document.getElementById('tDateTo').value = td; }
+  else if (type === 'week') { const m = new Date(now); m.setDate(now.getDate()-now.getDay()+1); document.getElementById('tDateFrom').value = m.toISOString().split('T')[0]; document.getElementById('tDateTo').value = td; }
+  else if (type === 'month') { document.getElementById('tDateFrom').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`; document.getElementById('tDateTo').value = td; }
+  else if (type === 'all') { document.getElementById('tDateFrom').value = '2020-01-01'; document.getElementById('tDateTo').value = td; }
+  renderTimingTab();
+}
+
+function renderTimingTab() {
+  const from = new Date((document.getElementById('tDateFrom').value||'2020-01-01')+'T00:00:00');
+  const to   = new Date((document.getElementById('tDateTo').value||new Date().toISOString().split('T')[0])+'T23:59:59');
+  const smFilter = document.getElementById('timingSmFilter').value;
+
+  let data = allData.filter(r => {
+    if (!r.timestamp) return false;
+    const d = new Date(r.timestamp);
+    return d >= from && d <= to;
+  });
+
+  if (!data.length) {
+    document.getElementById('tEarliest').textContent = '—';
+    document.getElementById('tLatest').textContent = '—';
+    document.getElementById('tAvgTime').textContent = '—';
+    document.getElementById('tPeakHour').textContent = '—';
+    document.getElementById('timingTimelineWrap').innerHTML = '<div class="empty" style="padding:28px"><p>No orders in this period.</p></div>';
+    document.getElementById('timingLogWrap').innerHTML = '';
+    dc('cHourDist'); dc('cDayDist');
+    return;
+  }
+
+  // ── Parse times ──
+  const withTime = data.map(r => ({ ...r, dt: new Date(r.timestamp) }));
+  const times = withTime.map(r => r.dt);
+  times.sort((a,b) => a-b);
+
+  // KPIs
+  const earliest = times[0];
+  const latest   = times[times.length-1];
+  const avgMs = times.reduce((s,t) => s + (t.getHours()*60+t.getMinutes()), 0) / times.length;
+  const avgH = Math.floor(avgMs/60), avgM = Math.round(avgMs%60);
+  const fmt12 = dt => { const h=dt.getHours(),m=dt.getMinutes(),ap=h>=12?'PM':'AM'; return `${h%12||12}:${String(m).padStart(2,'0')} ${ap}`; };
+
+  document.getElementById('tEarliest').textContent = fmt12(earliest);
+  document.getElementById('tLatest').textContent   = fmt12(latest);
+  document.getElementById('tAvgTime').textContent  = `${avgH%12||12}:${String(avgM).padStart(2,'0')} ${avgH>=12?'PM':'AM'}`;
+
+  // Peak hour
+  const hourCounts = Array(24).fill(0);
+  withTime.forEach(r => hourCounts[r.dt.getHours()]++);
+  const peakH = hourCounts.indexOf(Math.max(...hourCounts));
+  const peakAP = peakH >= 12 ? 'PM' : 'AM';
+  document.getElementById('tPeakHour').textContent = `${peakH%12||12}${peakAP}`;
+
+  // ── Hour distribution chart ──
+  const hourLabels = Array.from({length:24},(_,i)=>{ const ap=i>=12?'PM':'AM'; return `${i%12||12}${ap}`; });
+  dc('cHourDist');
+  const ctx1 = document.getElementById('cHourDist').getContext('2d');
+  charts['cHourDist'] = new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels: hourLabels,
+      datasets: [{ label: 'Orders', data: hourCounts,
+        backgroundColor: hourCounts.map((v,i) => i===peakH ? '#C9941A' : '#1A7A4A88'),
+        borderRadius: 4 }]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{title:i=>[`${hourLabels[i[0].dataIndex]} — ${hourCounts[i[0].dataIndex]} orders`]}} },
+      scales:{ y:{beginAtZero:true,grid:{color:'#f0ede8'},ticks:{stepSize:1}}, x:{grid:{display:false},ticks:{font:{size:10}}} }
+    }
+  });
+
+  // ── Day of week chart ──
+  const dayLabels = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const dayCounts = Array(7).fill(0);
+  withTime.forEach(r => dayCounts[r.dt.getDay()]++);
+  dc('cDayDist');
+  const ctx2 = document.getElementById('cDayDist').getContext('2d');
+  charts['cDayDist'] = new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: dayLabels,
+      datasets:[{ label:'Orders', data:dayCounts,
+        backgroundColor: dayCounts.map((v,i) => i===dayCounts.indexOf(Math.max(...dayCounts)) ? '#C9941A' : '#1A4A7A88'),
+        borderRadius: 4 }]
+    },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,grid:{color:'#f0ede8'},ticks:{stepSize:1}},x:{grid:{display:false}}}
+    }
+  });
+
+  // ── Salesperson activity timeline ──
+  // Group by salesperson + date, find first/last time each day
+  const smDayMap = {};
+  withTime.forEach(r => {
+    const key = r.salesman_payroll + '|' + dkey(r.timestamp);
+    if (!smDayMap[key]) smDayMap[key] = { name: r.salesman_name, payroll: r.salesman_payroll, date: dkey(r.timestamp), times: [] };
+    smDayMap[key].times.push(r.dt);
+  });
+
+  const smDays = Object.values(smDayMap).map(s => ({
+    ...s,
+    first: new Date(Math.min(...s.times)),
+    last:  new Date(Math.max(...s.times)),
+    count: s.times.length
+  })).sort((a,b) => a.date.localeCompare(b.date) || a.first - b.first);
+
+  const wrap = document.getElementById('timingTimelineWrap');
+  if (!smDays.length) { wrap.innerHTML = '<div class="empty" style="padding:24px"><p>No data.</p></div>'; }
+  else {
+    const minHour = 5, maxHour = 21; // display window 5am–9pm
+    const pct = dt => Math.max(0, Math.min(100, ((dt.getHours()*60+dt.getMinutes()) - minHour*60) / ((maxHour-minHour)*60) * 100));
+
+    // Group by date
+    const byDate = {};
+    smDays.forEach(s => { if(!byDate[s.date]) byDate[s.date]=[]; byDate[s.date].push(s); });
+
+    let html = '';
+    Object.entries(byDate).sort((a,b)=>b[0].localeCompare(a[0])).forEach(([date, entries]) => {
+      html += `<div style="padding:14px 16px;border-bottom:1px solid var(--border);">
+        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:12px;">
+          ${new Date(date+'T12:00:00').toLocaleDateString('en-KE',{weekday:'long',day:'2-digit',month:'short',year:'numeric'})}
+        </div>`;
+
+      // Hour axis labels
+      html += `<div style="position:relative;margin-bottom:4px;height:16px;margin-left:140px;border-left:1px solid var(--border);">`;
+      [6,8,10,12,14,16,18,20].forEach(h => {
+        const p = ((h - minHour)/(maxHour - minHour)*100).toFixed(1);
+        const ap = h>=12?'PM':'AM';
+        html += `<span style="position:absolute;left:${p}%;transform:translateX(-50%);font-size:.6rem;color:var(--muted);">${h%12||12}${ap}</span>`;
+      });
+      html += `</div>`;
+
+      entries.sort((a,b)=>a.first-b.first).forEach(s => {
+        const fp = pct(s.first), lp = pct(s.last);
+        const dur = s.last - s.first;
+        const durStr = dur < 60000 ? '<1m' : dur < 3600000 ? Math.round(dur/60000)+'m' : (dur/3600000).toFixed(1)+'h';
+        const isLate = s.first.getHours() >= 16;
+        const isEarly = s.first.getHours() < 8;
+        html += `
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <div style="width:130px;flex-shrink:0;font-size:.78rem;font-weight:600;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${s.name}">${s.name}</div>
+            <div style="flex:1;position:relative;height:28px;background:var(--cream);border-radius:4px;overflow:hidden;border:1px solid var(--border);">
+              <!-- bar from first to last -->
+              <div style="position:absolute;top:4px;bottom:4px;left:${fp.toFixed(1)}%;width:${Math.max(0.5,lp-fp).toFixed(1)}%;background:${isLate?'#C0392B':isEarly?'#1A4A7A':'#1A7A4A'};border-radius:3px;opacity:.85;"></div>
+              <!-- first dot -->
+              <div style="position:absolute;top:50%;left:${fp.toFixed(1)}%;transform:translate(-50%,-50%);width:10px;height:10px;background:${isLate?'#C0392B':isEarly?'#1A4A7A':'#1A7A4A'};border-radius:50%;border:2px solid white;z-index:2;" title="First: ${fmt12(s.first)}"></div>
+              <!-- last dot -->
+              <div style="position:absolute;top:50%;left:${lp.toFixed(1)}%;transform:translate(-50%,-50%);width:10px;height:10px;background:${isLate?'#a93226':isEarly?'#154360':'#145c38'};border-radius:50%;border:2px solid white;z-index:2;" title="Last: ${fmt12(s.last)}"></div>
+            </div>
+            <div style="width:90px;flex-shrink:0;font-size:.7rem;color:var(--muted);text-align:right;">
+              ${fmt12(s.first)}→${fmt12(s.last)}<br>
+              <span style="font-family:'DM Mono',monospace;font-size:.68rem;">${s.count} order${s.count>1?'s':''} · ${durStr}</span>
+            </div>
+          </div>`;
+      });
+
+      // Legend
+      html += `<div style="display:flex;gap:14px;margin-top:6px;padding-top:6px;border-top:1px dashed var(--border);font-size:.65rem;color:var(--muted);">
+        <span>🟢 Normal (8am–4pm)</span>
+        <span>🔵 Early (&lt;8am)</span>
+        <span>🔴 Late (4pm–10pm)</span>
+      </div>`;
+
+      html += `</div>`;
+    });
+    wrap.innerHTML = html;
+  }
+
+  // ── Detailed log table ──
+  const logData = smFilter ? withTime.filter(r => r.salesman_payroll === smFilter) : withTime;
+  const logSorted = [...logData].sort((a,b) => b.dt - a.dt);
+
+  const logWrap = document.getElementById('timingLogWrap');
+  if (!logSorted.length) { logWrap.innerHTML = '<div class="empty" style="padding:24px"><p>No orders found.</p></div>'; return; }
+
+  logWrap.innerHTML = `<table class="tbl">
+    <thead><tr>
+      <th>Date</th><th>Time</th><th>Salesperson</th><th>Route</th>
+      <th>Customer</th><th>Product</th><th>Qty</th><th>kg</th>
+    </tr></thead>
+    <tbody>${logSorted.map(r => {
+      const h = r.dt.getHours();
+      const isLate = h >= 16, isEarly = h < 8;
+      const timePill = isLate
+        ? `<span class="pill red"><span class="dot"></span>${fmt12(r.dt)}</span>`
+        : isEarly
+        ? `<span class="pill blue"><span class="dot"></span>${fmt12(r.dt)}</span>`
+        : `<span class="pill green"><span class="dot"></span>${fmt12(r.dt)}</span>`;
+      return `<tr>
+        <td style="font-size:.75rem;white-space:nowrap">${r.dt.toLocaleDateString('en-KE',{day:'2-digit',month:'short',year:'numeric'})}</td>
+        <td>${timePill}</td>
+        <td style="font-weight:600;font-size:.82rem">${r.salesman_name||'—'}</td>
+        <td style="font-size:.75rem">${r.route||'—'}</td>
+        <td style="font-size:.78rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.customer_name||'—'}</td>
+        <td style="font-size:.76rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.product_desc||'—'}</td>
+        <td style="font-family:'DM Mono',monospace;font-weight:600">${r.qty||''}</td>
+        <td style="font-family:'DM Mono',monospace;font-weight:600;color:var(--green)">${parseFloat(r.total_wt||0).toFixed(2)}</td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>
+  <div style="padding:10px 16px;background:var(--cream);border-top:1px solid var(--border);font-size:.72rem;color:var(--muted);">
+    ${logSorted.length} orders shown
+  </div>`;
 }
 
 // ═══════════ TOAST ═══════════
