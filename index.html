@@ -433,7 +433,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
     <div class="kpi g"><div class="val" id="svLines">—</div><div class="lbl">Total Order Lines</div></div>
     <div class="kpi o"><div class="val" id="svKg">—</div><div class="lbl">Total kg Ordered</div></div>
     <div class="kpi p"><div class="val" id="svCusts">—</div><div class="lbl">Unique Customers</div></div>
-    <div class="kpi g"><div class="val" id="svTrade" style="font-size:1rem;">—</div><div class="lbl">Trade Value (KES)</div></div>
+    <div class="kpi g"><div class="val" id="svTrade" style="font-size:1rem;">—</div><div class="lbl">Total Revenue (KES)</div></div>
   </div>
   <div class="supervisor-grid">
     <div class="panel">
@@ -476,7 +476,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
     <div class="kpi o"><div class="val" id="dSalesmen">—</div><div class="lbl">Salespeople</div></div>
     <div class="kpi p"><div class="val" id="dCusts">—</div><div class="lbl">Customers</div></div>
     <div class="kpi r"><div class="val" id="dTopProd" style="font-size:1rem;line-height:1.3;margin-top:4px;">—</div><div class="lbl">Top Product</div></div>
-    <div class="kpi g"><div class="val" id="dTrade" style="font-size:1rem;">—</div><div class="lbl">Trade Value</div></div>
+    <div class="kpi g"><div class="val" id="dTrade" style="font-size:1rem;">—</div><div class="lbl">Total Revenue</div></div>
 
   </div>
 
@@ -807,93 +807,96 @@ const ROUTES = [
 ];
 
 const PRICES = {
-  // FRESH MILK / TFA / TCA / ESL / TBA
-  "20":  { trade: 1790.04, consumer: 515.00, unit: "per carton" },
-  "21":  { trade: 786.06,  consumer: 68.00,  unit: "per carton" },
-  "83":  { trade: 930.00,  consumer: 60.00,  unit: "per carton" },
-  "29":  { trade: 342.00,  consumer: 60.00,  unit: "per carton" },
-  "23":  { trade: 534.60,  consumer: 28.00,  unit: "per carton" },
-  "27":  { trade: 534.60,  consumer: 28.00,  unit: "per carton" },
-  "12":  { trade: 412.50,  consumer: 50.00,  unit: "per carton" },
-  "28":  { trade: 412.50,  consumer: 50.00,  unit: "per carton" },
-  "24":  { trade: 512.40,  consumer: 25.00,  unit: "per carton" },
-  "30":  { trade: 500.00,  consumer: 30.00,  unit: "per carton" },
-  "26a": { trade: 612.00,  consumer: 50.00,  unit: "per carton" },
-  "13":  { trade: 412.50,  consumer: 50.00,  unit: "per carton" },
-  "18":  { trade: 480.00,  consumer: 77.00,  unit: "per carton" },
-  "17":  { trade: 480.00,  consumer: 77.00,  unit: "per carton" },
-  "71":  { trade: 1282.58, consumer: 115.00, unit: "per carton" },
-  "73C": { trade: 1544.06, consumer: 155.00, unit: "per carton" },
-  "73B": { trade: 1520.90, consumer: 170.00, unit: "per carton" },
-  "81":  { trade: 732.96,  consumer: 70.00,  unit: "per carton" },
+  // TFA
+  "20":  { trade: 636,    unit: "per carton" },
+  "21":  { trade: 624,    unit: "per carton" },
+  "83":  { trade: 612,    unit: "per carton" },
+  "29":  { trade: 678.48, unit: "per carton" },
+  // TCA
+  "23":  { trade: 525,    unit: "per carton" },
+  "27":  { trade: 504,    unit: "per carton" },
+  "12":  { trade: 525,    unit: "per carton" },
+  "28":  { trade: 860,    unit: "per carton" },
+  // ESL
+  "24":  { trade: 612,    unit: "per carton" },
+  "30":  { trade: 540,    unit: "per carton" },
+  "26a": { trade: 512,    unit: "per carton" },
+  "13":  { trade: 445.2,  unit: "per carton" },
+  // TBA
+  "18":  { trade: 1920,   unit: "per pack"   },
+  "17":  { trade: 900,    unit: "per carton" },
+  "71":  { trade: 1644,   unit: "per carton" },
+  "73C": { trade: 458,    unit: "per carton" },
+  "73B": { trade: 1308,   unit: "per carton" },
+  "81":  { trade: 732,    unit: "per carton" },
   // WATER
-  "500": { trade: 576.00,  consumer: 25.00,  unit: "per carton" },
-  "501": { trade: 576.00,  consumer: 25.00,  unit: "per carton" },
-  "502": { trade: 576.00,  consumer: 25.00,  unit: "per carton" },
-  "503": { trade: 480.00,  consumer: 50.00,  unit: "per carton" },
+  "500": { trade: 456,    unit: "per tray"   },
+  "501": { trade: 576,    unit: "per tray"   },
+  "502": { trade: 528,    unit: "per tray"   },
+  "503": { trade: 768,    unit: "per tray"   },
   // MALA
-  "88":  { trade: 1275.24, consumer: 85.00,  unit: "per carton" },
-  "110": { trade: 1275.24, consumer: 85.00,  unit: "per carton" },
-  "69":  { trade: 858.26,  consumer: 65.00,  unit: "per carton" },
-  "63":  { trade: 858.26,  consumer: 65.00,  unit: "per carton" },
-  "65":  { trade: 858.26,  consumer: 65.00,  unit: "per carton" },
-  "60":  { trade: 583.60,  consumer: 52.00,  unit: "per carton" },
-  "15":  { trade: 1072.92, consumer: 95.00,  unit: "per carton" },
-  "10":  { trade: 1072.92, consumer: 85.00,  unit: "per carton" },
-  "14":  { trade: 583.60,  consumer: 52.00,  unit: "per carton" },
-  "134": { trade: 858.26,  consumer: 65.00,  unit: "per carton" },
-  "135": { trade: 583.60,  consumer: 52.00,  unit: "per carton" },
-  "9":   { trade: 583.60,  consumer: 52.00,  unit: "per carton" },
+  "88":  { trade: 85,     unit: "per pcs"    },
+  "110": { trade: 165,    unit: "per pcs"    },
+  "69":  { trade: 165,    unit: "per pcs"    },
+  "63":  { trade: 85,     unit: "per pcs"    },
+  "65":  { trade: 956.28, unit: "per tray"   },
+  "60":  { trade: 561.6,  unit: "per tray"   },
+  "15":  { trade: 1072.92,unit: "per tray"   },
+  "10":  { trade: 175,    unit: "per pcs"    },
+  "14":  { trade: 564.6,  unit: "per tray"   },
+  "134": { trade: 1260,   unit: "per crate"  },
+  "135": { trade: 630,    unit: "per crate"  },
+  "9":   { trade: 1350,   unit: "per crate"  },
   // YOGHURT
-  "201": { trade: 1612.16, consumer: 115.00, unit: "per carton" },
-  "202": { trade: 790.50,  consumer: 50.00,  unit: "per carton" },
-  "36":  { trade: 540.00,  consumer: 50.00,  unit: "per carton" },
-  "204": { trade: 696.90,  consumer: 60.00,  unit: "per carton" },
-  "205": { trade: 790.50,  consumer: 50.00,  unit: "per carton" },
-  "216": { trade: 1612.16, consumer: 115.00, unit: "per carton" },
-  "217": { trade: 790.50,  consumer: 50.00,  unit: "per carton" },
-  "219": { trade: 1612.16, consumer: 115.00, unit: "per carton" },
-  "220": { trade: 790.50,  consumer: 50.00,  unit: "per carton" },
-  "210": { trade: 1813.08, consumer: 115.00, unit: "per carton" },
-  "211": { trade: 790.50,  consumer: 50.00,  unit: "per carton" },
-  "40":  { trade: 1813.08, consumer: 115.00, unit: "per carton" },
-  "41":  { trade: 1612.16, consumer: 115.00, unit: "per carton" },
+  "201": { trade: 696,    unit: "per tray"   },
+  "202": { trade: 647.28, unit: "per tray"   },
+  "36":  { trade: 200,    unit: "per tray"   },
+  "204": { trade: 696,    unit: "per tray"   },
+  "205": { trade: 647.28, unit: "per tray"   },
+  "216": { trade: 696,    unit: "per tray"   },
+  "217": { trade: 647.28, unit: "per tray"   },
+  "219": { trade: 756,    unit: "per tray"   },
+  "220": { trade: 647.28, unit: "per tray"   },
+  "210": { trade: 696,    unit: "per tray"   },
+  "211": { trade: 647.28, unit: "per tray"   },
+  "40":  { trade: 1612.16,unit: "per tray"   },
+  "41":  { trade: 1612.16,unit: "per tray"   },
   // SHAKES
-  "121": { trade: 777.90,  consumer: 42.00,  unit: "per carton" },
-  "120": { trade: 777.90,  consumer: 42.00,  unit: "per carton" },
-  "122": { trade: 777.90,  consumer: 42.00,  unit: "per carton" },
-  "75":  { trade: 1440.00, consumer: 65.00,  unit: "per carton" },
-  "79":  { trade: 1440.00, consumer: 65.00,  unit: "per carton" },
-  "77":  { trade: 1440.00, consumer: 60.00,  unit: "per carton" },
+  "121": { trade: 777,    unit: "per tray"   },
+  "120": { trade: 777,    unit: "per tray"   },
+  "122": { trade: 777,    unit: "per tray"   },
+  "75":  { trade: 1440,   unit: "per carton" },
+  "79":  { trade: 1440,   unit: "per carton" },
+  "77":  { trade: 1440,   unit: "per carton" },
   // CHEESE
-  "432": { trade: 235.00,  consumer: 235.00, unit: "per piece" },
-  "430": { trade: 564.00,  consumer: 564.00, unit: "per piece" },
-  "433": { trade: 1340.00, consumer: 1340.00,unit: "per piece" },
-  "436": { trade: 1345.00, consumer: 1345.00,unit: "per piece" },
+  "432": { trade: 280,    unit: "per carton" },
+  "430": { trade: 450,    unit: "per carton" },
+  "433": { trade: 785,    unit: "per carton" },
+  "436": { trade: 1345,   unit: "per carton" },
   // BUTTER
-  "600": { trade: 12948.00,consumer: 580.00, unit: "per carton" },
-  "601": { trade: 5760.00, consumer: 260.00, unit: "per carton" },
-  "602": { trade: 12948.00,consumer: 580.00, unit: "per carton" },
-  "603": { trade: 5760.00, consumer: 260.00, unit: "per carton" },
-  "604": { trade: 18251.00,consumer: 995.00, unit: "per carton" },
-  "605": { trade: 18251.00,consumer: 995.00, unit: "per carton" },
-  "646": { trade: 12948.00,consumer: 580.00, unit: "per carton" },
-  "709": { trade: 7087.86, consumer: 400.00, unit: "per carton" },
-  "606": { trade: 7087.86, consumer: 400.00, unit: "per carton" },
-  "757": { trade: 7527.00, consumer: 7527.00,unit: "per piece" },
-  "758": { trade: 7527.00, consumer: 7527.00,unit: "per piece" },
+  "600": { trade: 16516.62, unit: "per carton" },
+  "601": { trade: 12945.6,  unit: "per carton" },
+  "602": { trade: 16516.62, unit: "per carton" },
+  "603": { trade: 12945.6,  unit: "per carton" },
+  "604": { trade: 18351.8,  unit: "per carton" },
+  "605": { trade: 21576,    unit: "per carton" },
+  "646": { trade: 18351.8,  unit: "per carton" },
+  "709": { trade: 32532,    unit: "per carton" },
+  "606": { trade: 7807.68,  unit: "per carton" },
+  "757": { trade: 19400,    unit: "per piece"  },
+  "758": { trade: 19400,    unit: "per piece"  },
   // POWDER
-  "1036":{ trade: 4982.40, consumer: 214.00, unit: "per carton" },
-  "1037":{ trade: 5296.00, consumer: 310.00, unit: "per carton" },
-  "1038":{ trade: 9320.00, consumer: 341.00, unit: "per carton" },
-  "1031":{ trade: 37152.00,consumer: 20480.00,unit:"per bag" },
-  "1021":{ trade: 37152.00,consumer: 20480.00,unit:"per bag" },
+  "1036":{ trade: 6408,   unit: "per bag"    },
+  "1037":{ trade: 14652,  unit: "per bag"    },
+  "1038":{ trade: 17670,  unit: "per bag"    },
+  "1031":{ trade: 22000,  unit: "per bag"    },
+  "1021":{ trade: 21000,  unit: "per bag"    },
   // GHEE
-  "885": { trade: 19384.00,consumer: 9440.00, unit: "per carton" },
-  "882": { trade: 19384.00,consumer: 1800.00, unit: "per carton" },
-  "876": { trade: 43327.08,consumer: 840.00,  unit: "per carton" },
-  "877": { trade: 43327.08,consumer: 840.00,  unit: "per carton" },
-  "851": { trade: 7790.00, consumer: 840.00,  unit: "per piece" },
+  "885": { trade: 9440,   unit: "per carton" },
+  "882": { trade: 10284,  unit: "per carton" },
+  "876": { trade: 12527,  unit: "per carton" },
+  "877": { trade: 8574,   unit: "per carton" },
+  "851": { trade: 17280,  unit: "per bucket" },
 };
 
 // ═══════════ STATE ═══════════
@@ -1055,8 +1058,8 @@ async function loadData() {
       qty: r.qty,
       unit_wt: r.unit_wt,
       total_wt: r.total_wt,
-      trade_price: r.trade_price,
-      line_trade: r.line_trade,
+      unit_price: r.unit_price,
+      total_revenue: r.total_revenue,
 
     })) : [];
     applyFilter();
@@ -1154,7 +1157,8 @@ function selProd(c, d, k, w) {
   document.getElementById('pWt').value = w;
   document.getElementById('prodDd').style.display = 'none';
   document.getElementById('prodSelectedName').textContent = d;
-  document.getElementById('prodSelectedSub').textContent = '[' + c + '] · ' + k + ' · ' + w + ' kg/unit';
+  const priceHint = PRICES[c] ? ' · KES ' + PRICES[c].trade.toLocaleString() + ' ' + PRICES[c].unit : '';
+  document.getElementById('prodSelectedSub').textContent = '[' + c + '] · ' + k + ' · ' + w + ' kg/unit' + priceHint;
   document.getElementById('prodSelectedBox').classList.add('show');
   setTimeout(() => document.getElementById('qtyInput').focus(), 100);
 }
@@ -1171,9 +1175,9 @@ function addLine() {
   if (!pc) return showToast('Select a product','error');
   if (!qty||qty<1) return showToast('Enter a valid quantity','error');
   const priceInfo = PRICES[pc] || null;
-  const tradePrice = priceInfo ? priceInfo.trade : 0;
-  const lineTrade = +(tradePrice * qty).toFixed(2);
-  orderLines.push({customerAcc:ca,customerName:cn,productCode:pc,productDesc:pd,productPkg:pk,qty,unitWt:pw,totalWt:(qty*pw).toFixed(2),tradePrice,lineTrade});
+  const unitPrice = priceInfo ? priceInfo.trade : 0;
+  const totalRevenue = +(unitPrice * qty).toFixed(2);
+  orderLines.push({customerAcc:ca,customerName:cn,productCode:pc,productDesc:pd,productPkg:pk,qty,unitWt:pw,totalWt:(qty*pw).toFixed(2),unitPrice,totalRevenue});
   ['prodSearch','pCode','pDesc','pPkg','pWt'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('qtyInput').value = '1';
   document.getElementById('custSelectedBox').classList.remove('show');
@@ -1199,9 +1203,9 @@ function renderOrderTable() {
   document.getElementById('barLines').textContent = orderLines.length;
   document.getElementById('barKg').textContent = tw.toFixed(2);
   document.getElementById('orderBar').classList.remove('hidden');
-  const totalTrade2 = orderLines.reduce((s,l)=>s+(l.lineTrade||0),0);
+  const totalTrade2 = orderLines.reduce((s,l)=>s+(l.totalRevenue||0),0);
   if (document.getElementById('barKes')) document.getElementById('barKes').textContent = 'KES '+totalTrade2.toLocaleString();
-  const totalTrade = orderLines.reduce((s,l)=>s+(l.lineTrade||0),0);
+  const totalTrade = orderLines.reduce((s,l)=>s+(l.totalRevenue||0),0);
   w.innerHTML = '<div style="padding:12px 14px;">' + orderLines.map((l,i)=>`
     <div class="order-card">
       <div class="order-card-top">
@@ -1213,11 +1217,11 @@ function renderOrderTable() {
         <span class="badge">${l.productCode}</span>
         <span class="pill gold"><span class="dot"></span>Qty: ${l.qty}</span>
         <span class="order-card-kg">→ ${l.totalWt} kg</span>
-        ${l.lineTrade ? `<span class="pill green"><span class="dot"></span>KES ${l.lineTrade.toLocaleString()}</span>` : ''}
+        ${l.totalRevenue ? `<span class="pill green"><span class="dot"></span>KES ${l.totalRevenue.toLocaleString()}</span>` : ''}
       </div>
     </div>`).join('') +
     (totalTrade > 0 ? `<div style="background:var(--surface2);border-radius:10px;padding:12px 14px;border:1px solid var(--bd);display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);font-weight:700;margin-bottom:3px;">Trade Total</div><div style="font-family:'DM Mono',monospace;font-weight:700;font-size:1.1rem;color:var(--green);">KES ${totalTrade.toLocaleString()}</div></div>
+      <div><div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);font-weight:700;margin-bottom:3px;">Total Revenue</div><div style="font-family:'DM Mono',monospace;font-weight:700;font-size:1.1rem;color:var(--green);">KES ${totalTrade.toLocaleString()}</div></div>
       </div>` : '') +
     '</div>';
 }
@@ -1256,8 +1260,8 @@ async function submitOrder() {
       qty: line.qty,
       unit_wt: line.unitWt,
       total_wt: line.totalWt,
-      trade_price: line.tradePrice || 0,
-      line_trade: line.lineTrade || 0,
+      unit_price: line.unitPrice || 0,
+      total_revenue: line.totalRevenue || 0,
 
     }));
     const response = await fetch(SHEETDB_URL, {
@@ -1290,7 +1294,7 @@ function renderSupervisor() {
   const sms = Object.values(g);
   const tw = allData.reduce((s,r)=>s+(parseFloat(r.total_wt)||0),0);
   const uc = new Set(allData.map(r=>r.customer_acc)).size;
-  const totalTrade = allData.reduce((s,r)=>s+(parseFloat(r.line_trade)||0),0);
+  const totalTrade = allData.reduce((s,r)=>s+(parseFloat(r.total_revenue)||0),0);
   document.getElementById('svSalesmen').textContent = sms.length;
   document.getElementById('svLines').textContent = allData.length;
   document.getElementById('svKg').textContent = tw.toFixed(1)+' kg';
@@ -1324,9 +1328,9 @@ function renderSvDetail(s) {
       <span class="pill gold"><span class="dot"></span>${tw.toFixed(2)} kg</span>
       <span class="pill blue"><span class="dot"></span>${uc} customers</span>
       <span class="pill purple"><span class="dot"></span>${routes}</span>
-      ${s.lines.reduce((x,r)=>x+(parseFloat(r.line_trade)||0),0)>0?`<span class="pill green"><span class="dot"></span>KES ${Math.round(s.lines.reduce((x,r)=>x+(parseFloat(r.line_trade)||0),0)).toLocaleString()}</span>`:''}
+      ${s.lines.reduce((x,r)=>x+(parseFloat(r.total_revenue)||0),0)>0?`<span class="pill green"><span class="dot"></span>KES ${Math.round(s.lines.reduce((x,r)=>x+(parseFloat(r.total_revenue)||0),0)).toLocaleString()}</span>`:''}
     </div>
-    <table class="tbl"><thead><tr><th>Date/Time</th><th>Route</th><th>Customer</th><th>Product</th><th>Qty</th><th>Total kg</th><th>Trade KES</th></tr></thead>
+    <table class="tbl"><thead><tr><th>Date/Time</th><th>Route</th><th>Customer</th><th>Product</th><th>Qty</th><th>Total kg</th><th>Revenue (KES)</th></tr></thead>
     <tbody>${s.lines.map(r=>`<tr>
       <td style="font-size:.72rem;color:var(--muted);font-family:'DM Mono',monospace;">${r.timestamp?new Date(r.timestamp).toLocaleString('en-KE',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'—'}</td>
       <td style="font-size:.78rem;font-weight:500">${r.route||'—'}</td>
@@ -1334,7 +1338,7 @@ function renderSvDetail(s) {
       <td><div style="font-size:.8rem">${r.product_desc||'—'}</div><span class="badge">${r.product_code||''}</span></td>
       <td style="font-family:'DM Mono',monospace;font-weight:600">${r.qty||''}</td>
       <td style="font-family:'DM Mono',monospace;font-weight:600;color:var(--green)">${parseFloat(r.total_wt||0).toFixed(2)}</td>
-      <td style="font-family:'DM Mono',monospace;font-size:.78rem;color:var(--green)">${r.line_trade?'KES '+Math.round(parseFloat(r.line_trade)).toLocaleString():'—'}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:.78rem;color:var(--green)">${r.total_revenue?'KES '+Math.round(parseFloat(r.total_revenue)).toLocaleString():'—'}</td>
 
     </tr>`).join('')}</tbody></table>`;
 }
@@ -1417,7 +1421,7 @@ function renderDashboard() {
   const usm = new Set(data.map(r=>r.salesman_payroll)).size;
   const pq = {}; data.forEach(r=>{pq[r.product_desc]=(pq[r.product_desc]||0)+(parseInt(r.qty)||0);});
   const tp = Object.entries(pq).sort((a,b)=>b[1]-a[1])[0];
-  const dashTrade = data.reduce((s,r)=>s+(parseFloat(r.line_trade)||0),0);
+  const dashTrade = data.reduce((s,r)=>s+(parseFloat(r.total_revenue)||0),0);
 
   document.getElementById('dKg').textContent = tw>999?(tw/1000).toFixed(1)+'t':tw.toFixed(1);
   document.getElementById('dLines').textContent = data.length;
@@ -1869,7 +1873,7 @@ function clearExportFilter() {
 
 function downloadCSVExport() {
   if (!exportData.length) return showToast('No data to export. Apply filters first.', 'error');
-  const headers = ['Date','Time','Salesperson','Payroll','Route','Customer ACC','Customer Name','Channel','Product Code','Product','Category','Packaging','Qty','Unit Wt (kg)','Total Wt (kg)','Trade Price (KES)','Line Trade (KES)'];
+  const headers = ['Date','Time','Salesperson','Payroll','Route','Customer ACC','Customer Name','Channel','Product Code','Product','Category','Packaging','Qty','Unit Wt (kg)','Total Wt (kg)','Unit Price (KES)','Total Revenue (KES)'];
   const rows = exportData.map(r => {
     const dt = r.timestamp ? new Date(r.timestamp) : null;
     const ch = getExportChannel(r.customer_acc);
@@ -1881,7 +1885,7 @@ function downloadCSVExport() {
       r.customer_acc||'', `"${r.customer_name||''}"`, ch,
       r.product_code||'', `"${r.product_desc||''}"`, prod?prod.k:'', r.packaging||'',
       r.qty||'', parseFloat(r.unit_wt||0).toFixed(2), parseFloat(r.total_wt||0).toFixed(2),
-      parseFloat(r.trade_price||0).toFixed(2), parseFloat(r.line_trade||0).toFixed(2)
+      parseFloat(r.unit_price||0).toFixed(2), parseFloat(r.total_revenue||0).toFixed(2)
     ].join(',');
   });
   const csv = [headers.join(','), ...rows].join('\n');
