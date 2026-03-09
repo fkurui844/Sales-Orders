@@ -516,11 +516,15 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
     <div class="panel" style="margin-bottom:18px;">
       <div class="panel-header"><h2>Select Salesperson Dashboard</h2></div>
       <div class="panel-body">
-        <div class="form-group" style="max-width:360px;">
-          <label>Salesperson</label>
-          <select id="dashSmSelect" onchange="renderSalesmanDash()">
-            <option value="">— Choose salesperson —</option>
-          </select>
+        <div class="form-group" style="max-width:400px;">
+          <label>Search by name or payroll number</label>
+          <div class="dd-wrap" id="dashSmDdWrap">
+            <input type="text" id="dashSmSearch" placeholder="🔍  Type name or payroll number…"
+              oninput="filterDashSm()" onfocus="filterDashSm();document.getElementById('dashSmDd').style.display='block'"
+              autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+            <div class="dd-list" id="dashSmDd"></div>
+          </div>
+          <input type="hidden" id="dashSmSelect">
         </div>
       </div>
     </div>
@@ -6239,10 +6243,7 @@ const COLORS = ['#1A7A4A','#C9941A','#1A4A7A','#C0392B','#6C3483','#16A085','#E6
 document.addEventListener('DOMContentLoaded', () => {
   // Salesman dropdowns (dashboard select only)
   const sorted = [...SALESMEN].sort((a,b) => a.n.localeCompare(b.n));
-  const dsel = document.getElementById('dashSmSelect');
-  sorted.forEach(s => {
-    const o = document.createElement('option'); o.value = s.p; o.textContent = `${s.n} (${s.p})`; dsel.appendChild(o);
-  });
+  // dashSmSelect is now a hidden input, populated via filterDashSm()
 
   // Dates
   const now = new Date();
@@ -6404,6 +6405,47 @@ async function loadData() {
 }
 
 // ═══════════ ORDER FORM ═══════════
+function filterDashSm() {
+  const q = document.getElementById('dashSmSearch').value.toLowerCase().trim();
+  const dd = document.getElementById('dashSmDd');
+  dd.style.display = 'block';
+  const results = [...SALESMEN]
+    .filter(s => s.n.toLowerCase().includes(q) || s.p.includes(q))
+    .sort((a,b) => {
+      if (a.p === q) return -1; if (b.p === q) return 1;
+      const as = a.n.toLowerCase().startsWith(q)||a.p.startsWith(q);
+      const bs = b.n.toLowerCase().startsWith(q)||b.p.startsWith(q);
+      if (as && !bs) return -1; if (bs && !as) return 1;
+      return a.n.localeCompare(b.n);
+    })
+    .slice(0, 50);
+  if (!results.length) {
+    dd.innerHTML = '<div class="dd-opt" style="color:var(--text-muted);cursor:default;">No results found</div>';
+    return;
+  }
+  dd.innerHTML = results.map(s =>
+    `<div class="dd-opt" onclick="selectDashSm('${s.p}','${s.n}')">
+      <span style="font-weight:600">${s.n}</span>
+      <span class="badge" style="font-family:'DM Mono',monospace">${s.p}</span>
+    </div>`
+  ).join('');
+}
+
+function selectDashSm(payroll, name) {
+  document.getElementById('dashSmSearch').value = `${name} (${payroll})`;
+  document.getElementById('dashSmSelect').value = payroll;
+  document.getElementById('dashSmDd').style.display = 'none';
+  renderSalesmanDash();
+}
+
+// Close dashboard SM dropdown on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('#dashSmDdWrap')) {
+    const dd = document.getElementById('dashSmDd');
+    if (dd) dd.style.display = 'none';
+  }
+}, true);
+
 function filterSm() {
   const q = document.getElementById('smSearch').value.toLowerCase().trim();
   const dd = document.getElementById('smDd');
