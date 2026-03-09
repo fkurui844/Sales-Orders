@@ -488,8 +488,9 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
     <button class="itab" onclick="switchDashTab('products',this)">By Product</button>
     <button class="itab" onclick="switchDashTab('daily',this)">Daily Trend</button>
     <button class="itab" onclick="switchDashTab('routes',this)">By Route</button>
-    <button class="itab" onclick="switchDashTab('export',this)">⬇ Export Excel</button>
+    <button class="itab" onclick="switchDashTab('revenue',this)">💰 Revenue</button>
     <button class="itab" onclick="switchDashTab('timing',this)">⏱ Timing</button>
+    <button class="itab" onclick="switchDashTab('export',this)">⬇ Export Excel</button>
   </div>
   </div>
 
@@ -625,6 +626,71 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
   </div>
 
 </div>
+
+  <!-- TAB: REVENUE -->
+  <div id="dtRevenue" class="hidden">
+
+    <div class="panel" style="margin-bottom:18px;">
+      <div class="panel-body" style="padding:14px 22px;">
+        <div class="date-strip">
+          <span style="font-size:.72rem;font-weight:600;color:var(--text-muted);">PERIOD:</span>
+          <button class="fbt active" id="rvbt-today" onclick="setRevenueFilter('today',this)">Today</button>
+          <button class="fbt" id="rvbt-week" onclick="setRevenueFilter('week',this)">This Week</button>
+          <button class="fbt" id="rvbt-month" onclick="setRevenueFilter('month',this)">This Month</button>
+          <button class="fbt" id="rvbt-all" onclick="setRevenueFilter('all',this)">All Time</button>
+          <span style="color:var(--border);margin:0 4px;">|</span>
+          <input type="date" id="rvDateFrom" onchange="setRevenueFilter('custom',null)" style="width:140px;">
+          <span style="font-size:.75rem;color:var(--text-muted);">to</span>
+          <input type="date" id="rvDateTo" onchange="setRevenueFilter('custom',null)" style="width:140px;">
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI cards -->
+    <div class="kpi-row">
+      <div class="kpi g"><div class="val" id="rvTotal">—</div><div class="lbl">Total Revenue (KES)</div></div>
+      <div class="kpi b"><div class="val" id="rvLines">—</div><div class="lbl">Order Lines</div></div>
+      <div class="kpi o"><div class="val" id="rvAvgLine">—</div><div class="lbl">Avg Revenue / Line</div></div>
+      <div class="kpi p"><div class="val" id="rvTopSm">—</div><div class="lbl">Top Salesperson</div></div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="g2">
+      <div class="panel">
+        <div class="panel-header"><h2>Revenue by Salesperson</h2></div>
+        <div class="panel-body"><div class="chart-box"><canvas id="cRvSm"></canvas></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><h2>Revenue by Product Category</h2></div>
+        <div class="panel-body"><div class="chart-box"><canvas id="cRvCat"></canvas></div></div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:18px;">
+      <div class="panel-header"><h2>Daily Revenue Trend</h2></div>
+      <div class="panel-body"><div class="chart-box" style="height:220px;"><canvas id="cRvDaily"></canvas></div></div>
+    </div>
+
+    <!-- Revenue by Route -->
+    <div class="panel" style="margin-bottom:18px;">
+      <div class="panel-header"><h2>Revenue by Route</h2></div>
+      <div style="padding:0;overflow-x:auto;" id="rvRouteWrap"></div>
+    </div>
+
+    <!-- Top products by revenue -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2>Top Products by Revenue</h2>
+        <div style="margin-left:auto;">
+          <select id="rvSmFilter" onchange="renderRevenueTab()" style="font-size:.8rem;padding:6px 12px;border-radius:8px;border:1.5px solid var(--bd);">
+            <option value="">All Salespeople</option>
+          </select>
+        </div>
+      </div>
+      <div style="padding:0;overflow-x:auto;" id="rvProductWrap"></div>
+    </div>
+
+  </div>
 
   <!-- TAB: TIMING -->
   <div id="dtTiming" class="hidden">
@@ -944,6 +1010,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const o = document.createElement('option'); o.value = s.p; o.textContent = `${s.n} (${s.p})`; tSmF.appendChild(o);
   });
 
+  // Populate revenue salesman filter
+  const rvSmF = document.getElementById('rvSmFilter');
+  [...SALESMEN].sort((a,b)=>a.n.localeCompare(b.n)).forEach(s => {
+    const o = document.createElement('option'); o.value = s.p; o.textContent = `${s.n} (${s.p})`; rvSmF.appendChild(o);
+  });
+  // Init revenue date inputs
+  const nowRv = new Date(), tdRv = nowRv.toISOString().split('T')[0];
+  document.getElementById('rvDateFrom').value = tdRv;
+  document.getElementById('rvDateTo').value = tdRv;
+
   // Init timing date inputs
   const nowT = new Date(), tdT = nowT.toISOString().split('T')[0];
   document.getElementById('tDateFrom').value = tdT;
@@ -1012,7 +1088,7 @@ function switchDashTab(tab, btn) {
   activeDashTab = tab;
   document.querySelectorAll('.itab').forEach(t => t.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  ['Overview','Salesman','Products','Daily','Routes','Export','Timing'].forEach(t => {
+  ['Overview','Salesman','Products','Daily','Routes','Revenue','Timing','Export'].forEach(t => {
     document.getElementById('dt'+t).classList.toggle('hidden', t.toLowerCase() !== tab);
   });
   renderDashboard();
@@ -1437,6 +1513,7 @@ function renderDashboard() {
   else if (activeDashTab==='daily') renderDailyTab(data);
   else if (activeDashTab==='routes') renderRoutesTab();
   else if (activeDashTab==='export') initExportTab();
+  else if (activeDashTab==='revenue') renderRevenueTab();
   else if (activeDashTab==='timing') renderTimingTab();
 }
 
@@ -2008,6 +2085,161 @@ function downloadExcel() {
   a.download = `orders_export_${new Date().toISOString().split('T')[0]}.xls`;
   a.click();
   showToast(`✅ Exported ${exportData.length} rows — 4 sheets included`, 'success');
+}
+
+// ═══════════ REVENUE TAB ═══════════
+let revenueDateFilter = 'today';
+
+function setRevenueFilter(type, btn) {
+  revenueDateFilter = type;
+  document.querySelectorAll('[id^="rvbt-"]').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const now = new Date(), td = now.toISOString().split('T')[0];
+  if (type==='today')  { document.getElementById('rvDateFrom').value=td; document.getElementById('rvDateTo').value=td; }
+  else if (type==='week')  { const m=new Date(now); m.setDate(now.getDate()-now.getDay()+1); document.getElementById('rvDateFrom').value=m.toISOString().split('T')[0]; document.getElementById('rvDateTo').value=td; }
+  else if (type==='month') { document.getElementById('rvDateFrom').value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`; document.getElementById('rvDateTo').value=td; }
+  else if (type==='all')   { document.getElementById('rvDateFrom').value='2020-01-01'; document.getElementById('rvDateTo').value=td; }
+  renderRevenueTab();
+}
+
+function renderRevenueTab() {
+  const from = new Date((document.getElementById('rvDateFrom').value||'2020-01-01')+'T00:00:00');
+  const to   = new Date((document.getElementById('rvDateTo').value||new Date().toISOString().split('T')[0])+'T23:59:59');
+  const smFilter = document.getElementById('rvSmFilter').value;
+
+  let data = allData.filter(r => {
+    if (!r.timestamp) return false;
+    const d = new Date(r.timestamp);
+    return d >= from && d <= to;
+  });
+
+  if (smFilter) data = data.filter(r => r.salesman_payroll === smFilter);
+
+  const fmt = v => v >= 1000000 ? 'KES '+(v/1000000).toFixed(2)+'M' : v >= 1000 ? 'KES '+(v/1000).toFixed(1)+'K' : 'KES '+Math.round(v).toLocaleString();
+
+  if (!data.length) {
+    ['rvTotal','rvLines','rvAvgLine','rvTopSm'].forEach(id => document.getElementById(id).textContent = '—');
+    document.getElementById('rvRouteWrap').innerHTML = '<div class="empty" style="padding:24px"><p>No data for this period.</p></div>';
+    document.getElementById('rvProductWrap').innerHTML = '';
+    ['cRvSm','cRvCat','cRvDaily'].forEach(id => dc(id));
+    return;
+  }
+
+  const totalRev = data.reduce((s,r) => s+(parseFloat(r.total_revenue)||0), 0);
+  const lines = data.length;
+  const avgLine = lines ? totalRev/lines : 0;
+
+  // Top salesperson
+  const smRev = {};
+  data.forEach(r => {
+    smRev[r.salesman_name] = (smRev[r.salesman_name]||0) + (parseFloat(r.total_revenue)||0);
+  });
+  const smSorted = Object.entries(smRev).sort((a,b)=>b[1]-a[1]);
+  const topSm = smSorted[0];
+
+  document.getElementById('rvTotal').textContent = fmt(totalRev);
+  document.getElementById('rvLines').textContent = lines.toLocaleString();
+  document.getElementById('rvAvgLine').textContent = fmt(avgLine);
+  document.getElementById('rvTopSm').textContent = topSm ? topSm[0].split(' ')[0] : '—';
+
+  const COLORS = ['#1A7A4A','#C9941A','#1A4A7A','#C0392B','#8E44AD','#16A085','#D35400','#2C3E50','#27AE60','#E74C3C'];
+
+  // ── Revenue by Salesperson bar ──
+  const top10sm = smSorted.slice(0,10);
+  dc('cRvSm');
+  new Chart(document.getElementById('cRvSm').getContext('2d'), {
+    type:'bar',
+    data:{ labels: top10sm.map(s=>s[0].split(' ')[0]),
+      datasets:[{ label:'Revenue (KES)', data: top10sm.map(s=>Math.round(s[1])),
+        backgroundColor: top10sm.map((_,i)=>COLORS[i%COLORS.length]+'cc'), borderRadius:5 }]},
+    options:{ responsive:true, maintainAspectRatio:false, indexAxis:'y',
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:i=>'KES '+i.raw.toLocaleString()}} },
+      scales:{ x:{beginAtZero:true, ticks:{callback:v=>v>=1000?Math.round(v/1000)+'K':v}, grid:{color:'var(--bd)'}}, y:{grid:{display:false}} }
+    }
+  });
+
+  // ── Revenue by Category doughnut ──
+  const catRev = {};
+  data.forEach(r => {
+    const prod = PRODUCTS.find(p=>p.c===r.product_code);
+    const cat = prod ? prod.k : 'Other';
+    catRev[cat] = (catRev[cat]||0) + (parseFloat(r.total_revenue)||0);
+  });
+  const catSorted = Object.entries(catRev).sort((a,b)=>b[1]-a[1]);
+  dc('cRvCat');
+  new Chart(document.getElementById('cRvCat').getContext('2d'), {
+    type:'doughnut',
+    data:{ labels: catSorted.map(c=>c[0]),
+      datasets:[{ data: catSorted.map(c=>Math.round(c[1])),
+        backgroundColor: catSorted.map((_,i)=>COLORS[i%COLORS.length]+'dd'), borderWidth:2 }]},
+    options:{ responsive:true, maintainAspectRatio:false, cutout:'60%',
+      plugins:{ legend:{position:'right',labels:{font:{size:11},boxWidth:14}},
+        tooltip:{callbacks:{label:i=>`${i.label}: KES ${i.raw.toLocaleString()}`}} }
+    }
+  });
+
+  // ── Daily Revenue trend ──
+  const dayRev = {};
+  data.forEach(r => {
+    const d = dkey(r.timestamp);
+    dayRev[d] = (dayRev[d]||0) + (parseFloat(r.total_revenue)||0);
+  });
+  const days = Object.keys(dayRev).sort();
+  dc('cRvDaily');
+  new Chart(document.getElementById('cRvDaily').getContext('2d'), {
+    type:'line',
+    data:{ labels: days.map(d=>new Date(d+'T12:00:00').toLocaleDateString('en-KE',{day:'2-digit',month:'short'})),
+      datasets:[{ label:'Revenue', data: days.map(d=>Math.round(dayRev[d])),
+        borderColor:'#1A7A4A', backgroundColor:'#1A7A4A22', fill:true, tension:0.3, pointRadius:4, pointBackgroundColor:'#1A7A4A' }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:i=>'KES '+i.raw.toLocaleString()}} },
+      scales:{ y:{beginAtZero:true, ticks:{callback:v=>v>=1000?Math.round(v/1000)+'K':v}, grid:{color:'var(--bd)'}}, x:{grid:{display:false}} }
+    }
+  });
+
+  // ── Revenue by Route table ──
+  const routeRev = {};
+  data.forEach(r => {
+    routeRev[r.route||'Unknown'] = (routeRev[r.route||'Unknown']||0) + (parseFloat(r.total_revenue)||0);
+  });
+  const routeSorted = Object.entries(routeRev).sort((a,b)=>b[1]-a[1]);
+  const maxRouteRev = routeSorted[0]?.[1]||1;
+  document.getElementById('rvRouteWrap').innerHTML = `<table class="tbl">
+    <thead><tr><th>Route</th><th>Revenue</th><th>Share</th><th style="width:160px;">Bar</th></tr></thead>
+    <tbody>${routeSorted.map(([route,rev],i) => `<tr>
+      <td style="font-weight:600;font-size:.82rem">${route}</td>
+      <td style="font-family:'DM Mono',monospace;font-weight:700;color:var(--green)">KES ${Math.round(rev).toLocaleString()}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:.78rem;color:var(--text-muted)">${(rev/totalRev*100).toFixed(1)}%</td>
+      <td><div class="rb"><div style="height:5px;border-radius:3px;background:${COLORS[i%COLORS.length]};width:${(rev/maxRouteRev*100).toFixed(1)}%"></div></div></td>
+    </tr>`).join('')}</tbody>
+    <tfoot><tr style="background:var(--surface2)">
+      <td style="font-weight:700">TOTAL</td>
+      <td style="font-family:'DM Mono',monospace;font-weight:700;color:var(--green)">KES ${Math.round(totalRev).toLocaleString()}</td>
+      <td>100%</td><td></td>
+    </tr></tfoot>
+  </table>`;
+
+  // ── Top Products by Revenue ──
+  const prodRev = {};
+  data.forEach(r => {
+    const key = r.product_code+'|'+(r.product_desc||'');
+    prodRev[key] = (prodRev[key]||0) + (parseFloat(r.total_revenue)||0);
+  });
+  const prodSorted = Object.entries(prodRev).sort((a,b)=>b[1]-a[1]).slice(0,20);
+  const maxProdRev = prodSorted[0]?.[1]||1;
+  document.getElementById('rvProductWrap').innerHTML = `<table class="tbl">
+    <thead><tr><th>#</th><th>Product</th><th>Revenue</th><th>Share</th><th style="width:140px;">Bar</th></tr></thead>
+    <tbody>${prodSorted.map(([key,rev],i) => {
+      const [code, desc] = key.split('|');
+      return `<tr>
+        <td style="font-family:'DM Mono',monospace;color:var(--text-muted);font-size:.75rem">${i+1}</td>
+        <td><div style="font-weight:600;font-size:.82rem">${desc||code}</div><span class="badge">${code}</span></div></td>
+        <td style="font-family:'DM Mono',monospace;font-weight:700;color:var(--green)">KES ${Math.round(rev).toLocaleString()}</td>
+        <td style="font-family:'DM Mono',monospace;font-size:.78rem;color:var(--text-muted)">${(rev/totalRev*100).toFixed(1)}%</td>
+        <td><div class="rb"><div style="height:5px;border-radius:3px;background:${COLORS[i%COLORS.length]};width:${(rev/maxProdRev*100).toFixed(1)}%"></div></div></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
 }
 
 // ═══════════ TIMING TAB ═══════════
