@@ -326,10 +326,14 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
     <div class="panel-body">
       <div class="form-grid">
         <div class="form-group full">
-          <label>Your Name</label>
-          <select id="salesmanSelect" onchange="onSalesmanChange()">
-            <option value="">— Select your name —</option>
-          </select>
+          <label>Your Name / Payroll Number</label>
+          <div class="dd-wrap" id="smDdWrap">
+            <input type="text" id="smSearch" placeholder="🔍  Type name or payroll number…"
+              oninput="filterSm()" onfocus="filterSm();document.getElementById('smDd').style.display='block'"
+              autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+            <div class="dd-list" id="smDd"></div>
+          </div>
+          <input type="hidden" id="salesmanSelect">
         </div>
         <div class="form-group full">
           <label>Your Route</label>
@@ -6130,14 +6134,11 @@ const COLORS = ['#1A7A4A','#C9941A','#1A4A7A','#C0392B','#6C3483','#16A085','#E6
 
 // ═══════════ INIT ═══════════
 document.addEventListener('DOMContentLoaded', () => {
-  // Salesman dropdowns
+  // Salesman dropdowns (dashboard select only)
   const sorted = [...SALESMEN].sort((a,b) => a.n.localeCompare(b.n));
-  const sel = document.getElementById('salesmanSelect');
   const dsel = document.getElementById('dashSmSelect');
   sorted.forEach(s => {
-    [sel, dsel].forEach(el => {
-      const o = document.createElement('option'); o.value = s.p; o.textContent = `${s.n} (${s.p})`; el.appendChild(o);
-    });
+    const o = document.createElement('option'); o.value = s.p; o.textContent = `${s.n} (${s.p})`; dsel.appendChild(o);
   });
 
   // Dates
@@ -6300,6 +6301,46 @@ async function loadData() {
 }
 
 // ═══════════ ORDER FORM ═══════════
+function filterSm() {
+  const q = document.getElementById('smSearch').value.toLowerCase().trim();
+  const dd = document.getElementById('smDd');
+  dd.style.display = 'block';
+  const results = SALESMEN
+    .filter(s => s.n.toLowerCase().includes(q) || s.p.includes(q))
+    .sort((a,b) => {
+      // Exact payroll match first
+      if (a.p === q) return -1; if (b.p === q) return 1;
+      // Starts-with match next
+      const as = a.n.toLowerCase().startsWith(q)||a.p.startsWith(q);
+      const bs = b.n.toLowerCase().startsWith(q)||b.p.startsWith(q);
+      if (as && !bs) return -1; if (bs && !as) return 1;
+      return a.n.localeCompare(b.n);
+    })
+    .slice(0, 50);
+  if (!results.length) {
+    dd.innerHTML = '<div class="dd-opt" style="color:var(--text-muted);cursor:default;">No results found</div>';
+    return;
+  }
+  dd.innerHTML = results.map(s =>
+    `<div class="dd-opt" onclick="selectSm('${s.p}','${s.n}')">
+      <span style="font-weight:600">${s.n}</span>
+      <span class="badge" style="font-family:'DM Mono',monospace">${s.p}</span>
+    </div>`
+  ).join('');
+}
+
+function selectSm(payroll, name) {
+  document.getElementById('smSearch').value = `${name} (${payroll})`;
+  document.getElementById('salesmanSelect').value = payroll;
+  document.getElementById('smDd').style.display = 'none';
+  onSalesmanChange();
+}
+
+// Close SM dropdown on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('#smDdWrap')) document.getElementById('smDd').style.display = 'none';
+}, true);
+
 function onSalesmanChange() {
   const v = document.getElementById('salesmanSelect').value;
   currentSalesman = SALESMEN.find(s => s.p === v) || null;
