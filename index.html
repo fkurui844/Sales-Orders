@@ -462,9 +462,16 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         </div>
         <div class="form-group full">
           <label>Your Route</label>
-          <select id="routeSelect" onchange="onRouteChange()">
-            <option value="">— Select your route —</option>
-          </select>
+          <div class="dd-wrap" id="routeDdWrap" style="position:relative;">
+            <input type="text" id="routeSearch"
+              placeholder="🔍 Type route name…"
+              oninput="filterRoutes()"
+              onfocus="filterRoutes(); document.getElementById('routeDd').style.display='block'"
+              autocomplete="off" autocorrect="off" autocapitalize="off"
+              style="width:100%;">
+            <div class="dd-list" id="routeDd" style="display:none;max-height:260px;overflow-y:auto;"></div>
+          </div>
+          <input type="hidden" id="routeSelect">
         </div>
         <div class="form-group full">
           <label>Order Date</label>
@@ -554,7 +561,10 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         </div>
       </div>
 
-      <button class="btn-add" onclick="addLine()">＋ Add to Order</button>
+      <button class="btn-add" onclick="addLine()" id="addLineBtn">＋ Add to Order</button>
+      <button id="nextCustBtn" onclick="nextCustomer()" style="display:none;width:100%;margin-top:8px;padding:13px;background:var(--surface);color:var(--text);border:2px solid var(--bd);border-radius:12px;font-size:.9rem;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;touch-action:manipulation;transition:all .2s;">
+        👤 Next Customer →
+      </button>
     </div>
 
     <!-- Order lines (card style) -->
@@ -6722,10 +6732,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (el('dto'))       el('dto').value = td;
 
   // Route select (order form)
-  const rsel = el('routeSelect');
-  if (rsel) ROUTES.forEach(r => {
-    const o = document.createElement('option'); o.value = r; o.textContent = r; rsel.appendChild(o);
-  });
+  // Route searchable dropdown — list built dynamically in filterRoutes()
+  // Just pre-populate the dd on first focus via filterRoutes
 
   // Dashboard elements — safe to populate even if inside hidden panel
   const rfsel = el('routeFilterSelect');
@@ -7144,6 +7152,53 @@ document.addEventListener('click', e => {
   }
 }, true);
 
+function filterRoutes() {
+  const q   = (document.getElementById('routeSearch')||{}).value.toLowerCase().trim();
+  const dd  = document.getElementById('routeDd');
+  const cur = (document.getElementById('routeSelect')||{}).value || '';
+  if (!dd) return;
+
+  const matches = q
+    ? ROUTES.filter(r => r.toLowerCase().includes(q))
+    : ROUTES;
+
+  dd.style.display = 'block';
+  dd.innerHTML = matches.map(r =>
+    `<div onclick="selectRoute('${r.replace(/'/g, "\'")}')"
+      style="padding:10px 14px;cursor:pointer;font-size:.85rem;
+      font-weight:${r===cur?'700':'400'};
+      color:${r===cur?'var(--gold)':'var(--text)'};
+      transition:background .12s;"
+      onmouseover="this.style.background='var(--surface2)'"
+      onmouseout="this.style.background=''">
+      ${r===cur?'✓ ':''}${r}
+    </div>`
+  ).join('');
+
+  if (!matches.length) {
+    dd.innerHTML = '<div style="padding:10px 14px;font-size:.82rem;color:var(--muted);">No routes found</div>';
+  }
+}
+
+function selectRoute(val) {
+  const inp = document.getElementById('routeSearch');
+  const hid = document.getElementById('routeSelect');
+  const dd  = document.getElementById('routeDd');
+  if (inp) inp.value = val;
+  if (hid) hid.value = val;
+  if (dd)  dd.style.display = 'none';
+  onRouteChange(val);
+}
+
+// Close route dropdown on outside click
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('routeDdWrap');
+  if (wrap && !wrap.contains(e.target)) {
+    const dd = document.getElementById('routeDd');
+    if (dd) dd.style.display = 'none';
+  }
+});
+
 function filterSm() {
   const q = document.getElementById('smSearch').value.toLowerCase().trim();
   const dd = document.getElementById('smDd');
@@ -7190,8 +7245,8 @@ function onSalesmanChange() {
   checkReady();
 }
 
-function onRouteChange() {
-  currentRoute = document.getElementById('routeSelect').value || null;
+function onRouteChange(val) {
+  currentRoute = val || document.getElementById('routeSelect').value || null;
   checkReady();
 }
 
@@ -7357,21 +7412,51 @@ function addLine() {
   if (!ca) return showToast('Select a customer','error');
   if (!pc) return showToast('Select a product','error');
   if (!qty||qty<=0) return showToast('Enter a valid quantity','error');
+
   const priceInfo = PRICES[pc] || null;
   const unitPrice = priceInfo ? priceInfo.trade : 0;
   const totalRevenue = +(unitPrice * qty).toFixed(2);
   orderLines.push({customerAcc:ca,customerName:cn,productCode:pc,productDesc:pd,productPkg:pk,qty,unitWt:pw,totalWt:(qty*pw).toFixed(2),unitPrice,totalRevenue});
+
+  // ── Keep customer locked, only reset product + qty ──
   ['prodSearch','pCode','pDesc','pPkg','pWt'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('qtyInput').value = '1';
-  document.getElementById('custSelectedBox').classList.remove('show');
   document.getElementById('prodSelectedBox').classList.remove('show');
-  document.getElementById('custSearch').style.display = '';
   document.getElementById('prodSearch').style.display = '';
-  document.getElementById('custSearch').value = '';
+  const row = document.getElementById('pcsConverterRow');
+  if (row) row.style.display = 'none';
+
+  // Show "Next Customer" button and update customer box label
+  const nextBtn = document.getElementById('nextCustBtn');
+  if (nextBtn) nextBtn.style.display = 'block';
+
+  // Count products for this customer
+  const custLines = orderLines.filter(l => l.customerAcc === ca).length;
+  const custBox = document.getElementById('custSelectedName');
+  if (custBox) custBox.textContent = cn + ` (${custLines} product${custLines>1?'s':''} added)`;
+
+  // Focus product search for next product
+  setTimeout(() => document.getElementById('prodSearch').focus(), 100);
+  renderOrderTable(); checkReady();
+  showToast(`✅ Added! Add another product for ${cn} or tap "Next Customer"`, 'success');
+}
+
+function nextCustomer() {
+  // Clear customer and product, ready for next customer
   document.getElementById('custAcc').value = '';
   document.getElementById('custName').value = '';
-  document.getElementById('custSearch').focus();
-  renderOrderTable(); checkReady();
+  document.getElementById('custSearch').value = '';
+  document.getElementById('custSelectedBox').classList.remove('show');
+  document.getElementById('custSearch').style.display = '';
+  ['prodSearch','pCode','pDesc','pPkg','pWt'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('qtyInput').value = '1';
+  document.getElementById('prodSelectedBox').classList.remove('show');
+  document.getElementById('prodSearch').style.display = '';
+  const row = document.getElementById('pcsConverterRow');
+  if (row) row.style.display = 'none';
+  const nextBtn = document.getElementById('nextCustBtn');
+  if (nextBtn) nextBtn.style.display = 'none';
+  setTimeout(() => document.getElementById('custSearch').focus(), 100);
 }
 
 function removeLine(i) { orderLines.splice(i,1); renderOrderTable(); checkReady(); }
@@ -9502,7 +9587,7 @@ function buildComparison() {
   const achC=p=>p===null?'ach-zero':p>=100?'ach-over':p>=70?'ach-partial':'ach-low';
   const achL=p=>p===null?'—':p.toFixed(0)+'%';
 
-  document.getElementById('compCustTable').innerHTML=`<table class="tbl"><thead><tr><th>Account</th><th>Customer</th><th>Order Lines</th><th>Order Value</th><th>Sale Lines</th><th>Actual Sales</th><th>Achievement</th><th>Gap</th></tr></thead><tbody>${custRows.map(r=>{const gap=r.act_rev-r.ord_rev;return `<tr><td><span class="badge">${r.acc}</span></td><td style="font-size:.8rem;font-weight:500;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.name}</td><td style="font-family:'DM Mono',monospace">${r.ord_lines||'—'}</td><td style="font-family:'DM Mono',monospace;font-size:.78rem;color:var(--blue)">${r.ord_rev>0?fmtK(r.ord_rev):'—'}</td><td style="font-family:'DM Mono',monospace">${r.act_lines||'—'}</td><td style="font-family:'DM Mono',monospace;font-size:.78rem;color:var(--green)">${r.act_rev>0?fmtK(r.act_rev):'—'}</td><td><span class="ach-badge ${achC(r.ach_pct)}">${achL(r.ach_pct)}</span></td><td style="font-family:'DM Mono',monospace;font-size:.78rem;color:${gap>=0?'var(--green)':'var(--red)'}">${r.ord_rev>0||r.act_rev>0?(gap>=0?'+':'')+fmtK(gap):'—'}</td></tr>`;}).join('')}</tbody></table><div style="padding:8px 14px;background:var(--cream);border-top:1px solid var(--bd);font-size:.72rem;color:var(--muted);">${custRows.length} customers</div>`;
+  document.getElementById('compCustTable').innerHTML=`<table class="tbl"><thead><tr><th>Account</th><th>Customer</th><th>Order Value</th><th>Actual Sales</th><th>Achievement</th><th>Gap</th></tr></thead><tbody>${custRows.map(r=>{const gap=r.act_rev-r.ord_rev;return `<tr><td><span class="badge">${r.acc}</span></td><td style="font-size:.8rem;font-weight:500;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.name}</td><td style="font-family:'DM Mono',monospace;font-size:.78rem;color:var(--blue)">${r.ord_rev>0?fmtK(r.ord_rev):'—'}</td><td style="font-family:'DM Mono',monospace;font-size:.78rem;color:var(--green)">${r.act_rev>0?fmtK(r.act_rev):'—'}</td><td><span class="ach-badge ${achC(r.ach_pct)}">${achL(r.ach_pct)}</span></td><td style="font-family:'DM Mono',monospace;font-size:.78rem;color:${gap>=0?'var(--green)':'var(--red)'}">${r.ord_rev>0||r.act_rev>0?(gap>=0?'+':'')+fmtK(gap):'—'}</td></tr>`;}).join('')}</tbody></table><div style="padding:8px 14px;background:var(--cream);border-top:1px solid var(--bd);font-size:.72rem;color:var(--muted);">${custRows.length} customers</div>`;
 
   document.getElementById('compProdTable').innerHTML=`<table class="tbl"><thead><tr><th>#</th><th>Code</th><th>Product</th><th>Category</th><th>Ord Qty</th><th>Order Value</th><th>Act Qty</th><th>Actual Sales</th><th>Ach</th></tr></thead><tbody>${prodComp.map((p,i)=>`<tr><td style="font-family:'DM Mono',monospace;color:var(--muted);font-size:.72rem">${i+1}</td><td><span class="badge">${p.code}</span></td><td style="font-size:.8rem;font-weight:500;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${p.desc}">${p.desc}</td><td><span class="pill blue" style="font-size:.65rem;padding:2px 6px">${p.category||'—'}</span></td><td style="font-family:'DM Mono',monospace">${Math.round(p.ord_qty||0).toLocaleString()}</td><td style="font-family:'DM Mono',monospace;font-size:.78rem;color:var(--blue)">${p.ord_rev>0?fmtK(p.ord_rev):'—'}</td><td style="font-family:'DM Mono',monospace">${Math.round(p.act_qty||0).toLocaleString()}</td><td style="font-family:'DM Mono',monospace;font-size:.78rem;color:var(--green)">${p.act_rev>0?fmtK(p.act_rev):'—'}</td><td><span class="ach-badge ${achC(p.ach_pct)}">${achL(p.ach_pct)}</span></td></tr>`).join('')}</tbody></table>`;
 
