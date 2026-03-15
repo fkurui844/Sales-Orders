@@ -534,8 +534,23 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <label>Quantity</label>
         <div class="qty-stepper">
           <button class="qty-btn" onclick="stepQty(-1)">−</button>
-          <input class="qty-input" type="number" id="qtyInput" value="1" min="0.5" step="0.5" inputmode="decimal">
+          <input class="qty-input" type="number" id="qtyInput" value="1" min="0.01" step="any" inputmode="decimal">
           <button class="qty-btn" onclick="stepQty(1)">＋</button>
+        </div>
+        <!-- Pcs converter — shown when pcsPerUnit is known -->
+        <div id="pcsConverterRow" style="display:none;margin-top:10px;background:var(--surface2);border-radius:10px;padding:10px 14px;border:1px solid var(--bd);">
+          <div style="font-size:.7rem;font-weight:700;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">
+            📦 <span id="pcsUnitLabel">Pcs converter</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <input type="number" id="pcsInput" placeholder="Enter pcs…" min="1" step="1" inputmode="numeric"
+              oninput="convertPcsToUnits()"
+              style="width:120px;padding:8px 12px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.9rem;font-family:'DM Mono',monospace;font-weight:600;">
+            <span style="font-size:.8rem;color:var(--muted);">pcs</span>
+            <span style="font-size:.8rem;color:var(--muted);">→</span>
+            <span id="pcsResult" style="font-size:.9rem;font-weight:700;color:var(--green);font-family:'DM Mono',monospace;">—</span>
+            <button class="btn btn-outline btn-sm" onclick="usePcsResult()" id="pcsUseBtn" style="display:none;">Use this</button>
+          </div>
         </div>
       </div>
 
@@ -7200,8 +7215,10 @@ function goToStep1() {
 
 function stepQty(delta) {
   const inp = document.getElementById('qtyInput');
-  const val = Math.round(((parseFloat(inp.value) || 0) + (delta * 0.5)) * 10) / 10;
-  inp.value = Math.max(0.5, val);
+  const cur = parseFloat(inp.value) || 0;
+  // Step by 1 for whole numbers, by 0.01 precision for decimals
+  const val = Math.round((cur + delta) * 100) / 100;
+  inp.value = Math.max(0.01, val);
 }
 
 function clearProd() {
@@ -7213,6 +7230,8 @@ function clearProd() {
   document.getElementById('prodSelectedBox').classList.remove('show');
   document.getElementById('prodSearch').style.display = '';
   document.getElementById('prodDd').style.display = 'none';
+  const row = document.getElementById('pcsConverterRow');
+  if (row) row.style.display = 'none';
   document.getElementById('prodSearch').focus();
 }
 
@@ -7267,6 +7286,64 @@ function selProd(c, d, k, w) {
   document.getElementById('prodSelectedBox').classList.add('show');
   document.getElementById('prodSearch').style.display = 'none';
   setTimeout(() => document.getElementById('qtyInput').focus(), 100);
+  // Show pcs converter if product has known pack size
+  showPcsConverter(code, pkg, desc);
+}
+
+function showPcsConverter(code, pkg, desc) {
+  const row   = document.getElementById('pcsConverterRow');
+  const label = document.getElementById('pcsUnitLabel');
+  const pcsIn = document.getElementById('pcsInput');
+  if (!row) return;
+
+  // Extract pack size from description e.g. "1X18X500ML" → 18, "1*12*500ML" → 12
+  const match = (desc||'').match(/(?:1[Xx*](\d+)[Xx*]|(\d+)\s*x\s*\d)/i);
+  const packSize = match ? parseInt(match[1]||match[2]) : null;
+
+  if (packSize && packSize > 1 && ['Crates','Trays','Cartons','Packs'].includes(pkg)) {
+    row.style.display = 'block';
+    row._packSize = packSize;
+    row._pkg = pkg;
+    label.textContent = `${packSize} pcs per ${pkg.toLowerCase().replace(/s$/,'')} — enter pcs to convert`;
+    if (pcsIn) { pcsIn.value = ''; }
+    document.getElementById('pcsResult').textContent = '—';
+    document.getElementById('pcsUseBtn').style.display = 'none';
+  } else {
+    row.style.display = 'none';
+    row._packSize = null;
+  }
+}
+
+function convertPcsToUnits() {
+  const row    = document.getElementById('pcsConverterRow');
+  const pcsIn  = document.getElementById('pcsInput');
+  const result = document.getElementById('pcsResult');
+  const useBtn = document.getElementById('pcsUseBtn');
+  if (!row || !row._packSize) return;
+
+  const pcs   = parseInt(pcsIn.value) || 0;
+  const units = Math.round((pcs / row._packSize) * 100) / 100;
+
+  if (pcs > 0) {
+    result.textContent = `${units} ${row._pkg}`;
+    useBtn.style.display = 'inline-flex';
+  } else {
+    result.textContent = '—';
+    useBtn.style.display = 'none';
+  }
+}
+
+function usePcsResult() {
+  const row   = document.getElementById('pcsConverterRow');
+  const pcsIn = document.getElementById('pcsInput');
+  const qtyIn = document.getElementById('qtyInput');
+  if (!row || !row._packSize) return;
+  const pcs   = parseInt(pcsIn.value) || 0;
+  const units = Math.round((pcs / row._packSize) * 100) / 100;
+  if (units > 0) {
+    qtyIn.value = units;
+    qtyIn.focus();
+  }
 }
 
 function addLine() {
@@ -7279,7 +7356,7 @@ function addLine() {
   const qty = parseFloat(document.getElementById('qtyInput').value);
   if (!ca) return showToast('Select a customer','error');
   if (!pc) return showToast('Select a product','error');
-  if (!qty||qty<0.5) return showToast('Enter a valid quantity (min 0.5)','error');
+  if (!qty||qty<=0) return showToast('Enter a valid quantity','error');
   const priceInfo = PRICES[pc] || null;
   const unitPrice = priceInfo ? priceInfo.trade : 0;
   const totalRevenue = +(unitPrice * qty).toFixed(2);
