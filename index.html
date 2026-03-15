@@ -437,6 +437,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <button class="sys-menu-item" onclick="openDashSection('routes')">🗺️ By Route</button>
         <button class="sys-menu-item" onclick="openDashSection('revenue')">💰 Revenue</button>
         <button class="sys-menu-item" onclick="openDashSection('timing')">⏱️ Timing</button>
+        <button class="sys-menu-item" onclick="openDashSection('customer')">🏪 By Customer</button>
+        <button class="sys-menu-item" onclick="openDashSection('channel')">📡 By Channel</button>
         <button class="sys-menu-item" onclick="openDashSection('export')">⬇️ Export Excel</button>
       </div>
     </div>
@@ -863,6 +865,71 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       <div style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch;" id="timingLogWrap"></div>
     </div>
     </div>
+      <div id="dtCustomer" class="hidden">
+
+      <!-- Customer search — appears right after PERIOD -->
+      <div class="panel" style="margin-bottom:14px;">
+        <div class="panel-header"><h2>🏪 By Customer</h2></div>
+        <div class="panel-body" style="padding:14px 16px;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <input type="text" id="custSearchInput" oninput="renderCustomerTab()"
+              placeholder="🔍 Search by customer name or account number…"
+              autocomplete="off"
+              style="flex:1;min-width:220px;padding:10px 14px;border-radius:10px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.88rem;">
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('custSearchInput').value='';renderCustomerTab();">✕ Clear</button>
+            <span id="custActiveTag" style="font-size:.78rem;font-weight:700;color:var(--gold);"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts + table -->
+      <div class="panel" style="margin-bottom:18px;">
+        <div class="panel-header"><h2 id="custPanelTitle">Top Customers — Revenue</h2></div>
+        <div class="g2" style="padding:16px 16px 0;">
+          <div><div class="chart-box tall"><canvas id="cCustRev"></canvas></div></div>
+          <div><div class="chart-box tall"><canvas id="cCustLines"></canvas></div></div>
+        </div>
+        <div style="overflow-x:auto;" id="custTable"></div>
+      </div>
+
+      </div>
+
+      <div id="dtChannel" class="hidden">
+
+      <!-- Channel selector -->
+      <div class="panel" style="margin-bottom:14px;">
+        <div class="panel-header"><h2>📡 By Channel</h2></div>
+        <div class="panel-body" style="padding:14px 16px;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <div style="position:relative;flex:1;min-width:200px;max-width:360px;">
+              <input type="text" id="channelSearchInput"
+                placeholder="🔍 Type channel name… (e.g. NAIVAS, DISTRIBUTOR)"
+                oninput="filterChannelList()"
+                onfocus="showChannelList()"
+                autocomplete="off"
+                style="width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.88rem;">
+              <div id="channelDdList" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1.5px solid var(--bd);border-radius:10px;box-shadow:0 6px 20px var(--shadow);max-height:220px;overflow-y:auto;z-index:500;"></div>
+              <input type="hidden" id="channelSelected">
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="applyChannelFilter()">🔍 Apply</button>
+            <button class="btn btn-outline btn-sm" onclick="clearChannelFilter()">✕ All Channels</button>
+            <span id="channelActiveTag" style="font-size:.78rem;font-weight:700;color:var(--gold);"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="panel" style="margin-bottom:18px;">
+        <div class="panel-header"><h2 id="channelPanelTitle">All Channels — Revenue & Lines</h2></div>
+        <div class="g2" style="padding:16px 16px 0;">
+          <div><div class="chart-box tall"><canvas id="cChannelRev"></canvas></div></div>
+          <div><div class="chart-box tall"><canvas id="cChannelLines"></canvas></div></div>
+        </div>
+        <div style="overflow-x:auto;" id="channelTable"></div>
+      </div>
+
+      </div>
+
       <div id="dtExport" class="hidden">
       <!-- Filters -->
     <div class="panel" style="margin-bottom:18px;">
@@ -6714,18 +6781,27 @@ function openDashSection(tab) {
     overview:'📈 Overview', salesman:'👤 By Salesperson',
     products:'📦 By Product', daily:'📅 Daily Trend',
     routes:'🗺️ By Route', revenue:'💰 Revenue',
-    timing:'⏱️ Timing', export:'⬇️ Export Excel'
+    timing:'⏱️ Timing', customer:'🏪 By Customer',
+    channel:'📡 By Channel', export:'⬇️ Export Excel'
   };
   const titleEl = document.getElementById('systemPanelTitle');
   if (titleEl) titleEl.textContent = titles[tab] || tab;
   // Hide the header section for export tab
+  // For export: hide entire header; for channel/customer/salesman: hide KPIs + supervisor grid
+  const noHeader = ['export'];
+  const noKpis   = ['salesman','customer','channel'];
   const sysHeader = document.getElementById('systemPanelHeader');
-  if (sysHeader) sysHeader.style.display = tab === 'export' ? 'none' : '';
-  // Hide sv blocks for salesman tab (search panel replaces them)
+  if (sysHeader) sysHeader.style.display = noHeader.includes(tab) ? 'none' : '';
+
+  // Global KPI row (dKg, dLines etc.)
+  const globalKpis = document.querySelector('#systemPanelHeader .kpi-row');
+  if (globalKpis) globalKpis.style.display = noKpis.includes(tab) ? 'none' : '';
+
+  // Supervisor KPI block + grid
   const svKpi  = document.getElementById('svKpiBlock');
   const svGrid = document.getElementById('svGridBlock');
-  if (svKpi)  svKpi.style.display  = tab === 'salesman' ? 'none' : '';
-  if (svGrid) svGrid.style.display = tab === 'salesman' ? 'none' : '';
+  if (svKpi)  svKpi.style.display  = noKpis.includes(tab) ? 'none' : '';
+  if (svGrid) svGrid.style.display = noKpis.includes(tab) ? 'none' : '';
 
   // Switch the tab
   switchDashTab(tab, null);
@@ -6738,6 +6814,8 @@ function openDashSection(tab) {
 
   // Load data and render
   loadData();
+  // Pre-populate search lists for customer/channel tabs
+  if (tab === 'channel') setTimeout(() => filterChannelList(), 300);
 
   // Scroll to panel
   setTimeout(() => {
@@ -6799,7 +6877,7 @@ function switchDashTab(tab, btn) {
   activeDashTab = tab;
 
   // Show/hide dt panels
-  ['Overview','Salesman','Products','Daily','Routes','Revenue','Timing','Export'].forEach(t => {
+  ['Overview','Salesman','Products','Daily','Routes','Revenue','Timing','Customer','Channel','Export'].forEach(t => {
     const dtEl = document.getElementById('dt'+t);
     if (dtEl) dtEl.classList.toggle('hidden', t.toLowerCase() !== tab);
   });
@@ -6829,42 +6907,66 @@ function fmt(ts) { return ts ? new Date(ts).toLocaleDateString('en-KE',{day:'2-d
 
 // ═══════════ LOAD DATA ═══════════
 function loadData() {
+  // Show loading indicator on compCheckOrders
+  const oc = document.getElementById('compCheckOrders');
+  if (oc) { oc.textContent = '⏳ Orders: loading…'; oc.style.cssText='padding:10px 18px;border-radius:10px;font-size:.82rem;font-weight:600;background:#fef9ee;color:#C9941A;'; }
+
   return new Promise((resolve) => {
     const cb = 'cb_' + Date.now();
     const script = document.createElement('script');
-    window[cb] = function(result) {
+    let settled = false;
+
+    function finish(success, rows) {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
       delete window[cb];
-      script.remove();
-      try {
-        const rows = result.rows || [];
-        allData = rows.map(r => ({
-          timestamp:        r.timestamp,
-          salesman_payroll: r.salesman_payroll,
-          salesman_name:    r.salesman_name,
-          route:            r.route,
-          customer_acc:     r.customer_acc,
-          customer_name:    r.customer_name,
-          product_code:     r.product_code,
-          product_desc:     r.product_desc,
-          packaging:        r.packaging,
-          qty:              r.qty,
-          unit_wt:          r.unit_wt,
-          total_wt:         r.total_wt,
-          unit_price:       r.unit_price,
-          total_revenue:    r.total_revenue,
-        }));
-        applyFilter();
-        renderSupervisor();
-        renderDashboard();
-        // If Dashboard tab is active, refresh comparison status with new data
-        if (document.getElementById('viewComparison') &&
-            !document.getElementById('viewComparison').classList.contains('hidden')) {
-          renderComparisonStatus();
+      try { script.remove(); } catch(e) {}
+
+      if (success) {
+        try {
+          allData = rows.map(r => ({
+            timestamp:        r.timestamp,
+            salesman_payroll: String(r.salesman_payroll || ''),
+            salesman_name:    r.salesman_name,
+            route:            r.route,
+            customer_acc:     String(r.customer_acc || ''),
+            customer_name:    r.customer_name,
+            product_code:     String(r.product_code || ''),
+            product_desc:     r.product_desc,
+            packaging:        r.packaging,
+            qty:              parseFloat(r.qty) || 0,
+            unit_wt:          parseFloat(r.unit_wt) || 0,
+            total_wt:         parseFloat(r.total_wt) || 0,
+            unit_price:       parseFloat(r.unit_price) || 0,
+            total_revenue:    parseFloat(r.total_revenue) || 0,
+          }));
+          applyFilter();
+          renderSupervisor();
+          renderDashboard();
+          if (document.getElementById('viewComparison') &&
+              !document.getElementById('viewComparison').classList.contains('hidden')) {
+            renderComparisonStatus();
+          }
+          if (allData.length === 0) {
+            showToast('ℹ️ No orders found in sheet yet.', 'info');
+          }
+        } catch(e) {
+          showToast('⚠️ Could not parse data: ' + e.message, 'error');
         }
-      } catch(e) { showToast('⚠️ Could not parse data', 'error'); }
+      } else {
+        showToast('⚠️ Could not load data. Check GAS deployment is set to "Anyone".', 'error');
+        if (oc) { oc.textContent = '❌ Orders: failed to load'; oc.style.cssText='padding:10px 18px;border-radius:10px;font-size:.82rem;font-weight:600;background:#fdf0ef;color:#C0392B;'; }
+      }
       resolve();
-    };
-    script.onerror = () => { showToast('⚠️ Could not load data', 'error'); resolve(); };
+    }
+
+    window[cb] = (result) => finish(true, result.rows || []);
+    script.onerror  = () => finish(false, []);
+
+    // 15-second timeout
+    const timer = setTimeout(() => finish(false, []), 15000);
+
     script.src = GAS_URL + '?callback=' + cb;
     document.head.appendChild(script);
   });
@@ -7381,7 +7483,9 @@ function renderDashboard() {
   else if (activeDashTab==='products') renderProductsTab(data);
   else if (activeDashTab==='daily') renderDailyTab(data);
   else if (activeDashTab==='routes') renderRoutesTab();
-  else if (activeDashTab==='export') initExportTab();
+  else if (activeDashTab==='export')   initExportTab();
+  else if (activeDashTab==='customer') renderCustomerTab();
+  else if (activeDashTab==='channel')  renderChannelTab();
   else if (activeDashTab==='revenue') renderRevenueTab();
   else if (activeDashTab==='timing') renderTimingTab();
 }
@@ -8490,6 +8594,257 @@ function clearDashboard2Filters() {
   const to=document.getElementById('dbFilterTo');     if(to)   to.value=td;
   updateDbActiveFilters();
   renderDashboard2();
+}
+
+
+// ═══════════ BY CUSTOMER TAB ═══════════
+function renderCustomerTab() {
+  const q = (document.getElementById('custSearchInput')||{}).value || '';
+  const tag   = document.getElementById('custActiveTag');
+  const title = document.getElementById('custPanelTitle');
+  if (tag)   tag.textContent   = q ? `Searching: "${q}"` : '';
+  if (title) title.textContent = q ? `Customers matching "${q}"` : 'Top Customers — Revenue';
+  const data = filteredData.length ? filteredData : allData;
+  const fmtK = v => v>=1000000?'KES '+(v/1000000).toFixed(1)+'M':v>=1000?'KES '+(v/1000).toFixed(0)+'K':'KES '+Math.round(v).toLocaleString();
+
+  // Aggregate by customer
+  const CM = {};
+  data.forEach(r => {
+    const acc = r.customer_acc || '—';
+    const name = r.customer_name || acc;
+    if (q && !name.toLowerCase().includes(q.toLowerCase()) && !acc.includes(q)) return;
+    if (!CM[acc]) CM[acc] = { acc, name, lines:0, kg:0, rev:0 };
+    CM[acc].lines++;
+    CM[acc].kg   += parseFloat(r.total_wt) || 0;
+    CM[acc].rev  += parseFloat(r.total_revenue) || 0;
+  });
+
+  const rows = Object.values(CM).sort((a,b) => b.rev - a.rev);
+  const top15 = rows.slice(0, 15);
+
+  // Revenue chart
+  const cc = document.getElementById('cCustRev');
+  if (cc) {
+    if (charts['cCustRev']) { charts['cCustRev'].destroy(); delete charts['cCustRev']; }
+    charts['cCustRev'] = new Chart(cc.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: top15.map(r => r.name.slice(0,18)),
+        datasets: [{ label:'Revenue (KES)', data: top15.map(r=>Math.round(r.rev)),
+          backgroundColor:'#1A7A4A88', borderRadius:4 }]
+      },
+      options: { responsive:true, maintainAspectRatio:false, indexAxis:'y',
+        plugins:{ legend:{display:false}, title:{display:true,text:'Top 15 Customers — Revenue'} },
+        scales:{ x:{ ticks:{ callback: v=>v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v } } }
+      }
+    });
+  }
+
+  // Lines chart
+  const cl = document.getElementById('cCustLines');
+  if (cl) {
+    if (charts['cCustLines']) { charts['cCustLines'].destroy(); delete charts['cCustLines']; }
+    charts['cCustLines'] = new Chart(cl.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: top15.map(r => r.name.slice(0,18)),
+        datasets: [{ label:'Order Lines', data: top15.map(r=>r.lines),
+          backgroundColor:'#1A4A7A88', borderRadius:4 }]
+      },
+      options: { responsive:true, maintainAspectRatio:false, indexAxis:'y',
+        plugins:{ legend:{display:false}, title:{display:true,text:'Top 15 Customers — Lines'} }
+      }
+    });
+  }
+
+  // Table
+  const wrap = document.getElementById('custTable');
+  if (!wrap) return;
+  if (!rows.length) {
+    wrap.innerHTML='<div class="empty" style="padding:24px"><p>No orders found. Load data from Google Sheet first.</p></div>';
+    return;
+  }
+  wrap.innerHTML = `<table class="tbl"><thead><tr>
+    <th>#</th><th>Account</th><th>Customer</th><th>Lines</th><th>Total kg</th><th>Revenue</th>
+  </tr></thead><tbody>${rows.map((r,i)=>`<tr>
+    <td style="font-family:'DM Mono',monospace;color:var(--muted);font-size:.72rem">${i+1}</td>
+    <td><span class="badge">${r.acc}</span></td>
+    <td style="font-size:.82rem;font-weight:500">${r.name}</td>
+    <td style="font-family:'DM Mono',monospace">${r.lines.toLocaleString()}</td>
+    <td style="font-family:'DM Mono',monospace">${r.kg.toFixed(1)}</td>
+    <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:600">${fmtK(r.rev)}</td>
+  </tr>`).join('')}</tbody></table>
+  <div style="padding:8px 14px;background:var(--cream);border-top:1px solid var(--bd);font-size:.72rem;color:var(--muted);">${rows.length} customers</div>`;
+}
+
+// ═══════════ CHANNEL FILTER HELPERS ═══════════
+function getChannelList() {
+  const data = filteredData.length ? filteredData : allData;
+  const CUST_MAP = {};
+  if (typeof CUSTOMERS !== 'undefined') {
+    CUSTOMERS.forEach(c => { CUST_MAP[String(c.a).replace(/^0+/,'')] = c.ch || 'UNKNOWN'; });
+  }
+  const channels = new Set();
+  data.forEach(r => {
+    const acc = String(r.customer_acc||'').replace(/^0+/,'');
+    channels.add(CUST_MAP[acc] || 'UNKNOWN');
+  });
+  return [...channels].sort();
+}
+
+function showChannelList() {
+  filterChannelList();
+  document.getElementById('channelDdList').style.display = 'block';
+}
+
+function filterChannelList() {
+  const q   = (document.getElementById('channelSearchInput')||{}).value.toLowerCase();
+  const dd  = document.getElementById('channelDdList');
+  if (!dd) return;
+  const all = getChannelList();
+  const filtered = q ? all.filter(c => c.toLowerCase().includes(q)) : all;
+  const cur = (document.getElementById('channelSelected')||{}).value || '';
+
+  dd.innerHTML = '<div style="padding:7px 14px;font-size:.72rem;font-weight:700;color:var(--muted);letter-spacing:.06em;">CHANNELS</div>'
+    + ['', ...filtered].map(ch => {
+        const label = ch || 'All Channels';
+        const active = ch === cur;
+        return `<div onclick="selectChannel('${ch.replace(/'/g,"\'")}','${label.replace(/'/g,"\'")}')"
+          style="padding:9px 14px;cursor:pointer;font-size:.84rem;font-weight:${active?'700':'400'};
+          color:${active?'var(--gold)':'var(--text)'};transition:background .12s;"
+          onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+          ${active?'✓ ':''}${label}
+        </div>`;
+      }).join('');
+
+  // Close on outside click
+  setTimeout(() => {
+    document.addEventListener('click', function handler(e) {
+      const wrap = document.getElementById('channelDdList');
+      const inp  = document.getElementById('channelSearchInput');
+      if (wrap && inp && !wrap.contains(e.target) && e.target !== inp) {
+        wrap.style.display = 'none';
+        document.removeEventListener('click', handler);
+      }
+    });
+  }, 10);
+}
+
+function selectChannel(val, label) {
+  const inp = document.getElementById('channelSearchInput');
+  const hid = document.getElementById('channelSelected');
+  const dd  = document.getElementById('channelDdList');
+  if (inp) inp.value = val ? label : '';
+  if (hid) hid.value = val;
+  if (dd)  dd.style.display = 'none';
+  applyChannelFilter();
+}
+
+function applyChannelFilter() {
+  // Use hidden val if set by dropdown, else use typed text directly
+  const hid  = document.getElementById('channelSelected');
+  const inp  = document.getElementById('channelSearchInput');
+  let val = (hid && hid.value) ? hid.value : ((inp && inp.value.trim()) ? inp.value.trim().toUpperCase() : '');
+  // Sync hidden value
+  if (hid) hid.value = val;
+  const tag   = document.getElementById('channelActiveTag');
+  const title = document.getElementById('channelPanelTitle');
+  if (tag)   tag.textContent   = val ? `Showing: ${val}` : '';
+  if (title) title.textContent = val ? `${val} — Revenue & Lines` : 'All Channels — Revenue & Lines';
+  renderChannelTab();
+}
+
+function clearChannelFilter() {
+  const inp = document.getElementById('channelSearchInput');
+  const hid = document.getElementById('channelSelected');
+  const tag = document.getElementById('channelActiveTag');
+  const title = document.getElementById('channelPanelTitle');
+  if (inp)   inp.value   = '';
+  if (hid)   hid.value   = '';
+  if (tag)   tag.textContent  = '';
+  if (title) title.textContent = 'All Channels — Revenue & Lines';
+  renderChannelTab();
+}
+
+
+// ═══════════ BY CHANNEL TAB ═══════════
+function renderChannelTab() {
+  const selectedCh = (document.getElementById('channelSelected')||{}).value || '';
+  const baseData   = filteredData.length ? filteredData : allData;
+  const CUST_CH = {};
+  if (typeof CUSTOMERS !== 'undefined') {
+    CUSTOMERS.forEach(c => { CUST_CH[String(c.a).replace(/^0+/,'')] = (c.ch||'UNKNOWN').toUpperCase(); });
+  }
+  const selectedChUp = selectedCh.toUpperCase();
+  const data = selectedChUp
+    ? baseData.filter(r => {
+        const acc = String(r.customer_acc||'').replace(/^0+/,'');
+        const ch  = CUST_CH[acc] || 'UNKNOWN';
+        return ch.includes(selectedChUp) || selectedChUp.includes(ch);
+      })
+    : baseData;
+  const fmtK = v => v>=1000000?'KES '+(v/1000000).toFixed(1)+'M':v>=1000?'KES '+(v/1000).toFixed(0)+'K':'KES '+Math.round(v).toLocaleString();
+
+  // Look up channel from CUSTOMERS master data
+  const CH = {};
+  data.forEach(r => {
+    const acc = String(r.customer_acc||'').replace(/^0+/,'');
+    const ch = CUST_CH[acc] || 'UNKNOWN';
+    if (!CH[ch]) CH[ch] = { ch, lines:0, kg:0, rev:0, custs:new Set() };
+    CH[ch].lines++;
+    CH[ch].kg  += parseFloat(r.total_wt) || 0;
+    CH[ch].rev += parseFloat(r.total_revenue) || 0;
+    CH[ch].custs.add(acc);
+  });
+
+  const rows = Object.values(CH).sort((a,b) => b.rev - a.rev);
+  const COLORS = ['#1A7A4A','#C9941A','#1A4A7A','#C0392B','#6C3483','#16A085','#E67E22','#2980B9','#8E44AD','#117A65'];
+
+  // Revenue doughnut
+  const cr = document.getElementById('cChannelRev');
+  if (cr) {
+    if (charts['cChannelRev']) { charts['cChannelRev'].destroy(); delete charts['cChannelRev']; }
+    charts['cChannelRev'] = new Chart(cr.getContext('2d'), {
+      type: 'doughnut',
+      data: { labels: rows.map(r=>r.ch),
+        datasets:[{ data: rows.map(r=>Math.round(r.rev)),
+          backgroundColor: rows.map((_,i)=>COLORS[i%COLORS.length]) }] },
+      options: { responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{position:'right',labels:{font:{size:11}}},
+          title:{display:true,text:'Revenue by Channel'} } }
+    });
+  }
+
+  // Lines bar
+  const cl = document.getElementById('cChannelLines');
+  if (cl) {
+    if (charts['cChannelLines']) { charts['cChannelLines'].destroy(); delete charts['cChannelLines']; }
+    charts['cChannelLines'] = new Chart(cl.getContext('2d'), {
+      type: 'bar',
+      data: { labels: rows.map(r=>r.ch),
+        datasets:[{ label:'Order Lines', data: rows.map(r=>r.lines),
+          backgroundColor: rows.map((_,i)=>COLORS[i%COLORS.length]+'99'), borderRadius:4 }] },
+      options: { responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, title:{display:true,text:'Order Lines by Channel'} },
+        scales:{ x:{grid:{display:false}}, y:{beginAtZero:true} } }
+    });
+  }
+
+  // Table
+  const wrap = document.getElementById('channelTable');
+  if (!wrap) return;
+  if (!rows.length) { wrap.innerHTML='<div class="empty" style="padding:24px"><p>No data.</p></div>'; return; }
+  wrap.innerHTML = `<table class="tbl"><thead><tr>
+    <th>#</th><th>Channel</th><th>Customers</th><th>Order Lines</th><th>Total kg</th><th>Revenue</th>
+  </tr></thead><tbody>${rows.map((r,i)=>`<tr>
+    <td style="font-family:'DM Mono',monospace;color:var(--muted);font-size:.72rem">${i+1}</td>
+    <td style="font-weight:700;font-size:.85rem"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${COLORS[i%COLORS.length]};margin-right:6px;"></span>${r.ch}</td>
+    <td style="font-family:'DM Mono',monospace">${r.custs.size.toLocaleString()}</td>
+    <td style="font-family:'DM Mono',monospace">${r.lines.toLocaleString()}</td>
+    <td style="font-family:'DM Mono',monospace">${r.kg.toFixed(1)}</td>
+    <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:600">${fmtK(r.rev)}</td>
+  </tr>`).join('')}</tbody></table>
+  <div style="padding:8px 14px;background:var(--cream);border-top:1px solid var(--bd);font-size:.72rem;color:var(--muted);">${rows.length} channels</div>`;
 }
 
 
