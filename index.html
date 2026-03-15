@@ -534,7 +534,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <label>Quantity</label>
         <div class="qty-stepper">
           <button class="qty-btn" onclick="stepQty(-1)">−</button>
-          <input class="qty-input" type="number" id="qtyInput" value="1" min="1" step="1">
+          <input class="qty-input" type="number" id="qtyInput" value="1" min="0.5" step="0.5" inputmode="decimal">
           <button class="qty-btn" onclick="stepQty(1)">＋</button>
         </div>
       </div>
@@ -7200,8 +7200,8 @@ function goToStep1() {
 
 function stepQty(delta) {
   const inp = document.getElementById('qtyInput');
-  const val = (parseInt(inp.value) || 0) + delta;
-  inp.value = Math.max(1, val);
+  const val = Math.round(((parseFloat(inp.value) || 0) + (delta * 0.5)) * 10) / 10;
+  inp.value = Math.max(0.5, val);
 }
 
 function clearProd() {
@@ -7276,10 +7276,10 @@ function addLine() {
   const pd = document.getElementById('pDesc').value;
   const pk = document.getElementById('pPkg').value;
   const pw = parseFloat(document.getElementById('pWt').value)||0;
-  const qty = parseInt(document.getElementById('qtyInput').value);
+  const qty = parseFloat(document.getElementById('qtyInput').value);
   if (!ca) return showToast('Select a customer','error');
   if (!pc) return showToast('Select a product','error');
-  if (!qty||qty<1) return showToast('Enter a valid quantity','error');
+  if (!qty||qty<0.5) return showToast('Enter a valid quantity (min 0.5)','error');
   const priceInfo = PRICES[pc] || null;
   const unitPrice = priceInfo ? priceInfo.trade : 0;
   const totalRevenue = +(unitPrice * qty).toFixed(2);
@@ -7536,7 +7536,7 @@ function getProdData(data) {
   const g = {};
   data.forEach(r => {
     const k=r.product_code; if(!g[k]) g[k]={code:k,desc:r.product_desc||k,qty:0,kg:0,cat:''};
-    g[k].qty+=parseInt(r.qty)||0; g[k].kg+=parseFloat(r.total_wt)||0;
+    g[k].qty+=parseFloat(r.qty)||0; g[k].kg+=parseFloat(r.total_wt)||0;
     const f=PRODUCTS.find(p=>p.c===k); if(f) g[k].cat=f.k;
   });
   return Object.values(g).sort((a,b)=>b.kg-a.kg);
@@ -7580,7 +7580,7 @@ function renderDashboard() {
   const tw = data.reduce((s,r)=>s+(parseFloat(r.total_wt)||0),0);
   const uc = new Set(data.map(r=>r.customer_acc)).size;
   const usm = new Set(data.map(r=>r.salesman_payroll)).size;
-  const pq = {}; data.forEach(r=>{pq[r.product_desc]=(pq[r.product_desc]||0)+(parseInt(r.qty)||0);});
+  const pq = {}; data.forEach(r=>{pq[r.product_desc]=(pq[r.product_desc]||0)+(parseFloat(r.qty)||0);});
   const tp = Object.entries(pq).sort((a,b)=>b[1]-a[1])[0];
   const dashTrade = data.reduce((s,r)=>s+(parseFloat(r.total_revenue)||0),0);
 
@@ -7888,7 +7888,7 @@ function renderRoutesTab() {
   routeData.forEach(r => {
     const k = r.product_code||'?';
     if (!prodRank[k]) prodRank[k] = { code:k, desc:r.product_desc||k, qty:0, kg:0 };
-    prodRank[k].qty += parseInt(r.qty)||0;
+    prodRank[k].qty += parseFloat(r.qty)||0;
     prodRank[k].kg += parseFloat(r.total_wt)||0;
   });
   const prodRankList = Object.values(prodRank).sort((a,b)=>b.kg-a.kg);
@@ -8136,7 +8136,7 @@ function downloadExcel() {
   exportData.forEach(r => {
     const k = r.product_code||'?';
     if (!prodMap[k]) prodMap[k] = {desc:r.product_desc||k, code:k, qty:0, kg:0, rev:0};
-    prodMap[k].qty += parseInt(r.qty)||0;
+    prodMap[k].qty += parseFloat(r.qty)||0;
     prodMap[k].kg  += parseFloat(r.total_wt)||0;
     prodMap[k].rev += parseFloat(r.total_revenue)||0;
   });
@@ -9308,7 +9308,7 @@ function buildComparison() {
   actualsData.forEach(r=>{ const a=String(r.cust_acc||'').replace(/^0+/,''); if(!AC[a]) AC[a]={name:r.cust_name,lines:0,revenue:0}; AC[a].lines++; AC[a].revenue+=r.total_sales; });
   // Orders by product
   const OP={};
-  ordersToUse.forEach(r=>{ const k=r.product_code; if(!k) return; if(!OP[k]) OP[k]={code:k,desc:r.product_desc||k,ord_qty:0,ord_rev:0}; OP[k].ord_qty+=parseInt(r.qty)||0; OP[k].ord_rev+=parseFloat(r.total_revenue)||0; });
+  ordersToUse.forEach(r=>{ const k=r.product_code; if(!k) return; if(!OP[k]) OP[k]={code:k,desc:r.product_desc||k,ord_qty:0,ord_rev:0}; OP[k].ord_qty+=parseFloat(r.qty)||0; OP[k].ord_rev+=parseFloat(r.total_revenue)||0; });
   // Actuals by product (using old_code for matching)
   const AP={};
   actualsData.forEach(r=>{ const k=r.old_code||r.sap_code; if(!AP[k]) AP[k]={code:k,sap:r.sap_code,desc:r.desc,category:r.category,act_qty:0,act_rev:0}; AP[k].act_qty+=r.qty; AP[k].act_rev+=r.total_sales; });
