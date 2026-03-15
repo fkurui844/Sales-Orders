@@ -8703,7 +8703,6 @@ function renderCompSmTable() {
         <th>#</th>
         <th>Payroll</th>
         <th>Salesperson</th>
-        <th>Order Lines</th>
         <th style="color:var(--blue-light);font-size:.7rem;">ORDER VALUE (KES)</th>
         ${actHeaders}
       </tr></thead>
@@ -8720,7 +8719,6 @@ function renderCompSmTable() {
           <td style="font-family:'DM Mono',monospace;color:var(--muted);font-size:.72rem">${i+1}</td>
           <td><span class="badge">${r.payroll}</span></td>
           <td style="font-weight:600;font-size:.82rem">${r.name}</td>
-          <td style="font-family:'DM Mono',monospace">${r.ord_lines.toLocaleString()}</td>
           <td style="font-family:'DM Mono',monospace;color:var(--blue-light);">${fmtK(r.ord_rev)}</td>
           ${actCells}
         </tr>`;
