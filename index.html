@@ -402,7 +402,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 <body>
 
 <header>
-  <div class="logo">Sales<span>Order</span></div>
+  <div class="logo" onclick="openDevPanel()" style="cursor:pointer;" title="Developer Settings">Sales<span>Order</span></div>
   <div class="header-right">
     <span class="header-badge" id="headerBadge">0</span>
     <button id="themeToggleBtn" onclick="toggleTheme()"
@@ -1369,6 +1369,63 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
 
 <div class="toast" id="toast"></div>
+<!-- ═══════════ DEVELOPER PANEL ═══════════ -->
+<div id="devOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100000;backdrop-filter:blur(4px);" onclick="closeDevPanel(event)">
+  <div id="devPanel" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(92vw,820px);max-height:90vh;display:flex;flex-direction:column;background:var(--surface);border-radius:20px;box-shadow:0 24px 80px rgba(0,0,0,.4);overflow:hidden;">
+
+    <!-- Lock screen -->
+    <div id="devLock" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:52px 32px;gap:20px;">
+      <div style="font-size:2.4rem;">🔐</div>
+      <div style="font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--dark);">Developer Settings</div>
+      <div style="font-size:.82rem;color:var(--muted);">Enter password to access master data management</div>
+      <input type="password" id="devPwInput" placeholder="Password…"
+        onkeydown="if(event.key==='Enter')checkDevPw()"
+        style="width:100%;max-width:280px;padding:12px 16px;border-radius:10px;border:1.5px solid var(--bd);background:var(--bg);color:var(--text);font-size:1rem;text-align:center;letter-spacing:.2em;">
+      <div id="devPwError" style="color:#C0392B;font-size:.78rem;display:none;">Incorrect password</div>
+      <button onclick="checkDevPw()" style="padding:11px 32px;background:var(--dark);color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer;">Unlock →</button>
+    </div>
+
+    <!-- Main panel (hidden until unlocked) -->
+    <div id="devMain" style="display:none;flex-direction:column;height:100%;">
+      <!-- Header -->
+      <div style="display:flex;align-items:center;padding:18px 24px;border-bottom:1px solid var(--bd);background:var(--dark);color:#fff;">
+        <span style="font-family:'DM Serif Display',serif;font-size:1.1rem;">⚙️ Developer Settings</span>
+        <span style="margin-left:8px;font-size:.7rem;background:rgba(255,255,255,.15);padding:2px 8px;border-radius:20px;">v2</span>
+        <button onclick="closeDevPanel()" style="margin-left:auto;background:rgba(255,255,255,.15);border:none;color:#fff;width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:1rem;">✕</button>
+      </div>
+      <!-- Tabs -->
+      <div style="display:flex;border-bottom:1px solid var(--bd);background:var(--cream);">
+        <button class="dev-tab active" onclick="switchDevTab('salesmen',this)">👤 Salespeople</button>
+        <button class="dev-tab" onclick="switchDevTab('routes',this)">🗺️ Routes</button>
+        <button class="dev-tab" onclick="switchDevTab('products',this)">📦 Products</button>
+        <button class="dev-tab" onclick="switchDevTab('customers',this)">🏪 Customers</button>
+      </div>
+      <!-- Tab content -->
+      <div style="flex:1;overflow-y:auto;padding:18px 24px;" id="devContent"></div>
+      <!-- Footer -->
+      <div style="padding:14px 24px;border-top:1px solid var(--bd);display:flex;gap:10px;align-items:center;background:var(--cream);">
+        <button onclick="saveDevChanges()" style="padding:10px 28px;background:#1A7A4A;color:#fff;border:none;border-radius:10px;font-size:.88rem;font-weight:600;cursor:pointer;">💾 Save & Apply Changes</button>
+        <button onclick="exportDevCode()" style="padding:10px 18px;background:var(--surface);color:var(--text);border:1.5px solid var(--bd);border-radius:10px;font-size:.82rem;cursor:pointer;">📋 Copy Code</button>
+        <span id="devSaveMsg" style="font-size:.78rem;color:#1A7A4A;margin-left:8px;"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.dev-tab{padding:10px 18px;border:none;background:transparent;cursor:pointer;font-size:.82rem;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;transition:all .15s;font-family:'DM Sans',sans-serif;}
+.dev-tab.active,.dev-tab:hover{color:var(--dark);border-bottom-color:var(--gold);}
+.dev-tab.active{font-weight:700;color:var(--gold);}
+.dev-row{display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--bd);}
+.dev-row:last-child{border:none;}
+.dev-inp{flex:1;padding:7px 10px;border:1.5px solid var(--bd);border-radius:8px;font-size:.82rem;background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif;}
+.dev-inp:focus{outline:none;border-color:var(--gold);}
+.dev-del{background:#fdf0ef;border:none;color:#C0392B;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:.9rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.dev-add{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:2px dashed var(--bd);}
+.dev-section-title{font-size:.7rem;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:12px;}
+.dev-badge{font-size:.7rem;background:var(--surface2);color:var(--muted);padding:2px 7px;border-radius:10px;margin-left:4px;}
+</style>
+
 <div id="channelDdList" style="display:none;position:fixed;background:var(--surface);border:1.5px solid var(--bd);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:220px;overflow-y:auto;z-index:99999;min-width:220px;"></div>
 
 <script>
@@ -9911,6 +9968,289 @@ function showToast(msg, type='success') {
   t.textContent = msg; t.className = `toast show ${type}`;
   setTimeout(()=>t.classList.remove('show'), 4000);
 }
+// ═══════════ DEVELOPER PANEL ═══════════
+const DEV_PASSWORD = 'Festoo';
+let devTab = 'salesmen';
+let devUnlocked = false;
+
+// Working copies — edited in panel, applied on save
+let devSalesmen = [];
+let devRoutes   = [];
+let devProducts = [];
+let devCustomers = [];
+
+function openDevPanel() {
+  devSalesmen  = SALESMEN.map(s => ({...s}));
+  devRoutes    = [...ROUTES];
+  devProducts  = PRODUCTS.map(p => ({...p}));
+  devCustomers = CUSTOMERS.map(c => ({...c}));
+
+  const overlay = document.getElementById('devOverlay');
+  overlay.style.display = 'block';
+  if (!devUnlocked) {
+    document.getElementById('devLock').style.display = 'flex';
+    document.getElementById('devMain').style.display = 'none';
+    setTimeout(() => document.getElementById('devPwInput').focus(), 100);
+  } else {
+    renderDevTab();
+  }
+}
+
+function closeDevPanel(e) {
+  if (e && e.target !== document.getElementById('devOverlay')) return;
+  document.getElementById('devOverlay').style.display = 'none';
+}
+
+function checkDevPw() {
+  const pw = document.getElementById('devPwInput').value;
+  if (pw === DEV_PASSWORD) {
+    devUnlocked = true;
+    document.getElementById('devLock').style.display = 'none';
+    document.getElementById('devMain').style.display = 'flex';
+    document.getElementById('devPwInput').value = '';
+    document.getElementById('devPwError').style.display = 'none';
+    renderDevTab();
+  } else {
+    document.getElementById('devPwError').style.display = 'block';
+    document.getElementById('devPwInput').value = '';
+    document.getElementById('devPwInput').focus();
+  }
+}
+
+function switchDevTab(tab, btn) {
+  devTab = tab;
+  document.querySelectorAll('.dev-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderDevTab();
+}
+
+function renderDevTab() {
+  const c = document.getElementById('devContent');
+  if (!c) return;
+  if (devTab === 'salesmen')  renderDevSalesmen(c);
+  else if (devTab === 'routes')   renderDevRoutes(c);
+  else if (devTab === 'products') renderDevProducts(c);
+  else if (devTab === 'customers') renderDevCustomers(c);
+}
+
+// ── SALESMEN ──
+function renderDevSalesmen(c) {
+  c.innerHTML = `
+    <div class="dev-section-title">Salespeople <span class="dev-badge">${devSalesmen.length}</span></div>
+    <div id="devSmList">
+      ${devSalesmen.map((s,i) => `
+        <div class="dev-row">
+          <input class="dev-inp" style="max-width:110px;" value="${s.p}" placeholder="Payroll" oninput="devSalesmen[${i}].p=this.value">
+          <input class="dev-inp" value="${s.n}" placeholder="Full Name" oninput="devSalesmen[${i}].n=this.value">
+          <button class="dev-del" onclick="devSalesmen.splice(${i},1);renderDevTab()">🗑</button>
+        </div>`).join('')}
+    </div>
+    <div class="dev-add">
+      <input class="dev-inp" style="max-width:110px;" id="newSmP" placeholder="Payroll #">
+      <input class="dev-inp" id="newSmN" placeholder="Full Name">
+      <button onclick="devAddSalesman()" style="padding:7px 14px;background:var(--dark);color:#fff;border:none;border-radius:8px;font-size:.82rem;cursor:pointer;white-space:nowrap;">+ Add</button>
+    </div>`;
+}
+function devAddSalesman() {
+  const p = document.getElementById('newSmP').value.trim();
+  const n = document.getElementById('newSmN').value.trim();
+  if (!p||!n) return showToast('Enter payroll and name','error');
+  if (devSalesmen.find(s=>s.p===p)) return showToast('Payroll already exists','error');
+  devSalesmen.push({p,n});
+  renderDevTab();
+  showToast(`Added ${n}`, 'success');
+}
+
+// ── ROUTES ──
+function renderDevRoutes(c) {
+  c.innerHTML = `
+    <div class="dev-section-title">Routes <span class="dev-badge">${devRoutes.length}</span></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:14px;">
+      ${devRoutes.map((r,i) => `
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input class="dev-inp" value="${r}" oninput="devRoutes[${i}]=this.value">
+          <button class="dev-del" onclick="devRoutes.splice(${i},1);renderDevTab()">🗑</button>
+        </div>`).join('')}
+    </div>
+    <div class="dev-add">
+      <input class="dev-inp" id="newRoute" placeholder="New route name (e.g. NAKURU GT)">
+      <button onclick="devAddRoute()" style="padding:7px 14px;background:var(--dark);color:#fff;border:none;border-radius:8px;font-size:.82rem;cursor:pointer;white-space:nowrap;">+ Add</button>
+    </div>`;
+}
+function devAddRoute() {
+  const r = document.getElementById('newRoute').value.trim().toUpperCase();
+  if (!r) return;
+  if (devRoutes.includes(r)) return showToast('Route already exists','error');
+  devRoutes.push(r);
+  renderDevTab();
+  showToast(`Added route: ${r}`, 'success');
+}
+
+// ── PRODUCTS ──
+function renderDevProducts(c) {
+  const cats = [...new Set(devProducts.map(p=>p.k))].sort();
+  c.innerHTML = `
+    <div class="dev-section-title">Products <span class="dev-badge">${devProducts.length}</span></div>
+    ${cats.map(cat => `
+      <div style="margin-bottom:16px;">
+        <div style="font-size:.72rem;font-weight:700;color:var(--gold);letter-spacing:.06em;margin-bottom:6px;">${cat}</div>
+        ${devProducts.filter(p=>p.k===cat).map((p,_) => {
+          const i = devProducts.indexOf(p);
+          return `<div class="dev-row" style="flex-wrap:wrap;gap:6px;">
+            <input class="dev-inp" style="max-width:70px;" value="${p.c}" placeholder="Code" oninput="devProducts[${i}].c=this.value">
+            <input class="dev-inp" style="flex:2;min-width:180px;" value="${p.d}" placeholder="Description" oninput="devProducts[${i}].d=this.value">
+            <input class="dev-inp" style="max-width:80px;" value="${p.w}" placeholder="kg" type="number" step="0.1" oninput="devProducts[${i}].w=parseFloat(this.value)||0">
+            <input class="dev-inp" style="max-width:90px;" value="${p.p||0}" placeholder="Price" type="number" oninput="devProducts[${i}].p=parseFloat(this.value)||0">
+            <button class="dev-del" onclick="devProducts.splice(${i},1);renderDevTab()">🗑</button>
+          </div>`;
+        }).join('')}
+      </div>`).join('')}
+    <div class="dev-add" style="flex-wrap:wrap;">
+      <input class="dev-inp" style="max-width:70px;" id="newProdC" placeholder="Code">
+      <input class="dev-inp" style="flex:2;min-width:160px;" id="newProdD" placeholder="Description">
+      <input class="dev-inp" style="max-width:80px;" id="newProdK" placeholder="Category">
+      <input class="dev-inp" style="max-width:70px;" id="newProdW" placeholder="kg" type="number" step="0.1">
+      <input class="dev-inp" style="max-width:90px;" id="newProdP" placeholder="Price" type="number">
+      <button onclick="devAddProduct()" style="padding:7px 14px;background:var(--dark);color:#fff;border:none;border-radius:8px;font-size:.82rem;cursor:pointer;white-space:nowrap;">+ Add</button>
+    </div>`;
+}
+function devAddProduct() {
+  const c = document.getElementById('newProdC').value.trim();
+  const d = document.getElementById('newProdD').value.trim();
+  const k = document.getElementById('newProdK').value.trim().toUpperCase();
+  const w = parseFloat(document.getElementById('newProdW').value)||0;
+  const p = parseFloat(document.getElementById('newProdP').value)||0;
+  if (!c||!d||!k) return showToast('Enter code, description and category','error');
+  if (devProducts.find(x=>x.c===c)) return showToast('Product code already exists','error');
+  devProducts.push({c,d,k,w,p,pk:'Cartons'});
+  renderDevTab();
+  showToast(`Added: ${d}`, 'success');
+}
+
+// ── CUSTOMERS ──
+function renderDevCustomers(c) {
+  const channels = [...new Set(devCustomers.map(x=>x.ch||'OTHER'))].sort();
+  c.innerHTML = `
+    <div class="dev-section-title">Customers / Outlets <span class="dev-badge">${devCustomers.length}</span></div>
+    <div style="margin-bottom:12px;">
+      <input type="text" id="devCustSearch" placeholder="🔍 Search customer…" oninput="renderDevCustomers(document.getElementById('devContent'))"
+        style="width:100%;padding:8px 12px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.82rem;">
+    </div>
+    ${(() => {
+      const q = (document.getElementById('devCustSearch')?.value||'').toLowerCase();
+      const filtered = q ? devCustomers.filter(x => x.n.toLowerCase().includes(q)||x.a.includes(q)) : devCustomers;
+      return channels.map(ch => {
+        const rows = filtered.filter(x=>(x.ch||'OTHER')===ch);
+        if (!rows.length) return '';
+        return `<div style="margin-bottom:14px;">
+          <div style="font-size:.72rem;font-weight:700;color:var(--gold);letter-spacing:.06em;margin-bottom:6px;">${ch} (${rows.length})</div>
+          ${rows.map(x => {
+            const i = devCustomers.indexOf(x);
+            return `<div class="dev-row">
+              <input class="dev-inp" style="max-width:90px;" value="${x.a}" placeholder="Acc" oninput="devCustomers[${i}].a=this.value">
+              <input class="dev-inp" style="flex:2;" value="${x.n}" placeholder="Name" oninput="devCustomers[${i}].n=this.value">
+              <input class="dev-inp" style="max-width:110px;" value="${x.ch||''}" placeholder="Channel" oninput="devCustomers[${i}].ch=this.value.toUpperCase()">
+              <button class="dev-del" onclick="devCustomers.splice(${i},1);renderDevTab()">🗑</button>
+            </div>`;
+          }).join('')}
+        </div>`;
+      }).join('');
+    })()}
+    <div class="dev-add" style="flex-wrap:wrap;">
+      <input class="dev-inp" style="max-width:90px;" id="newCustA" placeholder="Acc #">
+      <input class="dev-inp" style="flex:2;min-width:160px;" id="newCustN" placeholder="Customer Name">
+      <input class="dev-inp" style="max-width:110px;" id="newCustCh" placeholder="Channel">
+      <button onclick="devAddCustomer()" style="padding:7px 14px;background:var(--dark);color:#fff;border:none;border-radius:8px;font-size:.82rem;cursor:pointer;white-space:nowrap;">+ Add</button>
+    </div>`;
+}
+function devAddCustomer() {
+  const a  = document.getElementById('newCustA').value.trim();
+  const n  = document.getElementById('newCustN').value.trim();
+  const ch = document.getElementById('newCustCh').value.trim().toUpperCase();
+  if (!a||!n) return showToast('Enter account and name','error');
+  if (devCustomers.find(x=>x.a===a)) return showToast('Account already exists','error');
+  devCustomers.push({a,n,ch,loc:''});
+  renderDevTab();
+  showToast(`Added: ${n}`, 'success');
+}
+
+// ── SAVE & APPLY ──
+function saveDevChanges() {
+  // Apply to live arrays
+  SALESMEN.length = 0; devSalesmen.forEach(s => SALESMEN.push(s));
+  ROUTES.length   = 0; devRoutes.forEach(r => ROUTES.push(r));
+  PRODUCTS.length = 0; devProducts.forEach(p => PRODUCTS.push(p));
+  CUSTOMERS.length = 0; devCustomers.forEach(c => CUSTOMERS.push(c));
+
+  // Rebuild PRICES from products
+  devProducts.forEach(p => { if (p.p) PRICES[p.c] = { trade: p.p, unit: 'per carton' }; });
+
+  // Refresh all dropdowns that depend on master data
+  rebuildDropdowns();
+
+  // Show save message
+  const msg = document.getElementById('devSaveMsg');
+  if (msg) { msg.textContent = '✅ Changes applied!'; setTimeout(()=>msg.textContent='', 3000); }
+
+  showToast('✅ Master data updated and applied', 'success');
+}
+
+function rebuildDropdowns() {
+  // Route select in order form
+  const rs = document.getElementById('routeSelect');
+  if (rs) rs.value = '';
+  const ri = document.getElementById('routeSearch');
+  if (ri) ri.value = '';
+
+  // Dashboard filter dropdowns
+  initDashFilterDropdowns();
+
+  // Re-init export dropdowns
+  expLists = {};
+  initExpDropdowns();
+
+  // Reload data to refresh dashboards
+  if (typeof loadData === 'function') loadData();
+}
+
+// ── EXPORT CODE (for updating the HTML file) ──
+function exportDevCode() {
+  const smCode   = JSON.stringify(devSalesmen).replace(/},{/g,'},
+  {');
+  const rtCode   = JSON.stringify(devRoutes).replace(/,/g,',
+  ');
+  const prodCode = JSON.stringify(devProducts).replace(/},{/g,'},
+  {');
+  const custCode = JSON.stringify(devCustomers.slice(0,10)).replace(/},{/g,'},
+  {');
+
+  const code = `// ── SALESMEN ──
+const SALESMEN = ${smCode};
+
+// ── ROUTES ──
+const ROUTES = ${rtCode};
+
+// ── PRODUCTS (first product shown as sample) ──
+// Full list: ${devProducts.length} products
+// Replace the PRODUCTS array in your HTML with the updated version from Dev Panel.
+
+// Tip: Save changes then download the HTML from your browser (Ctrl+S)
+// to capture the updated master data permanently.`;
+
+  navigator.clipboard.writeText(code).then(() => {
+    showToast('📋 Code copied to clipboard!', 'success');
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = code;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('📋 Code copied!', 'success');
+  });
+}
+
 </script>
 </body>
 </html>
