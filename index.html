@@ -571,19 +571,47 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
     <div style="background:var(--surface);border:1px solid var(--bd);border-top:none;border-radius:0 0 12px 12px;padding:0 0 8px;overflow:visible;">
 
       <div id="systemPanelHeader">
-      <!-- Date filter -->
+      <!-- Dashboard filter bar -->
       <div style="padding:14px 16px;border-bottom:1px solid var(--bd);">
-        <div class="date-strip">
-          <span style="font-size:.72rem;font-weight:600;color:var(--muted);">PERIOD:</span>
-          <button class="fbt" onclick="setFilter('today',this)">Today</button>
-          <button class="fbt" onclick="setFilter('week',this)">This Week</button>
-          <button class="fbt" onclick="setFilter('month',this)">This Month</button>
-          <button class="fbt active" onclick="setFilter('all',this)">All Time</button>
-          <span style="color:var(--border);margin:0 4px;">|</span>
-          <input type="date" id="dfrom" onchange="setFilter('custom',null)" style="width:130px;">
-          <span style="font-size:.75rem;color:var(--muted);">to</span>
-          <input type="date" id="dto" onchange="setFilter('custom',null)" style="width:130px;">
-          <button class="btn btn-primary btn-sm" onclick="loadData()">🔄</button>
+        <div class="exp-grid" style="margin-bottom:12px;">
+          <div class="form-group">
+            <label>Date From</label>
+            <input type="date" id="dfrom" onchange="applyDashFilter()">
+          </div>
+          <div class="form-group">
+            <label>Date To</label>
+            <input type="date" id="dto" onchange="applyDashFilter()">
+          </div>
+          <div class="form-group">
+            <label>Salesperson</label>
+            <select id="dashFilterSm" onchange="applyDashFilter()">
+              <option value="">All Salespeople</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Route</label>
+            <select id="dashFilterRoute" onchange="applyDashFilter()">
+              <option value="">All Routes</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Product Category</label>
+            <select id="dashFilterCat" onchange="applyDashFilter()">
+              <option value="">All Categories</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Channel</label>
+            <select id="dashFilterChannel" onchange="applyDashFilter()">
+              <option value="">All Channels</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="applyDashFilter()">🔍 Apply Filter</button>
+          <button class="btn btn-outline btn-sm" onclick="clearDashFilter()">✕ Clear</button>
+          <button class="btn btn-outline btn-sm" onclick="loadData()">🔄 Refresh</button>
+          <span id="dashFilterCount" style="font-size:.8rem;color:var(--muted);margin-left:4px;"></span>
         </div>
       </div>
 
@@ -6816,7 +6844,8 @@ function openDashSection(tab) {
 
   // Load data and render
   loadData();
-  // Pre-populate search lists for customer/channel tabs
+  // Init filter dropdowns and pre-populate search lists
+  initDashFilterDropdowns();
   if (tab === 'channel') setTimeout(() => filterChannelList(), 300);
 
   // Scroll to panel
@@ -6887,6 +6916,90 @@ function switchDashTab(tab, btn) {
 }
 
 // ═══════════ DATE FILTER ═══════════
+function initDashFilterDropdowns() {
+  const el = id => document.getElementById(id);
+  const sm  = el('dashFilterSm');
+  const rt  = el('dashFilterRoute');
+  const cat = el('dashFilterCat');
+  const ch  = el('dashFilterChannel');
+  if (!sm || sm.options.length > 1) return; // already populated
+
+  const smSorted = [...SALESMEN].sort((a,b)=>a.n.localeCompare(b.n));
+  smSorted.forEach(s => {
+    const o=document.createElement('option'); o.value=s.p; o.textContent=`${s.n} (${s.p})`; sm.appendChild(o);
+  });
+  ROUTES.forEach(r => {
+    const o=document.createElement('option'); o.value=r; o.textContent=r; rt.appendChild(o);
+  });
+  const cats = [...new Set(PRODUCTS.map(p=>p.k))].sort();
+  cats.forEach(c => { const o=document.createElement('option'); o.value=c; o.textContent=c; cat.appendChild(o); });
+
+  // Channels from CUSTOMERS
+  if (typeof CUSTOMERS !== 'undefined') {
+    const channels = [...new Set(CUSTOMERS.map(c=>c.ch).filter(Boolean))].sort();
+    channels.forEach(c => { const o=document.createElement('option'); o.value=c; o.textContent=c; ch.appendChild(o); });
+  }
+
+  // Default dates
+  const now=new Date(), td=now.toISOString().split('T')[0];
+  if(el('dfrom')&&!el('dfrom').value) el('dfrom').value='2020-01-01';
+  if(el('dto')&&!el('dto').value)     el('dto').value=td;
+}
+
+function applyDashFilter() {
+  const el = id => document.getElementById(id);
+  const from = new Date((el('dfrom').value||'2020-01-01')+'T00:00:00');
+  const to   = new Date((el('dto').value||new Date().toISOString().split('T')[0])+'T23:59:59');
+  const sm   = (el('dashFilterSm')||{}).value   || '';
+  const rt   = (el('dashFilterRoute')||{}).value || '';
+  const cat  = (el('dashFilterCat')||{}).value   || '';
+  const ch   = (el('dashFilterChannel')||{}).value || '';
+
+  const CUST_MAP = {};
+  if (typeof CUSTOMERS !== 'undefined') {
+    CUSTOMERS.forEach(c => { CUST_MAP[String(c.a).replace(/^0+/,'')] = (c.ch||'').toUpperCase(); });
+  }
+
+  filteredData = allData.filter(r => {
+    const d = new Date(r.timestamp);
+    if (d < from || d > to) return false;
+    if (sm  && r.salesman_payroll !== sm) return false;
+    if (rt  && r.route !== rt)            return false;
+    if (cat) {
+      const prod = PRODUCTS.find(p=>p.c===String(r.product_code||''));
+      if (!prod || prod.k !== cat) return false;
+    }
+    if (ch) {
+      const acc = String(r.customer_acc||'').replace(/^0+/,'');
+      if ((CUST_MAP[acc]||'') !== ch.toUpperCase()) return false;
+    }
+    return true;
+  });
+
+  // Update count badge
+  const countEl = document.getElementById('dashFilterCount');
+  if (countEl) countEl.textContent = `${filteredData.length.toLocaleString()} rows matched`;
+
+  renderSupervisor();
+  renderDashboard();
+}
+
+function clearDashFilter() {
+  const el = id => document.getElementById(id);
+  const now=new Date(), td=now.toISOString().split('T')[0];
+  if(el('dfrom'))         el('dfrom').value='2020-01-01';
+  if(el('dto'))           el('dto').value=td;
+  if(el('dashFilterSm'))      el('dashFilterSm').value='';
+  if(el('dashFilterRoute'))   el('dashFilterRoute').value='';
+  if(el('dashFilterCat'))     el('dashFilterCat').value='';
+  if(el('dashFilterChannel')) el('dashFilterChannel').value='';
+  const countEl = el('dashFilterCount');
+  if (countEl) countEl.textContent='';
+  filteredData = [...allData];
+  renderSupervisor();
+  renderDashboard();
+}
+
 function setFilter(type, btn) {
   document.querySelectorAll('.fbt').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
