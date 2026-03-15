@@ -251,6 +251,31 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 .theme-opt.active { font-weight: 700; color: var(--gold); }
 
 
+/* ── Dashboard searchable filters ── */
+.db-dd-wrap { position: relative; }
+.db-dd-list {
+  display: none; position: absolute; top: calc(100% + 2px); left: 0; right: 0;
+  background: var(--surface); border: 1.5px solid var(--bd); border-radius: 8px;
+  box-shadow: 0 6px 20px var(--shadow); max-height: 220px; overflow-y: auto;
+  z-index: 500; scrollbar-width: thin;
+}
+.db-dd-list.open { display: block; }
+.db-dd-item {
+  padding: 9px 14px; cursor: pointer; font-size: .82rem;
+  color: var(--text); transition: background .12s;
+}
+.db-dd-item:hover { background: var(--surface2); }
+.db-dd-item.selected { font-weight: 700; color: var(--gold); }
+.db-dd-clear {
+  padding: 7px 14px; cursor: pointer; font-size: .75rem;
+  color: var(--muted); border-top: 1px solid var(--bd);
+  transition: background .12s;
+}
+.db-dd-clear:hover { background: var(--surface2); }
+@media(max-width:640px) {
+  #viewComparison .panel-body > div:first-child { grid-template-columns: 1fr !important; }
+}
+
 /* ── System dropdown menu ── */
 .sys-menu-item {
   display: block; width: 100%; padding: 10px 16px;
@@ -1009,23 +1034,65 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
   <!-- ── Filter bar ── -->
   <div class="panel" style="margin-bottom:16px;">
-    <div class="panel-header" style="flex-wrap:wrap;gap:10px;">
-      <h2>📊 Dashboard</h2>
-      <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <select id="dbFilterSm" onchange="renderDashboard2()" style="font-size:.8rem;padding:6px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--surface);color:var(--text);min-height:34px;">
-          <option value="">All Salespeople</option>
-        </select>
-        <select id="dbFilterRoute" onchange="renderDashboard2()" style="font-size:.8rem;padding:6px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--surface);color:var(--text);min-height:34px;">
-          <option value="">All Routes</option>
-        </select>
-        <select id="dbFilterCat" onchange="renderDashboard2()" style="font-size:.8rem;padding:6px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--surface);color:var(--text);min-height:34px;">
-          <option value="">All Categories</option>
-        </select>
-        <input type="date" id="dbFilterFrom" onchange="renderDashboard2()" style="font-size:.8rem;padding:6px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--surface);color:var(--text);min-height:34px;">
-        <span style="font-size:.75rem;color:var(--muted);">to</span>
-        <input type="date" id="dbFilterTo" onchange="renderDashboard2()" style="font-size:.8rem;padding:6px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--surface);color:var(--text);min-height:34px;">
-        <button class="btn btn-primary btn-sm" onclick="renderDashboard2()">🔍 Apply</button>
-        <button class="btn btn-outline btn-sm" onclick="clearDashboard2Filters()">✕ Clear</button>
+    <div class="panel-header"><h2>📊 Dashboard</h2></div>
+    <div class="panel-body" style="padding:14px 16px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+
+        <!-- Salesperson search -->
+        <div class="form-group">
+          <label>Salesperson</label>
+          <div class="db-dd-wrap" id="dbSmWrap">
+            <input type="text" id="dbSmSearch" placeholder="🔍 Search name or payroll…"
+              oninput="dbFilterList('sm')" onfocus="dbShowDd('sm')"
+              autocomplete="off" style="width:100%;">
+            <input type="hidden" id="dbFilterSm">
+            <div class="db-dd-list" id="dbSmDd"></div>
+          </div>
+        </div>
+
+        <!-- Route search -->
+        <div class="form-group">
+          <label>Route</label>
+          <div class="db-dd-wrap" id="dbRouteWrap">
+            <input type="text" id="dbRouteSearch" placeholder="🔍 Search route…"
+              oninput="dbFilterList('route')" onfocus="dbShowDd('route')"
+              autocomplete="off" style="width:100%;">
+            <input type="hidden" id="dbFilterRoute">
+            <div class="db-dd-list" id="dbRouteDd"></div>
+          </div>
+        </div>
+
+        <!-- Category search -->
+        <div class="form-group">
+          <label>Category</label>
+          <div class="db-dd-wrap" id="dbCatWrap">
+            <input type="text" id="dbCatSearch" placeholder="🔍 Search category…"
+              oninput="dbFilterList('cat')" onfocus="dbShowDd('cat')"
+              autocomplete="off" style="width:100%;">
+            <input type="hidden" id="dbFilterCat">
+            <div class="db-dd-list" id="dbCatDd"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Date range + buttons -->
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div class="form-group" style="margin:0;">
+          <label>From</label>
+          <input type="date" id="dbFilterFrom" onchange="renderDashboard2()"
+            style="font-size:.82rem;padding:7px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);min-height:36px;">
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label>To</label>
+          <input type="date" id="dbFilterTo" onchange="renderDashboard2()"
+            style="font-size:.82rem;padding:7px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);min-height:36px;">
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-end;padding-bottom:2px;margin-top:18px;">
+          <button class="btn btn-primary btn-sm" onclick="renderDashboard2()">🔍 Apply</button>
+          <button class="btn btn-outline btn-sm" onclick="clearDashboard2Filters()">✕ Clear</button>
+        </div>
+        <div id="dbActiveFilters" style="font-size:.75rem;color:var(--gold);font-weight:600;margin-top:18px;"></div>
       </div>
     </div>
   </div>
@@ -1144,8 +1211,8 @@ const SALESMEN = [
 const PRODUCTS = [
   {c:"20",d:"GOLD CROWN TFA 1/2LT 1x 12",k:"TFA",w:6,pk:"Cartons",p:636},
   {c:"21",d:"KCC FRESH TFA 1x 12 x 1/2 lt",k:"TFA",w:6,pk:"Cartons",p:624},
-  {c:"83",d:"TAIFA TFA 1*12*500 ML",k:"TFA",w:6,pk:"Cartons",p:612},
-  {c:"29",d:"TAIFA TFA 1*24*250 ML",k:"TFA",w:6,pk:"Cartons",p:678.48},
+  {c:"83",d:"TAIFA TFA 1*12*500 ML",k:"FRESH MILK",w:6,pk:"Cartons",p:612},
+  {c:"29",d:"TAIFA TFA 1*24*250 ML",k:"FRESH MILK",w:6,pk:"Cartons",p:678.48},
   {c:"23",d:"GOLD CROWN TCA1 2DCL 1x 21",k:"TCA",w:4.2,pk:"Cartons",p:525},
   {c:"27",d:"KCC FRESH TCA1 2DL 1x 21",k:"TCA",w:4.2,pk:"Cartons",p:504},
   {c:"12",d:"TAIFA TCA DCL 1*21*200 ML",k:"TCA",w:4.2,pk:"Cartons",p:525},
@@ -8228,58 +8295,6 @@ function renderTimingTab() {
   </div>`;
 }
 
-// ═══════════ DASHBOARD (COMPARISON) FILTERS ═══════════
-function initDashboard2Filters() {
-  const smSel = document.getElementById('dbFilterSm');
-  const rtSel = document.getElementById('dbFilterRoute');
-  const ctSel = document.getElementById('dbFilterCat');
-  if (!smSel || smSel.options.length > 1) return;
-  [...SALESMEN].sort((a,b)=>a.n.localeCompare(b.n)).forEach(s => {
-    const o = document.createElement('option'); o.value=s.p; o.textContent=`${s.n} (${s.p})`; smSel.appendChild(o);
-  });
-  ROUTES.forEach(r => {
-    const o = document.createElement('option'); o.value=r; o.textContent=r; rtSel.appendChild(o);
-  });
-  const cats = [...new Set(PRODUCTS.map(p=>p.k))].sort();
-  cats.forEach(c => { const o=document.createElement('option'); o.value=c; o.textContent=c; ctSel.appendChild(o); });
-  // Default dates
-  const now = new Date(), td = now.toISOString().split('T')[0];
-  const from = document.getElementById('dbFilterFrom'); if(from&&!from.value) from.value='2020-01-01';
-  const to   = document.getElementById('dbFilterTo');   if(to&&!to.value)     to.value=td;
-}
-
-function getDashboard2Data() {
-  const smF  = (document.getElementById('dbFilterSm')||{}).value    || '';
-  const rtF  = (document.getElementById('dbFilterRoute')||{}).value || '';
-  const catF = (document.getElementById('dbFilterCat')||{}).value   || '';
-  const from = (document.getElementById('dbFilterFrom')||{}).value;
-  const to   = (document.getElementById('dbFilterTo')||{}).value;
-  return allData.filter(r => {
-    if (smF  && r.salesman_payroll !== smF)  return false;
-    if (rtF  && r.route            !== rtF)  return false;
-    if (catF) {
-      const prod = PRODUCTS.find(p=>p.c===String(r.product_code));
-      if (!prod || prod.k !== catF) return false;
-    }
-    if (from || to) {
-      const d = new Date(r.timestamp);
-      if (from && d < new Date(from+'T00:00:00')) return false;
-      if (to   && d > new Date(to  +'T23:59:59')) return false;
-    }
-    return true;
-  });
-}
-
-function clearDashboard2Filters() {
-  ['dbFilterSm','dbFilterRoute','dbFilterCat'].forEach(id => {
-    const el=document.getElementById(id); if(el) el.value='';
-  });
-  const now=new Date(), td=now.toISOString().split('T')[0];
-  const from=document.getElementById('dbFilterFrom'); if(from) from.value='2020-01-01';
-  const to=document.getElementById('dbFilterTo');     if(to)   to.value=td;
-  renderDashboard2();
-}
-
 function renderDashboard2() {
   // re-run buildComparison with filtered orders
   buildComparison();
@@ -8315,6 +8330,140 @@ function renderCompSmTable() {
     <td style="font-family:'DM Mono',monospace;color:var(--green)">${fmtK(d.rev)}</td>
   </tr>`).join('')}</tbody></table>
   <div style="padding:8px 14px;background:var(--cream);border-top:1px solid var(--bd);font-size:.72rem;color:var(--muted);">${rows.length} salespeople</div>`;
+}
+
+
+// ═══════════ DASHBOARD SEARCHABLE FILTERS ═══════════
+let dbLists = { sm: [], route: [], cat: [] };
+
+function initDashboard2Filters() {
+  // Build lists
+  dbLists.sm    = [...SALESMEN].sort((a,b)=>a.n.localeCompare(b.n)).map(s=>({val:s.p, label:`${s.n} (${s.p})`}));
+  dbLists.route = ROUTES.map(r=>({val:r, label:r}));
+  dbLists.cat   = [...new Set(PRODUCTS.map(p=>p.k))].sort().map(c=>({val:c,label:c}));
+
+  const from = document.getElementById('dbFilterFrom');
+  const to   = document.getElementById('dbFilterTo');
+  const now  = new Date(), td = now.toISOString().split('T')[0];
+  if (from && !from.value) from.value = '2020-01-01';
+  if (to   && !to.value)   to.value   = td;
+
+  // Close dropdowns on outside click
+  document.addEventListener('click', e => {
+    ['SmWrap','RouteWrap','CatWrap'].forEach(suffix => {
+      const wrap = document.getElementById('db'+suffix);
+      if (wrap && !wrap.contains(e.target)) {
+        const dd = wrap.querySelector('.db-dd-list');
+        if (dd) dd.classList.remove('open');
+      }
+    });
+  });
+}
+
+function dbShowDd(type) {
+  const map = { sm:'SmWrap', route:'RouteWrap', cat:'CatWrap' };
+  const wrap = document.getElementById('db'+map[type]);
+  if (!wrap) return;
+  const dd = wrap.querySelector('.db-dd-list');
+  const q  = wrap.querySelector('input[type=text]').value.toLowerCase();
+  dbRenderDd(type, q);
+  dd.classList.add('open');
+}
+
+function dbFilterList(type) {
+  const map = { sm:'SmWrap', route:'RouteWrap', cat:'CatWrap' };
+  const wrap = document.getElementById('db'+map[type]);
+  if (!wrap) return;
+  const q = wrap.querySelector('input[type=text]').value.toLowerCase();
+  dbRenderDd(type, q);
+  wrap.querySelector('.db-dd-list').classList.add('open');
+  // Clear hidden value since user is typing
+  const hiddenMap = { sm:'dbFilterSm', route:'dbFilterRoute', cat:'dbFilterCat' };
+  const hidden = document.getElementById(hiddenMap[type]);
+  if (hidden) hidden.value = '';
+  updateDbActiveFilters();
+}
+
+function dbRenderDd(type, q) {
+  const map = { sm:'SmWrap', route:'RouteWrap', cat:'CatWrap' };
+  const hiddenMap = { sm:'dbFilterSm', route:'dbFilterRoute', cat:'dbFilterCat' };
+  const wrap = document.getElementById('db'+map[type]);
+  if (!wrap) return;
+  const dd = wrap.querySelector('.db-dd-list');
+  const curVal = (document.getElementById(hiddenMap[type])||{}).value || '';
+  const items = dbLists[type].filter(i => !q || i.label.toLowerCase().includes(q));
+  dd.innerHTML = `<div class="db-dd-clear" onclick="dbSelectItem('${type}','','All')">✕ Clear filter</div>`
+    + items.slice(0, 80).map(i =>
+        `<div class="db-dd-item${i.val===curVal?' selected':''}"
+              onclick="dbSelectItem('${type}','${i.val.replace(/'/g,"\'")}','${i.label.replace(/'/g,"\'")}')"
+         >${i.label}</div>`
+      ).join('');
+}
+
+function dbSelectItem(type, val, label) {
+  const map       = { sm:'SmWrap',    route:'RouteWrap',    cat:'CatWrap' };
+  const searchMap = { sm:'dbSmSearch', route:'dbRouteSearch', cat:'dbCatSearch' };
+  const hiddenMap = { sm:'dbFilterSm', route:'dbFilterRoute', cat:'dbFilterCat' };
+
+  const wrap   = document.getElementById('db'+map[type]);
+  const search = document.getElementById(searchMap[type]);
+  const hidden = document.getElementById(hiddenMap[type]);
+  const dd     = wrap ? wrap.querySelector('.db-dd-list') : null;
+
+  if (search) search.value = val ? label : '';
+  if (hidden) hidden.value = val;
+  if (dd)     dd.classList.remove('open');
+
+  updateDbActiveFilters();
+  renderDashboard2();
+}
+
+function updateDbActiveFilters() {
+  const tags = [];
+  const sm  = document.getElementById('dbSmSearch');
+  const rt  = document.getElementById('dbRouteSearch');
+  const cat = document.getElementById('dbCatSearch');
+  if (sm  && sm.value)  tags.push('👤 '+sm.value.split('(')[0].trim());
+  if (rt  && rt.value)  tags.push('🗺️ '+rt.value);
+  if (cat && cat.value) tags.push('📦 '+cat.value);
+  const el = document.getElementById('dbActiveFilters');
+  if (el) el.textContent = tags.length ? 'Filters: ' + tags.join(' · ') : '';
+}
+
+function getDashboard2Data() {
+  const smF  = (document.getElementById('dbFilterSm')||{}).value    || '';
+  const rtF  = (document.getElementById('dbFilterRoute')||{}).value || '';
+  const catF = (document.getElementById('dbFilterCat')||{}).value   || '';
+  const from = (document.getElementById('dbFilterFrom')||{}).value;
+  const to   = (document.getElementById('dbFilterTo')||{}).value;
+  return allData.filter(r => {
+    if (smF  && r.salesman_payroll !== smF)  return false;
+    if (rtF  && r.route            !== rtF)  return false;
+    if (catF) {
+      const prod = PRODUCTS.find(p=>p.c===String(r.product_code));
+      if (!prod || prod.k !== catF) return false;
+    }
+    if (from || to) {
+      const d = new Date(r.timestamp);
+      if (from && d < new Date(from+'T00:00:00')) return false;
+      if (to   && d > new Date(to  +'T23:59:59')) return false;
+    }
+    return true;
+  });
+}
+
+function clearDashboard2Filters() {
+  ['dbSmSearch','dbRouteSearch','dbCatSearch'].forEach(id => {
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  ['dbFilterSm','dbFilterRoute','dbFilterCat'].forEach(id => {
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  const now=new Date(), td=now.toISOString().split('T')[0];
+  const from=document.getElementById('dbFilterFrom'); if(from) from.value='2020-01-01';
+  const to=document.getElementById('dbFilterTo');     if(to)   to.value=td;
+  updateDbActiveFilters();
+  renderDashboard2();
 }
 
 
@@ -8432,17 +8581,12 @@ const CODE_TO_SAP = {};
 PRODUCT_MAPPING.forEach(p => { SAP_TO_CODE[p.sap] = p; CODE_TO_SAP[p.code] = p; });
 
 function getSapCategory(sapCode) {
+  // Look up directly from PRODUCT_MAPPING which uses Excel categories
   const p = SAP_TO_CODE[sapCode];
   if (!p) return 'Other';
-  const c = p.code;
-  if (['20','21','83','29','23','27','12','28','24','30','26a','13','18','17','71','73C','73B','81','55','59','84','86','85','54','97','98','100','101','102','103','104','105','106','107','108','50','51','58','68','70'].includes(c)) return 'Fresh Milk';
-  if (['500','501','502','503'].includes(c)) return 'Water';
-  if (['88','110','69','63','65','60','15','10','14','134','135','9'].includes(c)) return 'Mala';
-  if (['200','201','202','203','204','205','216','217','218','219','220','210','211','36','40','41','120','121','122','75','79','77'].includes(c)) return 'Yoghurt/Shakes';
-  if (['430','432','433','436'].includes(c)) return 'Cheese';
-  if (['600','601','602','603','604','605','646','709','606','757','758'].includes(c)) return 'Butter';
-  if (['1036','1037','1038','1031','1021'].includes(c)) return 'Powder';
-  if (['885','882','876','877','851'].includes(c)) return 'Ghee';
+  // Match against PRODUCTS array for the authoritative category
+  const prod = PRODUCTS.find(pr => pr.c === p.code);
+  if (prod && prod.k) return prod.k;
   return 'Other';
 }
 
