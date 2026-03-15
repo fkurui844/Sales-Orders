@@ -51,10 +51,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .hidden{display:none!important;}
 
 /* ── HEADER ── */
-header{background:var(--dark);color:var(--white);padding:0 16px;height:var(--header-h);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,0.3);}
+header{background:var(--dark);color:var(--white);padding:0 16px;height:var(--header-h);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:400;box-shadow:0 2px 12px rgba(0,0,0,0.3);overflow:visible;}
 .logo{font-family:'DM Serif Display',serif;font-size:1.25rem;letter-spacing:-0.5px;}
 .logo span{color:var(--gold);}
-.header-right{display:flex;align-items:center;gap:8px;}
+.header-right{display:flex;align-items:center;gap:8px;overflow:visible;position:relative;}
 .header-badge{font-size:.7rem;background:var(--green);color:#fff;padding:3px 8px;border-radius:20px;font-weight:600;display:none;}
 .header-badge.show{display:inline-block;}
 
@@ -81,7 +81,7 @@ header{background:var(--dark);color:var(--white);padding:0 16px;height:var(--hea
 @media(min-width:768px){.container{padding:28px 24px;}}
 
 /* ── PANELS ── */
-.panel{background:var(--surface);border-radius:16px;border:1px solid var(--bd);box-shadow:0 2px 12px var(--shadow);overflow:hidden;margin-bottom:14px;transition:background .3s,border-color .3s;}
+.panel{background:var(--surface);border-radius:16px;border:1px solid var(--bd);box-shadow:0 2px 12px var(--shadow);overflow:hidden;margin-bottom:14px;transition:background .3s,border-color .3s;position:relative;z-index:1;}
 .panel-header{padding:14px 16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--surface);}
 .panel-header h2{font-family:'DM Serif Display',serif;font-size:1rem;color:var(--dark);}
 .panel-body{padding:16px;}
@@ -237,6 +237,35 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
 
 
+
+
+/* ── Theme dropdown ── */
+.theme-dropdown-wrap { position: relative; }
+.theme-opt {
+  display: block; width: 100%; padding: 10px 16px;
+  background: transparent; border: none; text-align: left;
+  font-family: 'DM Sans', sans-serif; font-size: .82rem; font-weight: 500;
+  color: var(--text); cursor: pointer; transition: background .15s;
+}
+.theme-opt:hover { background: var(--surface2); }
+.theme-opt.active { font-weight: 700; color: var(--gold); }
+
+
+/* ── System dropdown menu ── */
+.sys-menu-item {
+  display: block; width: 100%; padding: 10px 16px;
+  background: transparent; border: none; text-align: left;
+  font-family: 'DM Sans', sans-serif; font-size: .84rem; font-weight: 500;
+  color: var(--text); cursor: pointer; transition: background .15s;
+  touch-action: manipulation;
+}
+.sys-menu-item:hover, .sys-menu-item:active { background: var(--surface2); }
+#themeSystemBtn.open { background: rgba(255,255,255,0.22); }
+
+/* ── Dashboard Orders toggle button ── */
+#dashOrdersToggleBtn:hover { background: #333; }
+[data-theme="dark"] #dashOrdersToggleBtn { background: var(--surface2); color: var(--text); border: 1px solid var(--bd); }
+[data-theme="dark"] #dashOrdersToggleBtn:hover { background: var(--bd); }
 /* ── SALES ACTUALS & COMPARISON SPECIFIC ── */
 .vs-bar{display:flex;height:16px;border-radius:8px;overflow:hidden;background:var(--bd);}
 .vs-orders{background:#1A4A7A;height:100%;}
@@ -328,11 +357,27 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
   <div class="logo">Sales<span>Order</span></div>
   <div class="header-right">
     <span class="header-badge" id="headerBadge">0</span>
-    <button id="themeToggleBtn" onclick="toggleTheme()" style="background:rgba(255,255,255,0.1);border:none;color:white;width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:background .2s;touch-action:manipulation;" title="Toggle dark/light theme">🌙</button>
+    <button id="themeToggleBtn" onclick="toggleTheme()"
+      style="background:rgba(255,255,255,0.1);border:none;color:white;width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:background .2s;touch-action:manipulation;"
+      title="Toggle dark/light">🌙</button>
+    <div style="position:relative;">
+      <button id="themeSystemBtn" onclick="toggleSystemMenu(event)"
+        style="background:rgba(255,255,255,0.1);border:none;color:white;height:36px;padding:0 10px;border-radius:8px;cursor:pointer;font-size:.7rem;font-weight:700;letter-spacing:.05em;font-family:'DM Sans',sans-serif;transition:background .2s;touch-action:manipulation;display:flex;align-items:center;gap:5px;"
+        title="Dashboard sections">💻 SYSTEM <span style="font-size:.55rem;opacity:.7;">▾</span></button>
+      <div id="systemDropdown" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:var(--surface);border:1.5px solid var(--bd);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.22);min-width:190px;z-index:10000;overflow:hidden;padding:6px 0;">
+        <div style="padding:7px 16px 5px;font-size:.62rem;font-weight:700;letter-spacing:.07em;color:var(--text-muted);text-transform:uppercase;">Dashboard</div>
+        <button class="sys-menu-item" onclick="openDashSection('overview')">📈 Overview</button>
+        <button class="sys-menu-item" onclick="openDashSection('salesman')">👤 By Salesperson</button>
+        <button class="sys-menu-item" onclick="openDashSection('products')">📦 By Product</button>
+        <button class="sys-menu-item" onclick="openDashSection('daily')">📅 Daily Trend</button>
+        <button class="sys-menu-item" onclick="openDashSection('routes')">🗺️ By Route</button>
+        <button class="sys-menu-item" onclick="openDashSection('revenue')">💰 Revenue</button>
+        <button class="sys-menu-item" onclick="openDashSection('timing')">⏱️ Timing</button>
+        <button class="sys-menu-item" onclick="openDashSection('export')">⬇️ Export Excel</button>
+      </div>
+    </div>
     <div class="mode-tabs no-print">
       <button class="mode-tab active" onclick="switchMode('order')">📦 Place Order</button>
-      <button class="mode-tab" onclick="switchMode('supervisor')">👥 Orders</button>
-      <button class="mode-tab" onclick="switchMode('dashboard')">📊 Dashboard</button>
       <button class="mode-tab" onclick="switchMode('actuals')">📥 Sales Actuals</button>
       <button class="mode-tab" onclick="switchMode('comparison')">⚖️ vs Actuals</button>
     </div>
@@ -345,14 +390,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
     <span class="bnav-icon">📦</span>
     <span class="bnav-label">Order</span>
   </button>
-  <button class="bnav-item" id="bnav-supervisor" onclick="switchMode('supervisor')">
-    <span class="bnav-icon">👥</span>
-    <span class="bnav-label">Orders</span>
-  </button>
-  <button class="bnav-item" id="bnav-dashboard" onclick="switchMode('dashboard')">
-    <span class="bnav-icon">📊</span>
-    <span class="bnav-label">Dashboard</span>
-  </button>
+
 
   <button class="bnav-item" id="bnav-actuals" onclick="switchMode('actuals')">
     <span class="bnav-icon">📥</span>
@@ -481,79 +519,72 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
     </div>
   </div>
 
-</div>
 
-<!-- ═══════════════════════ SUPERVISOR VIEW ═══════════════════════ -->
-<div id="viewSupervisor" class="container hidden">
-  <div class="kpi-row">
-    <div class="kpi b"><div class="val" id="svSalesmen">—</div><div class="lbl">Active Salespeople</div></div>
-    <div class="kpi g"><div class="val" id="svLines">—</div><div class="lbl">Total Order Lines</div></div>
-    <div class="kpi o"><div class="val" id="svKg">—</div><div class="lbl">Total kg Ordered</div></div>
-    <div class="kpi p"><div class="val" id="svCusts">—</div><div class="lbl">Unique Customers</div></div>
-    <div class="kpi g"><div class="val" id="svTrade" style="font-size:1rem;">—</div><div class="lbl">Total Revenue (KES)</div></div>
-  </div>
-  <div class="supervisor-grid">
-    <div class="panel">
-      <div class="panel-header"><h2>Salespeople</h2></div>
-      <div style="padding:8px;"><div class="sm-list" id="svSmList"></div></div>
+
+
+  <!-- ── System Section Panel ── -->
+  <div id="systemPanel" style="display:none;margin-top:8px;">
+    <!-- Header bar -->
+    <div style="display:flex;align-items:center;justify-content:space-between;background:var(--dark);color:var(--white);border-radius:12px 12px 0 0;padding:14px 20px;">
+      <span id="systemPanelTitle" style="font-family:'DM Serif Display',serif;font-size:1rem;">Overview</span>
+      <button onclick="closeSystemPanel()" style="background:rgba(255,255,255,0.12);border:none;color:white;width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
-    <div class="panel">
-      <div class="panel-header"><h2 id="svDetailTitle">Select a salesperson</h2><button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="exportCSV()">⬇ CSV</button></div>
-      <div id="svDetailBody"><div class="empty"><div class="ico">👈</div><p>Pick a salesperson from the list.</p></div></div>
-    </div>
-  </div>
-  <div style="margin-top:16px;text-align:center;"><button class="btn btn-primary" onclick="loadData()">🔄 Refresh</button></div>
-</div>
+    <!-- Content area — dashboard tabs rendered here -->
+    <div style="background:var(--surface);border:1px solid var(--bd);border-top:none;border-radius:0 0 12px 12px;padding:0 0 8px;">
 
-<!-- ═══════════════════════ DASHBOARD VIEW ═══════════════════════ -->
-<div id="viewDashboard" class="container hidden">
-
-  <!-- Date Filter -->
-  <div class="panel" style="margin-bottom:18px;">
-    <div class="panel-body" style="padding:14px 22px;">
-      <div class="date-strip">
-        <span style="font-size:.72rem;font-weight:600;color:var(--muted);">PERIOD:</span>
-        <button class="fbt" onclick="setFilter('today',this)">Today</button>
-        <button class="fbt" onclick="setFilter('week',this)">This Week</button>
-        <button class="fbt" onclick="setFilter('month',this)">This Month</button>
-        <button class="fbt active" onclick="setFilter('all',this)">All Time</button>
-        <span style="color:var(--border);margin:0 4px;">|</span>
-        <input type="date" id="dfrom" onchange="setFilter('custom',null)" style="width:140px;">
-        <span style="font-size:.75rem;color:var(--muted);">to</span>
-        <input type="date" id="dto" onchange="setFilter('custom',null)" style="width:140px;">
-        <button class="btn btn-primary btn-sm" onclick="loadData()">🔄 Refresh</button>
+      <div id="systemPanelHeader">
+      <!-- Date filter -->
+      <div style="padding:14px 16px;border-bottom:1px solid var(--bd);">
+        <div class="date-strip">
+          <span style="font-size:.72rem;font-weight:600;color:var(--muted);">PERIOD:</span>
+          <button class="fbt" onclick="setFilter('today',this)">Today</button>
+          <button class="fbt" onclick="setFilter('week',this)">This Week</button>
+          <button class="fbt" onclick="setFilter('month',this)">This Month</button>
+          <button class="fbt active" onclick="setFilter('all',this)">All Time</button>
+          <span style="color:var(--border);margin:0 4px;">|</span>
+          <input type="date" id="dfrom" onchange="setFilter('custom',null)" style="width:130px;">
+          <span style="font-size:.75rem;color:var(--muted);">to</span>
+          <input type="date" id="dto" onchange="setFilter('custom',null)" style="width:130px;">
+          <button class="btn btn-primary btn-sm" onclick="loadData()">🔄</button>
+        </div>
       </div>
-    </div>
-  </div>
 
-  <!-- Global KPIs -->
-  <div class="kpi-row">
-    <div class="kpi g"><div class="val" id="dKg">—</div><div class="lbl">Total kg</div></div>
-    <div class="kpi b"><div class="val" id="dLines">—</div><div class="lbl">Order Lines</div></div>
-    <div class="kpi o"><div class="val" id="dSalesmen">—</div><div class="lbl">Salespeople</div></div>
-    <div class="kpi p"><div class="val" id="dCusts">—</div><div class="lbl">Customers</div></div>
-    <div class="kpi r"><div class="val" id="dTopProd" style="font-size:1rem;line-height:1.3;margin-top:4px;">—</div><div class="lbl">Top Product</div></div>
-    <div class="kpi g"><div class="val" id="dTrade" style="font-size:1rem;">—</div><div class="lbl">Total Revenue</div></div>
+      <!-- Global KPIs -->
+      <div class="kpi-row" style="padding:14px 16px 0;">
+        <div class="kpi g"><div class="val" id="dKg">—</div><div class="lbl">Total kg</div></div>
+        <div class="kpi b"><div class="val" id="dLines">—</div><div class="lbl">Order Lines</div></div>
+        <div class="kpi o"><div class="val" id="dSalesmen">—</div><div class="lbl">Salespeople</div></div>
+        <div class="kpi p"><div class="val" id="dCusts">—</div><div class="lbl">Customers</div></div>
+        <div class="kpi r"><div class="val" id="dTopProd" style="font-size:1rem;line-height:1.3;margin-top:4px;">—</div><div class="lbl">Top Product</div></div>
+        <div class="kpi g"><div class="val" id="dTrade" style="font-size:1rem;">—</div><div class="lbl">Total Revenue</div></div>
+      </div>
+      <!-- Supervisor KPIs (hidden, used by renderSupervisor) -->
+      <div class="kpi-row" style="padding:6px 16px 0;">
+        <div class="kpi b"><div class="val" id="svSalesmen">—</div><div class="lbl">Active Salespeople</div></div>
+        <div class="kpi g"><div class="val" id="svLines">—</div><div class="lbl">Order Lines</div></div>
+        <div class="kpi o"><div class="val" id="svKg">—</div><div class="lbl">Total kg</div></div>
+        <div class="kpi p"><div class="val" id="svCusts">—</div><div class="lbl">Customers</div></div>
+        <div class="kpi g"><div class="val" id="svTrade" style="font-size:1rem;">—</div><div class="lbl">Revenue (KES)</div></div>
+      </div>
+      <!-- Supervisor salesperson list (used by renderSupervisor/selectSvSm) -->
+      <div class="supervisor-grid" style="padding:12px 16px;">
+        <div class="panel">
+          <div class="panel-header"><h2>Salespeople</h2></div>
+          <div style="padding:8px;"><div class="sm-list" id="svSmList"></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><h2 id="svDetailTitle">Select a salesperson</h2><button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="exportCSV()">⬇ CSV</button></div>
+          <div id="svDetailBody"><div class="empty"><div class="ico">👈</div><p>Pick a salesperson from the list.</p></div></div>
+        </div>
+      </div>
 
-  </div>
 
-  <!-- Inner Tabs -->
-  <div class="itabs-wrap no-print">
-  <div class="itabs">
-    <button class="itab active" onclick="switchDashTab('overview',this)">Overview</button>
-    <button class="itab" onclick="switchDashTab('salesman',this)">By Salesperson</button>
-    <button class="itab" onclick="switchDashTab('products',this)">By Product</button>
-    <button class="itab" onclick="switchDashTab('daily',this)">Daily Trend</button>
-    <button class="itab" onclick="switchDashTab('routes',this)">By Route</button>
-    <button class="itab" onclick="switchDashTab('revenue',this)">💰 Revenue</button>
-    <button class="itab" onclick="switchDashTab('timing',this)">⏱ Timing</button>
-    <button class="itab" onclick="switchDashTab('export',this)">⬇ Export Excel</button>
-  </div>
-  </div>
 
-  <!-- TAB: OVERVIEW -->
-  <div id="dtOverview">
-    <div class="g2">
+      </div><!-- /systemPanelHeader -->
+
+      <div style="padding:8px 0;">
+      <div id="dtOverview">
+      <div class="g2">
       <div class="panel"><div class="panel-header"><h2>Daily Volume (kg)</h2></div><div class="panel-body"><div class="chart-box"><canvas id="cDailyKg"></canvas></div></div></div>
       <div class="panel"><div class="panel-header"><h2>Orders Per Day</h2></div><div class="panel-body"><div class="chart-box"><canvas id="cDailyLines"></canvas></div></div></div>
     </div>
@@ -561,11 +592,9 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       <div class="panel"><div class="panel-header"><h2>Top Salespeople — kg</h2></div><div class="panel-body" id="rankSmKg"></div></div>
       <div class="panel"><div class="panel-header"><h2>Top Products — Qty</h2></div><div class="panel-body" id="rankProdQty"></div></div>
     </div>
-  </div>
-
-  <!-- TAB: BY SALESPERSON -->
-  <div id="dtSalesman" class="hidden">
-    <!-- Salesperson selector for individual dash -->
+    </div>
+      <div id="dtSalesman" class="hidden">
+      <!-- Salesperson selector for individual dash -->
     <div class="panel" style="margin-bottom:18px;overflow:visible;">
       <div class="panel-header"><h2>Select Salesperson Dashboard</h2></div>
       <div class="panel-body" style="overflow:visible;">
@@ -601,20 +630,16 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       <div class="panel-header"><h2>All Salespeople Detail</h2></div>
       <div style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch;" id="allSmTable"></div>
     </div>
-  </div>
-
-  <!-- TAB: BY PRODUCT -->
-  <div id="dtProducts" class="hidden">
-    <div class="g2">
+    </div>
+      <div id="dtProducts" class="hidden">
+      <div class="g2">
       <div class="panel"><div class="panel-header"><h2>Top Products — Total kg</h2></div><div class="panel-body"><div class="chart-box tall"><canvas id="cProdKg"></canvas></div></div></div>
       <div class="panel"><div class="panel-header"><h2>Category Mix</h2></div><div class="panel-body"><div class="chart-box tall"><canvas id="cCatMix"></canvas></div></div></div>
     </div>
     <div class="panel"><div class="panel-header"><h2>All Products Ranked</h2></div><div style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch;" id="allProdTable"></div></div>
-  </div>
-
-  <!-- TAB: DAILY TREND -->
-  <div id="dtDaily" class="hidden">
-    <div class="panel" style="margin-bottom:20px;">
+    </div>
+      <div id="dtDaily" class="hidden">
+      <div class="panel" style="margin-bottom:20px;">
       <div class="panel-header"><h2>Consolidated Daily Trend</h2></div>
       <div class="panel-body"><div class="chart-box tall"><canvas id="cTrend"></canvas></div></div>
     </div>
@@ -622,12 +647,9 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       <div class="panel-header"><h2>Day-by-Day Breakdown</h2></div>
       <div style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch;" id="dailyTable"></div>
     </div>
-  </div>
-</div>
-
-  <!-- TAB: BY ROUTE -->
-  <div id="dtRoutes" class="hidden">
-    <!-- Route filter -->
+    </div>
+      <div id="dtRoutes" class="hidden">
+      <!-- Route filter -->
     <div class="panel" style="margin-bottom:18px;">
       <div class="panel-body" style="padding:14px 22px;">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -684,14 +706,9 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       <div class="panel-header"><h2>All Routes Summary</h2></div>
       <div style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch;" id="allRoutesTable"></div>
     </div>
-  </div>
-
-</div>
-
-  <!-- TAB: REVENUE -->
-  <div id="dtRevenue" class="hidden">
-
-    <div class="panel" style="margin-bottom:18px;">
+    </div>
+      <div id="dtRevenue" class="hidden">
+      <div class="panel" style="margin-bottom:18px;">
       <div class="panel-body" style="padding:14px 22px;">
         <div class="date-strip">
           <span style="font-size:.72rem;font-weight:600;color:var(--text-muted);">PERIOD:</span>
@@ -751,13 +768,9 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       </div>
       <div style="padding:0;overflow-x:auto;" id="rvProductWrap"></div>
     </div>
-
-  </div>
-
-  <!-- TAB: TIMING -->
-  <div id="dtTiming" class="hidden">
-
-    <div class="panel" style="margin-bottom:18px;">
+    </div>
+      <div id="dtTiming" class="hidden">
+      <div class="panel" style="margin-bottom:18px;">
       <div class="panel-body" style="padding:14px 22px;">
         <div class="date-strip">
           <span style="font-size:.72rem;font-weight:600;color:var(--muted);">DATE:</span>
@@ -814,13 +827,9 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       </div>
       <div style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch;" id="timingLogWrap"></div>
     </div>
-
-  </div>
-
-  <!-- TAB: EXPORT -->
-  <div id="dtExport" class="hidden">
-
-    <!-- Filters -->
+    </div>
+      <div id="dtExport" class="hidden">
+      <!-- Filters -->
     <div class="panel" style="margin-bottom:18px;">
       <div class="panel-header"><h2>Filter Orders to Export</h2></div>
       <div class="panel-body">
@@ -898,10 +907,14 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       <div class="kpi o"><div class="val" id="expTotalSalesmen">—</div><div class="lbl">Salespeople</div></div>
       <div class="kpi p"><div class="val" id="expTotalRoutes">—</div><div class="lbl">Routes</div></div>
     </div>
-
+    </div>
+    </div>
   </div>
 
 </div>
+
+</div>
+
 
 
 <!-- ═══════════════════════ SALES ACTUALS VIEW ═══════════════════════ -->
@@ -1068,7 +1081,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
 <script>
 // ═══════════ CONFIG ═══════════
-const SHEETDB_URL = "https://sheetdb.io/api/v1/k1zts6elnlkrm";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwfZ89KAmWHiaXXwYcGgSOuU9Y3UmieJkWElbIgwnnILAwC3Ia2pFYeub7mLxFGnH6i6w/exec";
 
 // ═══════════ MASTER DATA ═══════════
 const SALESMEN = [
@@ -1076,103 +1089,105 @@ const SALESMEN = [
 ];
 
 const PRODUCTS = [
-  {c:"20",d:"GOLD CROWN TFA 1/2LT 1x 12",k:"Fresh Milk",w:6.0,pk:"Cartons",p:636.0},
-  {c:"21",d:"KCC FRESH TFA 1x 12 x 1/2 lt",k:"Fresh Milk",w:6.0,pk:"Cartons",p:624.0},
-  {c:"83",d:"TAIFA TFA 1*12*500 ML",k:"Fresh Milk",w:6.0,pk:"Cartons",p:612.0},
-  {c:"29",d:"TAIFA TFA 1*24*250 ML",k:"Fresh Milk",w:6.0,pk:"Cartons",p:678.48},
-  {c:"23",d:"GOLD CROWN TCA1 2DCL 1x 21",k:"Fresh Milk",w:4.2,pk:"Cartons",p:525.0},
-  {c:"27",d:"KCC FRESH TCA1 2DL 1x 21",k:"Fresh Milk",w:4.2,pk:"Cartons",p:504.0},
-  {c:"12",d:"TAIFA TCA DCL 1*21*200 ML",k:"Fresh Milk",w:4.2,pk:"Cartons",p:525.0},
-  {c:"28",d:"KCC SCHOOL TCA1 2DL 1x 21",k:"Fresh Milk",w:4.2,pk:"Cartons",p:860.0},
-  {c:"24",d:"ASEPTIC POUCH 18*500ML G/C",k:"Fresh Milk",w:6.0,pk:"Cartons",p:612.0},
-  {c:"30",d:"esl 450 ml",k:"Fresh Milk",w:5.4,pk:"Cartons",p:540.0},
-  {c:"13",d:"TAIFA ESL -200 ML",k:"Fresh Milk",w:4.2,pk:"Cartons",p:445.2},
-  {c:"18",d:"TBA G/C 1*12*1 LTR LACTOSE FREE",k:"Fresh Milk",w:12.0,pk:"Packs",p:1920.0},
-  {c:"17",d:"LACTOSE FREE 12*500ML",k:"Fresh Milk",w:6.0,pk:"Cartons",p:900.0},
-  {c:"71",d:"TBA GC 1LT",k:"Fresh Milk",w:4.0,pk:"Cartons",p:1644.0},
-  {c:"81",d:"UHT FULL CREAM 500ML",k:"Fresh Milk",w:6.0,pk:"Cartons",p:732.0},
-  {c:"500",d:"Gold Crown Purified Drinking Water 1*24*300ML Bottle",k:"Water",w:7.2,pk:"Trays",p:456.0},
-  {c:"501",d:"Gold Crown Purified Drinking Water 1*24*500ML Bottle",k:"Water",w:12.0,pk:"Trays",p:576.0},
-  {c:"502",d:"Gold Crown Purified Drinking Water 1*12*1L Bottle",k:"Water",w:12.0,pk:"Trays",p:528.0},
-  {c:"503",d:"Gold Crown Purified Drinking Water 1*12*1.5LTR Bottle",k:"Water",w:18.0,pk:"Trays",p:768.0},
-  {c:"88",d:"PLAIN MALA (1x16) 1/2 (TR)",k:"Mala",w:0.5,pk:"PCS",p:85.0},
-  {c:"110",d:"MALA TR-1LITRE",k:"Mala",w:0.5,pk:"PCS",p:165.0},
-  {c:"69",d:"MALA 1L BOTTLE",k:"Mala",w:1.0,pk:"PCS",p:165.0},
-  {c:"63",d:"PLAIN MALA 1/2 LT BOTTLE",k:"Mala",w:0.5,pk:"PCS",p:85.0},
-  {c:"65",d:"12*500 ML SLEEVED MALA BOTTLE",k:"Mala",w:6.0,pk:"Trays",p:956.28},
-  {c:"60",d:"BOTTLED MALA(1*12*250ML) SLEEVE",k:"Mala",w:3.0,pk:"Trays",p:561.6},
-  {c:"15",d:"SWEETENED MALA -500 ML",k:"Mala",w:6.0,pk:"Trays",p:1072.92},
-  {c:"10",d:"SWEETENED MALA 1L",k:"Mala",w:1.0,pk:"PCS",p:175.0},
-  {c:"14",d:"SWEETENED MALA -250 ML",k:"Mala",w:3.0,pk:"Trays",p:564.6},
-  {c:"134",d:"500ML FILPAK MALA",k:"Mala",w:0.5,pk:"Crates",p:1260.0},
-  {c:"135",d:"MALA 200ML POUCH",k:"Mala",w:0.2,pk:"Crates",p:630.0},
-  {c:"9",d:"SWEETEND MALA POUCH",k:"Mala",w:0.5,pk:"Crates",p:1350.0},
-  {c:"201",d:"VANNILA YOGHURT 0.25 LT CUPS",k:"Yoghurt",w:3.0,pk:"Trays",p:696.0},
-  {c:"202",d:"VANNILA YOGHURT 0.5 LT CUPS",k:"Yoghurt",w:6.0,pk:"Trays",p:647.28},
-  {c:"36",d:"VANILLA CUP 100 ML",k:"Yoghurt",w:1.2,pk:"Trays",p:200.0},
-  {c:"204",d:"STRAW BERRY YOGHURT 0.25LT CUPS",k:"Yoghurt",w:3.0,pk:"Trays",p:696.0},
-  {c:"205",d:"STRAW BERRY YOGHURT 0.5LT CUPS",k:"Yoghurt",w:6.0,pk:"Trays",p:647.28},
-  {c:"216",d:"COCONUT YOGHURT 0.25LT CUPS",k:"Yoghurt",w:3.0,pk:"Trays",p:696.0},
-  {c:"217",d:"COCONUT YOGHURT 0.5LT CUPS",k:"Yoghurt",w:6.0,pk:"Trays",p:647.28},
-  {c:"219",d:"NATURAL YOGHURT 0.25LT CUPS",k:"Yoghurt",w:3.0,pk:"Trays",p:756.0},
-  {c:"220",d:"NATURAL YOGHURT 0.5LT CUPS",k:"Yoghurt",w:6.0,pk:"Trays",p:647.28},
-  {c:"210",d:"PINEAPPLE YOGHURT 0.25LT  CUPS",k:"Yoghurt",w:3.0,pk:"Trays",p:696.0},
-  {c:"211",d:"PINEAPPLE YOGHURT 0.5LT  CUPS",k:"Yoghurt",w:6.0,pk:"Trays",p:647.28},
-  {c:"40",d:"KCC VANILLA YOGHURT (1x16) 1/2LT (TR)",k:"Yoghurt",w:8.0,pk:"Trays",p:1612.16},
-  {c:"41",d:"KCC STRAWBERRY YOGHURT (1x16) 1/2LT (TR)",k:"Yoghurt",w:8.0,pk:"Trays",p:1612.16},
-  {c:"121",d:"TCA 1*21*200ML STRAWBERRY MILK SHAKE",k:"Yoghurt",w:4.2,pk:"Trays",p:777.0},
-  {c:"120",d:"TCA 1*21*200ML CHOCOLATE MILK SHAKE",k:"Yoghurt",w:4.2,pk:"Trays",p:777.0},
-  {c:"122",d:"TCA 1*21*200ML VANILLA MILK SHAKE",k:"Yoghurt",w:4.2,pk:"Trays",p:777.0},
-  {c:"75",d:"STRAWBERRY FLAVOUR 1*24*250 ML SHAKES",k:"Yoghurt",w:6.0,pk:"Cartons",p:1440.0},
-  {c:"79",d:"VANILLA FLAVOUR 1*24*250 ML SHAKES",k:"Yoghurt",w:6.0,pk:"Cartons",p:1440.0},
-  {c:"77",d:"CHOCOLATE FLAVOUR 1*24*250 ML SHAKES",k:"Yoghurt",w:6.0,pk:"Cartons",p:1440.0},
-  {c:"432",d:"RINDLESS CHEDDAR 150gms*90",k:"Shakes",w:0.15,pk:"Cartons",p:280.0},
-  {c:"430",d:"RINDLESS CHEDDAR 250gms",k:"Shakes",w:0.25,pk:"Cartons",p:450.0},
-  {c:"433",d:"RINDLESS CHEDDAR 500 gms",k:"Shakes",w:0.5,pk:"Cartons",p:785.0},
-  {c:"436",d:"RINDLESS CHEDDAR 1 KG",k:"Shakes",w:1.0,pk:"Cartons",p:1345.0},
-  {c:"600",d:"SALTED BUTTER TUBS 1*18* 0.5KG",k:"Cheese",w:9.0,pk:"Cartons",p:16516.62},
-  {c:"601",d:"SALTED BUTTER TUBS 1*24* 0.25KG",k:"Cheese",w:6.0,pk:"Cartons",p:12945.6},
-  {c:"602",d:"UNSALTED BUTTER TUBS 1*18* 0.5KG",k:"Cheese",w:9.0,pk:"Cartons",p:16516.62},
-  {c:"603",d:"UNSALTED BUTTER TUBS 1*24* 0.25KG",k:"Cheese",w:6.0,pk:"Cartons",p:12945.6},
-  {c:"604",d:"SALTED BUTTER 1*20*0.5KG",k:"Cheese",w:10.0,pk:"Cartons",p:18351.8},
-  {c:"605",d:"SALTED BUTTER 1*40*0.25KG",k:"Cheese",w:10.0,pk:"Cartons",p:21576.0},
-  {c:"646",d:"UNSALTED BUTTER 1*20* 0.5KG",k:"Cheese",w:10.0,pk:"Cartons",p:18351.8},
-  {c:"709",d:"SALTED MINI BUTTER 1x100x10 GMS x 12",k:"Cheese",w:1.2,pk:"Cartons",p:32532.0},
-  {c:"606",d:"SALTED MINI BUTTER TUB 1x24x8 GMS x 12",k:"Cheese",w:2.3,pk:"Cartons",p:7807.68},
-  {c:"757",d:"BULK UNSALTED BUTTER 10 KGS",k:"Cheese",w:10.0,pk:"Cartons",p:19400.0},
-  {c:"758",d:"BULK SALTED BUTTER 10 KGS",k:"Cheese",w:10.0,pk:"Cartons",p:19400.0},
-  {c:"1036",d:"DRIED POWDER 1*12*400 GRMS",k:"Butter",w:4.8,pk:"BAGS",p:6408.0},
-  {c:"1037",d:"DRIED MILK POWDER 1*12*900 GRMS",k:"Butter",w:10.8,pk:"Bags",p:14652.0},
-  {c:"1038",d:"DRIED POWDER 1*6*2.50 KG TIN",k:"Butter",w:15.0,pk:"Bags",p:17670.0},
-  {c:"1031",d:"DRIED WHOLE MILK POWDER 1 x 25 KG BAG",k:"Butter",w:25.0,pk:"Bags",p:22000.0},
-  {c:"1021",d:"DRIED SKIMMED MILK POWDER 1 x 25 KG BAG",k:"Butter",w:25.0,pk:"Bags",p:21000.0},
-  {c:"885",d:"SUPERFINE GHEE 20 x 1/2KG TINS",k:"Ghee",w:10.0,pk:"Cartons",p:9440.0},
-  {c:"882",d:"SUPERFINE GHEE 12 x 1KG TINS",k:"Ghee",w:12.0,pk:"Cartons",p:10284.0},
-  {c:"876",d:"SUPERFINE GHEE 6 x 3KG TINS",k:"Ghee",w:18.0,pk:"Cartons",p:12327.0},
-  {c:"877",d:"SUPERFINE GHEE 6 x 2KG TINS",k:"Ghee",w:12.0,pk:"Cartons",p:8574.0},
-  {c:"851",d:"SUPERFINE GHEE 1 x 18KG PLASTIC",k:"Ghee",w:18.0,pk:"Buckets",p:17280.0},
-  {c:"58",d:"GOLD CROWN 1X16X1LT (TR)",k:"Fresh Milk",w:1.0,pk:"PCS",p:115.0},
-  {c:"68",d:"GOLD CROWN 1X16X500ML (TR)",k:"Fresh Milk",w:0.5,pk:"PCS",p:65.0},
-  {c:"70",d:"KCC FRESH MILK 1X16X500ML (TR)",k:"Fresh Milk",w:8.0,pk:"Crates",p:956.16},
-  {c:"55",d:"GOLD CROWN FILPAK 1X18X500ML POUCH",k:"Fresh Milk",w:9.0,pk:"Crates",p:936.0},
-  {c:"59",d:"GOLD CROWN FILPAK 1X45X200ML POUCH",k:"Fresh Milk",w:9.0,pk:"Crates",p:945.0},
-  {c:"84",d:"KCC FRESH FILPAK 1X18X500ML POUCH",k:"Fresh Milk",w:9.0,pk:"Crates",p:936.0},
-  {c:"86",d:"KCC FRESH FILPAK 1X45X200ML POUCH",k:"Fresh Milk",w:9.0,pk:"Crates",p:900.0},
-  {c:"85",d:"TAIFA FRESH FILPAK 1X18X500ML POUCH",k:"Fresh Milk",w:9.0,pk:"Crates",p:900.0},
-  {c:"54",d:"TAIFA FRESH FILPAK 1X45X200ML POUCH",k:"Fresh Milk",w:9.0,pk:"Crates",p:360.0},
-  {c:"97",d:"KCC FRESH MILK 500ML BOTTLE",k:"Fresh Milk",w:0.5,pk:"PCS",p:70.0},
-  {c:"98",d:"GOLD CROWN FRESH MILK  500ML BOTTLE",k:"Fresh Milk",w:0.5,pk:"PCS",p:70.0},
-  {c:"100",d:"GOLD CROWN FRESH MILK 1X35X1LT BOTTLE",k:"Fresh Milk",w:1.0,pk:"PCS",p:130.0},
-  {c:"101",d:"GOLD CROWN FRESH MILK 1X18X2LT BOTTLE",k:"Fresh Milk",w:2.0,pk:"PCS",p:250.0},
-  {c:"102",d:"GOLD CROWN FRESH MILK 1X10X3LT BOTTLE",k:"Fresh Milk",w:3.0,pk:"PCS",p:390.0},
-  {c:"103",d:"GOLD CROWN STANDARD 1X35X1LT BOTTLE",k:"Fresh Milk",w:1.0,pk:"PCS",p:130.0},
-  {c:"104",d:"GOLD CROWN STANDARD 1X18X2LT BOTTLE",k:"Fresh Milk",w:2.0,pk:"PCS",p:250.0},
-  {c:"105",d:"GOLD CROWN STANDARD 1X10X3LT BOTTLE",k:"Fresh Milk",w:3.0,pk:"PCS",p:390.0},
-  {c:"106",d:"GOLD CROWN LOWFAT 1X18X2LT BOTTLE",k:"Fresh Milk",w:2.0,pk:"PCS",p:250.0},
-  {c:"107",d:"GOLD CROWN LOWFAT 1X10X3LT BOTTLE",k:"Fresh Milk",w:3.0,pk:"PCS",p:390.0},
-  {c:"108",d:"GOLD CROWN FRESH MILK 5 LITRE BOTTLE",k:"Fresh Milk",w:5.0,pk:"PCS",p:580.0},
-  {c:"51",d:"BULK FRESH MILK 50 LITRE CAN",k:"Fresh Milk",w:50.0,pk:"PCS",p:4500.0},
-  {c:"50",d:"BULK FRESH MILK 20L PACK",k:"Fresh Milk",w:20.0,pk:"PCS",p:2000.0}
+  {c:"20",d:"GOLD CROWN TFA 1/2LT 1x 12",k:"TFA",w:6,pk:"Cartons",p:636},
+  {c:"21",d:"KCC FRESH TFA 1x 12 x 1/2 lt",k:"TFA",w:6,pk:"Cartons",p:624},
+  {c:"83",d:"TAIFA TFA 1*12*500 ML",k:"TFA",w:6,pk:"Cartons",p:612},
+  {c:"29",d:"TAIFA TFA 1*24*250 ML",k:"TFA",w:6,pk:"Cartons",p:678.48},
+  {c:"23",d:"GOLD CROWN TCA1 2DCL 1x 21",k:"TCA",w:4.2,pk:"Cartons",p:525},
+  {c:"27",d:"KCC FRESH TCA1 2DL 1x 21",k:"TCA",w:4.2,pk:"Cartons",p:504},
+  {c:"12",d:"TAIFA TCA DCL 1*21*200 ML",k:"TCA",w:4.2,pk:"Cartons",p:525},
+  {c:"28",d:"KCC SCHOOL TCA1 2DL 1x 21",k:"TCA",w:4.2,pk:"Cartons",p:860},
+  {c:"24",d:"ASEPTIC POUCH 18*500ML G/C",k:"ESL",w:6,pk:"Cartons",p:612},
+  {c:"30",d:"esl 450 ml",k:"ESL",w:5.4,pk:"Cartons",p:540},
+  {c:"26a",d:"ESL GOLD GROWN 200 ML",k:"ESL",w:4.2,pk:"Cartons",p:512},
+  {c:"13",d:"TAIFA ESL -200 ML",k:"ESL",w:4.2,pk:"Cartons",p:445.2},
+  {c:"18",d:"TBA G/C 1*12*1 LTR LACTOSE FREE",k:"LACTOSE",w:12,pk:"Packs",p:1920},
+  {c:"17",d:"LACTOSE FREE 12*500ML",k:"LACTOSE",w:6,pk:"Cartons",p:900},
+  {c:"71",d:"TBA GC 1LT",k:"UHT",w:4,pk:"Cartons",p:1644},
+  {c:"73C",d:"UHT FULL CREAM 1L",k:"UHT",w:4,pk:"Cartons",p:458},
+  {c:"73B",d:"UHT FULL CREAM WITH CUPS 1L",k:"UHT",w:12,pk:"Cartons",p:1308},
+  {c:"81",d:"UHT FULL CREAM 500ML",k:"UHT",w:6,pk:"Cartons",p:732},
+  {c:"500",d:"Gold Crown Purified Drinking Water 1*24*300ML Bottle",k:"WATER",w:7.199999999999999,pk:"Trays",p:456},
+  {c:"501",d:"Gold Crown Purified Drinking Water 1*24*500ML Bottle",k:"WATER",w:12,pk:"Trays",p:576},
+  {c:"502",d:"Gold Crown Purified Drinking Water 1*12*1L Bottle",k:"WATER",w:12,pk:"Trays",p:528},
+  {c:"503",d:"Gold Crown Purified Drinking Water 1*12*1.5LTR Bottle",k:"WATER",w:18,pk:"Trays",p:768},
+  {c:"88",d:"PLAIN MALA (1x16) 1/2 (TR)",k:"MALA",w:0.5,pk:"PCS",p:85},
+  {c:"110",d:"MALA TR-1LITRE",k:"MALA",w:0.5,pk:"PCS",p:165},
+  {c:"69",d:"MALA 1L BOTTLE",k:"MALA",w:1,pk:"PCS",p:165},
+  {c:"63",d:"PLAIN MALA 1/2 LT BOTTLE",k:"MALA",w:0.5,pk:"PCS",p:85},
+  {c:"65",d:"12*500 ML SLEEVED MALA BOTTLE",k:"MALA",w:6,pk:"Trays",p:956.28},
+  {c:"60",d:"BOTTLED MALA(1*12*250ML) SLEEVE",k:"MALA",w:3,pk:"Trays",p:561.5999999999999},
+  {c:"15",d:"SWEETENED MALA -500 ML",k:"MALA",w:6,pk:"Trays",p:1072.92},
+  {c:"10",d:"SWEETENED MALA 1L",k:"MALA",w:1,pk:"PCS",p:175},
+  {c:"14",d:"SWEETENED MALA -250 ML",k:"MALA",w:3,pk:"Trays",p:564.5999999999999},
+  {c:"134",d:"500ML FILPAK MALA",k:"MALA",w:0.5,pk:"Crates",p:1260},
+  {c:"135",d:"MALA 200ML POUCH",k:"MALA",w:0.2,pk:"Crates",p:630},
+  {c:"9",d:"SWEETEND MALA POUCH",k:"MALA",w:0.5,pk:"Crates",p:1350},
+  {c:"201",d:"VANNILA YOGHURT 0.25 LT CUPS",k:"YOGHURT",w:3,pk:"Trays",p:696},
+  {c:"202",d:"VANNILA YOGHURT 0.5 LT CUPS",k:"YOGHURT",w:6,pk:"Trays",p:647.28},
+  {c:"36",d:"VANILLA CUP 100 ML",k:"YOGHURT",w:1.2,pk:"Trays",p:200},
+  {c:"204",d:"STRAW BERRY YOGHURT 0.25LT CUPS",k:"YOGHURT",w:3,pk:"Trays",p:696},
+  {c:"205",d:"STRAW BERRY YOGHURT 0.5LT CUPS",k:"YOGHURT",w:6,pk:"Trays",p:647.28},
+  {c:"216",d:"COCONUT YOGHURT 0.25LT CUPS",k:"YOGHURT",w:3,pk:"Trays",p:696},
+  {c:"217",d:"COCONUT YOGHURT 0.5LT CUPS",k:"YOGHURT",w:6,pk:"Trays",p:647.28},
+  {c:"219",d:"NATURAL YOGHURT 0.25LT CUPS",k:"YOGHURT",w:3,pk:"Trays",p:756},
+  {c:"220",d:"NATURAL YOGHURT 0.5LT CUPS",k:"YOGHURT",w:6,pk:"Trays",p:647.28},
+  {c:"210",d:"PINEAPPLE YOGHURT 0.25LT  CUPS",k:"YOGHURT",w:3,pk:"Trays",p:696},
+  {c:"211",d:"PINEAPPLE YOGHURT 0.5LT  CUPS",k:"YOGHURT",w:6,pk:"Trays",p:647.28},
+  {c:"40",d:"KCC VANILLA YOGHURT (1x16) 1/2LT (TR)",k:"YOGHURT",w:8,pk:"Trays",p:1612.16},
+  {c:"41",d:"KCC STRAWBERRY YOGHURT (1x16) 1/2LT (TR)",k:"YOGHURT",w:8,pk:"Trays",p:1612.16},
+  {c:"121",d:"TCA 1*21*200ML STRAWBERRY MILK SHAKE",k:"SHAKES",w:4.2,pk:"Trays",p:777},
+  {c:"120",d:"TCA 1*21*200ML CHOCOLATE MILK SHAKE",k:"SHAKES",w:4.2,pk:"Trays",p:777},
+  {c:"122",d:"TCA 1*21*200ML VANILLA MILK SHAKE",k:"SHAKES",w:4.2,pk:"Trays",p:777},
+  {c:"75",d:"STRAWBERRY FLAVOUR 1*24*250 ML SHAKES",k:"SHAKES",w:6,pk:"Cartons",p:1440},
+  {c:"79",d:"VANILLA FLAVOUR 1*24*250 ML SHAKES",k:"SHAKES",w:6,pk:"Cartons",p:1440},
+  {c:"77",d:"CHOCOLATE FLAVOUR 1*24*250 ML SHAKES",k:"SHAKES",w:6,pk:"Cartons",p:1440},
+  {c:"432",d:"RINDLESS CHEDDAR 150gms*90",k:"CHEESE",w:0.15,pk:"Cartons",p:280},
+  {c:"430",d:"RINDLESS CHEDDAR 250gms",k:"CHEESE",w:0.25,pk:"Cartons",p:450},
+  {c:"433",d:"RINDLESS CHEDDAR 500 gms",k:"CHEESE",w:0.5,pk:"Cartons",p:785},
+  {c:"436",d:"RINDLESS CHEDDAR 1 KG",k:"CHEESE",w:1,pk:"Cartons",p:1345},
+  {c:"600",d:"SALTED BUTTER TUBS 1*18* 0.5KG",k:"BUTTER",w:9,pk:"Cartons",p:16516.62},
+  {c:"601",d:"SALTED BUTTER TUBS 1*24* 0.25KG",k:"BUTTER",w:6,pk:"Cartons",p:12945.599999999999},
+  {c:"602",d:"UNSALTED BUTTER TUBS 1*18* 0.5KG",k:"BUTTER",w:9,pk:"Cartons",p:16516.62},
+  {c:"603",d:"UNSALTED BUTTER TUBS 1*24* 0.25KG",k:"BUTTER",w:6,pk:"Cartons",p:12945.599999999999},
+  {c:"604",d:"SALTED BUTTER 1*20*0.5KG",k:"BUTTER",w:10,pk:"Cartons",p:18351.8},
+  {c:"605",d:"SALTED BUTTER 1*40*0.25KG",k:"BUTTER",w:10,pk:"Cartons",p:21576},
+  {c:"646",d:"UNSALTED BUTTER 1*20* 0.5KG",k:"BUTTER",w:10,pk:"Cartons",p:18351.8},
+  {c:"709",d:"SALTED MINI BUTTER 1x100x10 GMS x 12",k:"BUTTER",w:1.2,pk:"Cartons",p:32532},
+  {c:"606",d:"SALTED MINI BUTTER TUB 1x24x8 GMS x 12",k:"BUTTER",w:2.3,pk:"Cartons",p:7807.68},
+  {c:"757",d:"BULK UNSALTED BUTTER 10 KGS",k:"BUTTER",w:10,pk:"Cartons",p:19400},
+  {c:"758",d:"BULK SALTED BUTTER 10 KGS",k:"BUTTER",w:10,pk:"Cartons",p:19400},
+  {c:"1036",d:"DRIED POWDER 1*12*400 GRMS",k:"POWDER",w:4.8,pk:"BAGS",p:6408},
+  {c:"1037",d:"DRIED MILK POWDER 1*12*900 GRMS",k:"POWDER",w:10.8,pk:"Bags",p:14652},
+  {c:"1038",d:"DRIED POWDER 1*6*2.50 KG TIN",k:"POWDER",w:15,pk:"Bags",p:17670},
+  {c:"1031",d:"DRIED WHOLE MILK POWDER 1 x 25 KG BAG",k:"POWDER",w:25,pk:"Bags",p:22000},
+  {c:"1021",d:"DRIED SKIMMED MILK POWDER 1 x 25 KG BAG",k:"POWDER",w:25,pk:"Bags",p:21000},
+  {c:"885",d:"SUPERFINE GHEE 20 x 1/2KG TINS",k:"GHEE",w:10,pk:"Cartons",p:9440},
+  {c:"882",d:"SUPERFINE GHEE 12 x 1KG TINS",k:"GHEE",w:12,pk:"Cartons",p:10284},
+  {c:"876",d:"SUPERFINE GHEE 6 x 3KG TINS",k:"GHEE",w:18,pk:"Cartons",p:12327},
+  {c:"877",d:"SUPERFINE GHEE 6 x 2KG TINS",k:"GHEE",w:12,pk:"Cartons",p:8574},
+  {c:"851",d:"SUPERFINE GHEE 1 x 18KG PLASTIC",k:"GHEE",w:18,pk:"Buckets",p:17280},
+  {c:"68",d:"GOLD CROWN 1X16X500ML (TR)",k:"FRESH MILK",w:0.5,pk:"PCS",p:65},
+  {c:"70",d:"KCC FRESH MILK 1X16X500ML (TR)",k:"FRESH MILK",w:8,pk:"Crates",p:956.16},
+  {c:"55",d:"GOLD CROWN FILPAK 1X18X500ML POUCH",k:"FRESH MILK",w:9,pk:"Crates",p:936},
+  {c:"59",d:"GOLD CROWN FILPAK 1X45X200ML POUCH",k:"FRESH MILK",w:9,pk:"Crates",p:945},
+  {c:"84",d:"KCC FRESH FILPAK 1X18X500ML POUCH",k:"FRESH MILK",w:9,pk:"Crates",p:936},
+  {c:"86",d:"KCC FRESH FILPAK 1X45X200ML POUCH",k:"FRESH MILK",w:9,pk:"Crates",p:900},
+  {c:"85",d:"TAIFA FRESH FILPAK 1X18X500ML POUCH",k:"FRESH MILK",w:9,pk:"Crates",p:900},
+  {c:"54",d:"TAIFA FRESH FILPAK 1X45X200ML POUCH",k:"FRESH MILK",w:9,pk:"Crates",p:360},
+  {c:"97",d:"KCC FRESH MILK 500ML BOTTLE",k:"FRESH MILK",w:0.5,pk:"PCS",p:70},
+  {c:"98",d:"GOLD CROWN FRESH MILK  500ML BOTTLE",k:"FRESH MILK",w:0.5,pk:"PCS",p:70},
+  {c:"100",d:"GOLD CROWN FRESH MILK 1X35X1LT BOTTLE",k:"FRESH MILK",w:1,pk:"PCS",p:130},
+  {c:"101",d:"GOLD CROWN FRESH MILK 1X18X2LT BOTTLE",k:"FRESH MILK",w:2,pk:"PCS",p:250},
+  {c:"102",d:"GOLD CROWN FRESH MILK 1X10X3LT BOTTLE",k:"FRESH MILK",w:3,pk:"PCS",p:390},
+  {c:"103",d:"GOLD CROWN STANDARD 1X35X1LT BOTTLE",k:"FRESH MILK",w:1,pk:"PCS",p:130},
+  {c:"104",d:"GOLD CROWN STANDARD 1X18X2LT BOTTLE",k:"FRESH MILK",w:2,pk:"PCS",p:250},
+  {c:"105",d:"GOLD CROWN STANDARD 1X10X3LT BOTTLE",k:"FRESH MILK",w:3,pk:"PCS",p:390},
+  {c:"106",d:"GOLD CROWN LOWFAT 1X18X2LT BOTTLE",k:"FRESH MILK",w:2,pk:"PCS",p:250},
+  {c:"107",d:"GOLD CROWN LOWFAT 1X10X3LT BOTTLE",k:"FRESH MILK",w:3,pk:"PCS",p:390},
+  {c:"108",d:"GOLD CROWN FRESH MILK 5 LITRE BOTTLE",k:"FRESH MILK",w:5,pk:"PCS",p:580},
+  {c:"51",d:"BULK FRESH MILK 50 LITRE CAN",k:"FRESH MILK",w:50,pk:"PCS",p:4500},
+  {c:"50",d:"BULK FRESH MILK 20L PACK",k:"FRESH MILK",w:20,pk:"PCS",p:2000}
 ];
 
 const CUSTOMERS = [
@@ -6348,103 +6363,105 @@ const ROUTES = [
 ];
 
 const PRICES = {
-  "20": { trade: 636.0, unit: "per cartons" },
-  "21": { trade: 624.0, unit: "per cartons" },
-  "83": { trade: 612.0, unit: "per cartons" },
+  "20": { trade: 636, unit: "per cartons" },
+  "21": { trade: 624, unit: "per cartons" },
+  "83": { trade: 612, unit: "per cartons" },
   "29": { trade: 678.48, unit: "per cartons" },
-  "23": { trade: 525.0, unit: "per cartons" },
-  "27": { trade: 504.0, unit: "per cartons" },
-  "12": { trade: 525.0, unit: "per cartons" },
-  "28": { trade: 860.0, unit: "per cartons" },
-  "24": { trade: 612.0, unit: "per cartons" },
-  "30": { trade: 540.0, unit: "per cartons" },
+  "23": { trade: 525, unit: "per cartons" },
+  "27": { trade: 504, unit: "per cartons" },
+  "12": { trade: 525, unit: "per cartons" },
+  "28": { trade: 860, unit: "per cartons" },
+  "24": { trade: 612, unit: "per cartons" },
+  "30": { trade: 540, unit: "per cartons" },
+  "26a": { trade: 512, unit: "per cartons" },
   "13": { trade: 445.2, unit: "per cartons" },
-  "18": { trade: 1920.0, unit: "per packs" },
-  "17": { trade: 900.0, unit: "per cartons" },
-  "71": { trade: 1644.0, unit: "per cartons" },
-  "81": { trade: 732.0, unit: "per cartons" },
-  "500": { trade: 456.0, unit: "per trays" },
-  "501": { trade: 576.0, unit: "per trays" },
-  "502": { trade: 528.0, unit: "per trays" },
-  "503": { trade: 768.0, unit: "per trays" },
-  "88": { trade: 85.0, unit: "per pcs" },
-  "110": { trade: 165.0, unit: "per pcs" },
-  "69": { trade: 165.0, unit: "per pcs" },
-  "63": { trade: 85.0, unit: "per pcs" },
+  "18": { trade: 1920, unit: "per packs" },
+  "17": { trade: 900, unit: "per cartons" },
+  "71": { trade: 1644, unit: "per cartons" },
+  "73C": { trade: 458, unit: "per cartons" },
+  "73B": { trade: 1308, unit: "per cartons" },
+  "81": { trade: 732, unit: "per cartons" },
+  "500": { trade: 456, unit: "per trays" },
+  "501": { trade: 576, unit: "per trays" },
+  "502": { trade: 528, unit: "per trays" },
+  "503": { trade: 768, unit: "per trays" },
+  "88": { trade: 85, unit: "per pcs" },
+  "110": { trade: 165, unit: "per pcs" },
+  "69": { trade: 165, unit: "per pcs" },
+  "63": { trade: 85, unit: "per pcs" },
   "65": { trade: 956.28, unit: "per trays" },
-  "60": { trade: 561.6, unit: "per trays" },
+  "60": { trade: 561.5999999999999, unit: "per trays" },
   "15": { trade: 1072.92, unit: "per trays" },
-  "10": { trade: 175.0, unit: "per pcs" },
-  "14": { trade: 564.6, unit: "per trays" },
-  "134": { trade: 1260.0, unit: "per crates" },
-  "135": { trade: 630.0, unit: "per crates" },
-  "9": { trade: 1350.0, unit: "per crates" },
-  "201": { trade: 696.0, unit: "per trays" },
+  "10": { trade: 175, unit: "per pcs" },
+  "14": { trade: 564.5999999999999, unit: "per trays" },
+  "134": { trade: 1260, unit: "per crates" },
+  "135": { trade: 630, unit: "per crates" },
+  "9": { trade: 1350, unit: "per crates" },
+  "201": { trade: 696, unit: "per trays" },
   "202": { trade: 647.28, unit: "per trays" },
-  "36": { trade: 200.0, unit: "per trays" },
-  "204": { trade: 696.0, unit: "per trays" },
+  "36": { trade: 200, unit: "per trays" },
+  "204": { trade: 696, unit: "per trays" },
   "205": { trade: 647.28, unit: "per trays" },
-  "216": { trade: 696.0, unit: "per trays" },
+  "216": { trade: 696, unit: "per trays" },
   "217": { trade: 647.28, unit: "per trays" },
-  "219": { trade: 756.0, unit: "per trays" },
+  "219": { trade: 756, unit: "per trays" },
   "220": { trade: 647.28, unit: "per trays" },
-  "210": { trade: 696.0, unit: "per trays" },
+  "210": { trade: 696, unit: "per trays" },
   "211": { trade: 647.28, unit: "per trays" },
   "40": { trade: 1612.16, unit: "per trays" },
   "41": { trade: 1612.16, unit: "per trays" },
-  "121": { trade: 777.0, unit: "per trays" },
-  "120": { trade: 777.0, unit: "per trays" },
-  "122": { trade: 777.0, unit: "per trays" },
-  "75": { trade: 1440.0, unit: "per cartons" },
-  "79": { trade: 1440.0, unit: "per cartons" },
-  "77": { trade: 1440.0, unit: "per cartons" },
-  "432": { trade: 280.0, unit: "per cartons" },
-  "430": { trade: 450.0, unit: "per cartons" },
-  "433": { trade: 785.0, unit: "per cartons" },
-  "436": { trade: 1345.0, unit: "per cartons" },
+  "121": { trade: 777, unit: "per trays" },
+  "120": { trade: 777, unit: "per trays" },
+  "122": { trade: 777, unit: "per trays" },
+  "75": { trade: 1440, unit: "per cartons" },
+  "79": { trade: 1440, unit: "per cartons" },
+  "77": { trade: 1440, unit: "per cartons" },
+  "432": { trade: 280, unit: "per cartons" },
+  "430": { trade: 450, unit: "per cartons" },
+  "433": { trade: 785, unit: "per cartons" },
+  "436": { trade: 1345, unit: "per cartons" },
   "600": { trade: 16516.62, unit: "per cartons" },
-  "601": { trade: 12945.6, unit: "per cartons" },
+  "601": { trade: 12945.599999999999, unit: "per cartons" },
   "602": { trade: 16516.62, unit: "per cartons" },
-  "603": { trade: 12945.6, unit: "per cartons" },
+  "603": { trade: 12945.599999999999, unit: "per cartons" },
   "604": { trade: 18351.8, unit: "per cartons" },
-  "605": { trade: 21576.0, unit: "per cartons" },
+  "605": { trade: 21576, unit: "per cartons" },
   "646": { trade: 18351.8, unit: "per cartons" },
-  "709": { trade: 32532.0, unit: "per cartons" },
+  "709": { trade: 32532, unit: "per cartons" },
   "606": { trade: 7807.68, unit: "per cartons" },
-  "757": { trade: 19400.0, unit: "per cartons" },
-  "758": { trade: 19400.0, unit: "per cartons" },
-  "1036": { trade: 6408.0, unit: "per bags" },
-  "1037": { trade: 14652.0, unit: "per bags" },
-  "1038": { trade: 17670.0, unit: "per bags" },
-  "1031": { trade: 22000.0, unit: "per bags" },
-  "1021": { trade: 21000.0, unit: "per bags" },
-  "885": { trade: 9440.0, unit: "per cartons" },
-  "882": { trade: 10284.0, unit: "per cartons" },
-  "876": { trade: 12327.0, unit: "per cartons" },
-  "877": { trade: 8574.0, unit: "per cartons" },
-  "851": { trade: 17280.0, unit: "per buckets" },
-  "58": { trade: 115.0, unit: "per pcs" },
-  "68": { trade: 65.0, unit: "per pcs" },
+  "757": { trade: 19400, unit: "per cartons" },
+  "758": { trade: 19400, unit: "per cartons" },
+  "1036": { trade: 6408, unit: "per bags" },
+  "1037": { trade: 14652, unit: "per bags" },
+  "1038": { trade: 17670, unit: "per bags" },
+  "1031": { trade: 22000, unit: "per bags" },
+  "1021": { trade: 21000, unit: "per bags" },
+  "885": { trade: 9440, unit: "per cartons" },
+  "882": { trade: 10284, unit: "per cartons" },
+  "876": { trade: 12327, unit: "per cartons" },
+  "877": { trade: 8574, unit: "per cartons" },
+  "851": { trade: 17280, unit: "per buckets" },
+  "68": { trade: 65, unit: "per pcs" },
   "70": { trade: 956.16, unit: "per crates" },
-  "55": { trade: 936.0, unit: "per crates" },
-  "59": { trade: 945.0, unit: "per crates" },
-  "84": { trade: 936.0, unit: "per crates" },
-  "86": { trade: 900.0, unit: "per crates" },
-  "85": { trade: 900.0, unit: "per crates" },
-  "54": { trade: 360.0, unit: "per crates" },
-  "97": { trade: 70.0, unit: "per pcs" },
-  "98": { trade: 70.0, unit: "per pcs" },
-  "100": { trade: 130.0, unit: "per pcs" },
-  "101": { trade: 250.0, unit: "per pcs" },
-  "102": { trade: 390.0, unit: "per pcs" },
-  "103": { trade: 130.0, unit: "per pcs" },
-  "104": { trade: 250.0, unit: "per pcs" },
-  "105": { trade: 390.0, unit: "per pcs" },
-  "106": { trade: 250.0, unit: "per pcs" },
-  "107": { trade: 390.0, unit: "per pcs" },
-  "108": { trade: 580.0, unit: "per pcs" },
-  "51": { trade: 4500.0, unit: "per pcs" },
-  "50": { trade: 2000.0, unit: "per pcs" }
+  "55": { trade: 936, unit: "per crates" },
+  "59": { trade: 945, unit: "per crates" },
+  "84": { trade: 936, unit: "per crates" },
+  "86": { trade: 900, unit: "per crates" },
+  "85": { trade: 900, unit: "per crates" },
+  "54": { trade: 360, unit: "per crates" },
+  "97": { trade: 70, unit: "per pcs" },
+  "98": { trade: 70, unit: "per pcs" },
+  "100": { trade: 130, unit: "per pcs" },
+  "101": { trade: 250, unit: "per pcs" },
+  "102": { trade: 390, unit: "per pcs" },
+  "103": { trade: 130, unit: "per pcs" },
+  "104": { trade: 250, unit: "per pcs" },
+  "105": { trade: 390, unit: "per pcs" },
+  "106": { trade: 250, unit: "per pcs" },
+  "107": { trade: 390, unit: "per pcs" },
+  "108": { trade: 580, unit: "per pcs" },
+  "51": { trade: 4500, unit: "per pcs" },
+  "50": { trade: 2000, unit: "per pcs" }
 };
 
 // ═══════════ STATE ═══════════
@@ -6457,63 +6474,54 @@ const COLORS = ['#1A7A4A','#C9941A','#1A4A7A','#C0392B','#6C3483','#16A085','#E6
 
 // ═══════════ INIT ═══════════
 document.addEventListener('DOMContentLoaded', () => {
-  // Salesman dropdowns (dashboard select only)
-  const sorted = [...SALESMEN].sort((a,b) => a.n.localeCompare(b.n));
-  // dashSmSelect is now a hidden input, populated via filterDashSm()
+  const el = id => document.getElementById(id);
+  const now = new Date(), td = now.toISOString().split('T')[0];
+  const smSorted = [...SALESMEN].sort((a,b) => a.n.localeCompare(b.n));
 
-  // Dates
-  const now = new Date();
-  document.getElementById('orderDate').value = now.toISOString();
-  const td = now.toISOString().split('T')[0];
-  document.getElementById('dfrom').value = '2020-01-01';
-  document.getElementById('dto').value = td;
+  // Always-present elements
+  if (el('orderDate')) el('orderDate').value = now.toISOString();
+  if (el('dfrom'))     el('dfrom').value = '2020-01-01';
+  if (el('dto'))       el('dto').value = td;
 
-  // Populate routes
-  const rsel = document.getElementById('routeSelect');
-  ROUTES.forEach(r => {
+  // Route select (order form)
+  const rsel = el('routeSelect');
+  if (rsel) ROUTES.forEach(r => {
     const o = document.createElement('option'); o.value = r; o.textContent = r; rsel.appendChild(o);
   });
 
-  // Populate route filter dropdown
-  const rfsel = document.getElementById('routeFilterSelect');
-  ROUTES.forEach(r => {
+  // Dashboard elements — safe to populate even if inside hidden panel
+  const rfsel = el('routeFilterSelect');
+  if (rfsel) ROUTES.forEach(r => {
     const o = document.createElement('option'); o.value = r; o.textContent = r; rfsel.appendChild(o);
   });
 
-  // Populate timing salesman filter
-  const tSmF = document.getElementById('timingSmFilter');
-  [...SALESMEN].sort((a,b)=>a.n.localeCompare(b.n)).forEach(s => {
+  const tSmF = el('timingSmFilter');
+  if (tSmF) smSorted.forEach(s => {
     const o = document.createElement('option'); o.value = s.p; o.textContent = `${s.n} (${s.p})`; tSmF.appendChild(o);
   });
 
-  // Populate revenue salesman filter
-  const rvSmF = document.getElementById('rvSmFilter');
-  [...SALESMEN].sort((a,b)=>a.n.localeCompare(b.n)).forEach(s => {
+  const rvSmF = el('rvSmFilter');
+  if (rvSmF) smSorted.forEach(s => {
     const o = document.createElement('option'); o.value = s.p; o.textContent = `${s.n} (${s.p})`; rvSmF.appendChild(o);
   });
-  // Init revenue date inputs
-  const nowRv = new Date(), tdRv = nowRv.toISOString().split('T')[0];
-  document.getElementById('rvDateFrom').value = tdRv;
-  document.getElementById('rvDateTo').value = tdRv;
 
-  // Init timing date inputs
-  const nowT = new Date(), tdT = nowT.toISOString().split('T')[0];
-  document.getElementById('tDateFrom').value = tdT;
-  document.getElementById('tDateTo').value = tdT;
+  if (el('rvDateFrom')) el('rvDateFrom').value = td;
+  if (el('rvDateTo'))   el('rvDateTo').value   = td;
+  if (el('tDateFrom'))  el('tDateFrom').value  = td;
+  if (el('tDateTo'))    el('tDateTo').value    = td;
 
-  // Populate export dropdowns
-  const expSm = document.getElementById('expSalesman');
-  const expRt = document.getElementById('expRoute');
-  [...SALESMEN].sort((a,b)=>a.n.localeCompare(b.n)).forEach(s => {
+  const expSm = el('expSalesman');
+  if (expSm) smSorted.forEach(s => {
     const o = document.createElement('option'); o.value = s.p; o.textContent = `${s.n} (${s.p})`; expSm.appendChild(o);
   });
-  ROUTES.forEach(r => {
+
+  const expRt = el('expRoute');
+  if (expRt) ROUTES.forEach(r => {
     const o = document.createElement('option'); o.value = r; o.textContent = r; expRt.appendChild(o);
   });
-  // Set default dates for export
-  const nowD = new Date(), tdD = nowD.toISOString().split('T')[0];
-  document.getElementById('expDateFrom').value = '2020-01-01';
-  document.getElementById('expDateTo').value = tdD;
+
+  if (el('expDateFrom')) el('expDateFrom').value = '2020-01-01';
+  if (el('expDateTo'))   el('expDateTo').value   = td;
 
   // Close dropdowns on outside click
   document.addEventListener('click', e => {
@@ -6528,29 +6536,111 @@ document.addEventListener('DOMContentLoaded', () => {
 // ═══════════ THEME ═══════════
 function toggleTheme() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  setTheme(isDark ? 'light' : 'dark');
+  const next = isDark ? 'light' : 'dark';
+  localStorage.setItem('themeChoice', next);
+  setTheme(next);
+  updateThemeBtns(next);
 }
+
+function setThemeChoice(choice) {
+  const resolved = choice === 'system'
+    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : choice;
+  localStorage.setItem('themeChoice', choice);
+  setTheme(resolved);
+  updateThemeBtns(resolved);
+}
+
+function updateThemeBtns(theme) {
+  const moonBtn = document.getElementById('themeToggleBtn');
+  if (moonBtn) moonBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+}
+
+function toggleSystemMenu(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('systemDropdown');
+  const btn  = document.getElementById('themeSystemBtn');
+  const isOpen = menu.style.display !== 'none';
+  menu.style.display = isOpen ? 'none' : 'block';
+  btn.classList.toggle('open', !isOpen);
+}
+
+document.addEventListener('click', () => {
+  const menu = document.getElementById('systemDropdown');
+  const btn  = document.getElementById('themeSystemBtn');
+  if (menu) menu.style.display = 'none';
+  if (btn)  btn.classList.remove('open');
+});
+
+function openDashSection(tab) {
+  // Close the dropdown menu
+  const menu = document.getElementById('systemDropdown');
+  const btn  = document.getElementById('themeSystemBtn');
+  if (menu) menu.style.display = 'none';
+  if (btn)  btn.classList.remove('open');
+
+  // Show the system panel
+  const panel = document.getElementById('systemPanel');
+  if (panel) panel.style.display = 'block';
+
+  // Update title
+  const titles = {
+    overview:'📈 Overview', salesman:'👤 By Salesperson',
+    products:'📦 By Product', daily:'📅 Daily Trend',
+    routes:'🗺️ By Route', revenue:'💰 Revenue',
+    timing:'⏱️ Timing', export:'⬇️ Export Excel'
+  };
+  const titleEl = document.getElementById('systemPanelTitle');
+  if (titleEl) titleEl.textContent = titles[tab] || tab;
+  // Hide the header section (date filter, KPIs, supervisor) for export tab
+  const sysHeader = document.getElementById('systemPanelHeader');
+  if (sysHeader) sysHeader.style.display = tab === 'export' ? 'none' : '';
+
+  // Switch the tab
+  switchDashTab(tab, null);
+
+  // Highlight active in system dropdown
+  document.querySelectorAll('.sys-menu-item').forEach(b => {
+    b.style.fontWeight = b.getAttribute('onclick') && b.getAttribute('onclick').includes("'"+tab+"'") ? '700' : '500';
+    b.style.color = b.getAttribute('onclick') && b.getAttribute('onclick').includes("'"+tab+"'") ? 'var(--gold)' : 'var(--text)';
+  });
+
+  // Load data and render
+  loadData();
+
+  // Scroll to panel
+  setTimeout(() => {
+    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 150);
+}
+
+function closeSystemPanel() {
+  const panel = document.getElementById('systemPanel');
+  if (panel) panel.style.display = 'none';
+}
+
 function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem('theme', theme);
-  const btn = document.getElementById('themeToggleBtn');
-  if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
-  // Update Chart.js defaults for dark mode
   if (window.Chart) {
     Chart.defaults.color = theme === 'dark' ? '#8A8480' : '#7A7169';
     Chart.defaults.borderColor = theme === 'dark' ? '#2E3240' : '#D8CFC4';
   }
-  // Redraw any active charts
   Object.values(charts).forEach(c => { try { c.update(); } catch(e){} });
 }
+
 // Apply saved theme on load
 (function(){
-  const saved = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  setTheme(saved);
+  const saved = localStorage.getItem('themeChoice') || 'dark';
+  const resolved = saved === 'system'
+    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : saved;
+  setTheme(resolved);
+  document.addEventListener('DOMContentLoaded', () => updateThemeBtns(resolved));
 })();
 
 function switchMode(m) {
-  ['order','supervisor','dashboard','actuals','comparison'].forEach((id,i) => {
+  ['order','actuals','comparison'].forEach((id,i) => {
     const el = document.getElementById('view'+id.charAt(0).toUpperCase()+id.slice(1));
     if (el) el.classList.toggle('hidden', id !== m);
     const tabs = document.querySelectorAll('.mode-tab');
@@ -6558,17 +6648,19 @@ function switchMode(m) {
     const bnav = document.getElementById('bnav-'+id);
     if (bnav) bnav.classList.toggle('active', id === m);
   });
-  if (m === 'supervisor' || m === 'dashboard') loadData();
+
   if (m === 'comparison') renderComparisonStatus();
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
+
 function switchDashTab(tab, btn) {
   activeDashTab = tab;
-  document.querySelectorAll('.itab').forEach(t => t.classList.remove('active'));
-  if (btn) btn.classList.add('active');
+
+  // Show/hide dt panels
   ['Overview','Salesman','Products','Daily','Routes','Revenue','Timing','Export'].forEach(t => {
-    document.getElementById('dt'+t).classList.toggle('hidden', t.toLowerCase() !== tab);
+    const dtEl = document.getElementById('dt'+t);
+    if (dtEl) dtEl.classList.toggle('hidden', t.toLowerCase() !== tab);
   });
   renderDashboard();
 }
@@ -6595,32 +6687,41 @@ function dkey(ts) { return ts ? new Date(ts).toISOString().split('T')[0] : ''; }
 function fmt(ts) { return ts ? new Date(ts).toLocaleDateString('en-KE',{day:'2-digit',month:'short',year:'numeric'}) : '—'; }
 
 // ═══════════ LOAD DATA ═══════════
-async function loadData() {
-  try {
-    const response = await fetch(SHEETDB_URL);
-    const rows = await response.json();
-    // SheetDB returns array directly, map keys to match our format
-    allData = Array.isArray(rows) ? rows.map(r => ({
-      timestamp: r.timestamp,
-      salesman_payroll: r.salesman_payroll,
-      salesman_name: r.salesman_name,
-      route: r.route,
-      customer_acc: r.customer_acc,
-      customer_name: r.customer_name,
-      product_code: r.product_code,
-      product_desc: r.product_desc,
-      packaging: r.packaging,
-      qty: r.qty,
-      unit_wt: r.unit_wt,
-      total_wt: r.total_wt,
-      unit_price: r.unit_price,
-      total_revenue: r.total_revenue,
-
-    })) : [];
-    applyFilter();
-    renderSupervisor();
-    renderDashboard();
-  } catch(e) { showToast('⚠️ Could not load data', 'error'); }
+function loadData() {
+  return new Promise((resolve) => {
+    const cb = 'cb_' + Date.now();
+    const script = document.createElement('script');
+    window[cb] = function(result) {
+      delete window[cb];
+      script.remove();
+      try {
+        const rows = result.rows || [];
+        allData = rows.map(r => ({
+          timestamp:        r.timestamp,
+          salesman_payroll: r.salesman_payroll,
+          salesman_name:    r.salesman_name,
+          route:            r.route,
+          customer_acc:     r.customer_acc,
+          customer_name:    r.customer_name,
+          product_code:     r.product_code,
+          product_desc:     r.product_desc,
+          packaging:        r.packaging,
+          qty:              r.qty,
+          unit_wt:          r.unit_wt,
+          total_wt:         r.total_wt,
+          unit_price:       r.unit_price,
+          total_revenue:    r.total_revenue,
+        }));
+        applyFilter();
+        renderSupervisor();
+        renderDashboard();
+      } catch(e) { showToast('⚠️ Could not parse data', 'error'); }
+      resolve();
+    };
+    script.onerror = () => { showToast('⚠️ Could not load data', 'error'); resolve(); };
+    script.src = GAS_URL + '?callback=' + cb;
+    document.head.appendChild(script);
+  });
 }
 
 // ═══════════ ORDER FORM ═══════════
@@ -6891,35 +6992,43 @@ async function submitOrder() {
   const btn = document.getElementById('submitBtn');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Submitting…';
   try {
-    const rows = orderLines.map(line => ({
-      timestamp: new Date().toISOString(),
-      salesman_payroll: currentSalesman.p,
-      salesman_name: currentSalesman.n,
-      route: currentRoute,
-      customer_acc: line.customerAcc,
-      customer_name: line.customerName,
-      product_code: line.productCode,
-      product_desc: line.productDesc,
-      packaging: line.productPkg,
-      qty: line.qty,
-      unit_wt: line.unitWt,
-      total_wt: line.totalWt,
-      unit_price: line.unitPrice || 0,
-      total_revenue: line.totalRevenue || 0,
 
-    }));
-    const response = await fetch(SHEETDB_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: rows })
+    await new Promise((resolve, reject) => {
+      const cb = 'submit_' + Date.now();
+      const script = document.createElement('script');
+      window[cb] = function(result) {
+        delete window[cb];
+        script.remove();
+        if (result.status === 'ok') {
+          showToast(`✅ Order submitted! ${orderLines.length} lines saved.`, 'success');
+          orderLines=[]; renderOrderTable(); checkReady();
+          resolve();
+        } else {
+          reject(new Error(result.message || 'Unknown error'));
+        }
+      };
+      script.onerror = () => reject(new Error('Network error'));
+      const payload = {
+        timestamp:        new Date().toISOString(),
+        salesman_payroll: currentSalesman.p,
+        salesman_name:    currentSalesman.n,
+        route:            currentRoute,
+        lines:            orderLines.map(line => ({
+          customerAcc:  line.customerAcc,
+          customerName: line.customerName,
+          productCode:  line.productCode,
+          productDesc:  line.productDesc,
+          productPkg:   line.productPkg,
+          qty:          line.qty,
+          unitWt:       line.unitWt,
+          totalWt:      line.totalWt,
+          unitPrice:    line.unitPrice  || 0,
+          totalRevenue: line.totalRevenue || 0,
+        }))
+      };
+      script.src = GAS_URL + '?callback=' + cb + '&data=' + encodeURIComponent(JSON.stringify(payload));
+      document.head.appendChild(script);
     });
-    const result = await response.json();
-    if (response.ok) {
-      showToast(`✅ Order submitted! ${orderLines.length} lines saved.`, 'success');
-      orderLines=[]; renderOrderTable(); checkReady();
-    } else {
-      throw new Error(JSON.stringify(result));
-    }
   } catch(e) {
     showToast('⚠️ Submission failed: ' + e.message, 'error');
   }
@@ -6939,11 +7048,12 @@ function renderSupervisor() {
   const tw = allData.reduce((s,r)=>s+(parseFloat(r.total_wt)||0),0);
   const uc = new Set(allData.map(r=>r.customer_acc)).size;
   const totalTrade = allData.reduce((s,r)=>s+(parseFloat(r.total_revenue)||0),0);
-  document.getElementById('svSalesmen').textContent = sms.length;
-  document.getElementById('svLines').textContent = allData.length;
-  document.getElementById('svKg').textContent = tw.toFixed(1)+' kg';
-  document.getElementById('svCusts').textContent = uc;
-  document.getElementById('svTrade').textContent = totalTrade > 0 ? 'KES '+Math.round(totalTrade).toLocaleString() : '—';
+  const sv = id => document.getElementById(id);
+  if(sv('svSalesmen')) sv('svSalesmen').textContent = sms.length;
+  if(sv('svLines'))    sv('svLines').textContent    = allData.length;
+  if(sv('svKg'))       sv('svKg').textContent       = tw.toFixed(1)+' kg';
+  if(sv('svCusts'))    sv('svCusts').textContent    = uc;
+  if(sv('svTrade'))    sv('svTrade').textContent    = totalTrade > 0 ? 'KES '+Math.round(totalTrade).toLocaleString() : '—';
 
   const el = document.getElementById('svSmList');
   if (!sms.length) { el.innerHTML = '<div style="padding:14px;color:var(--muted);font-size:.82rem;">No orders yet.</div>'; return; }
@@ -6962,7 +7072,7 @@ function selectSvSm(payroll) {
 }
 
 function renderSvDetail(s) {
-  document.getElementById('svDetailTitle').textContent = `${s.name} (${s.payroll})`;
+  const dtEl = document.getElementById('svDetailTitle'); if(dtEl) dtEl.textContent = `${s.name} (${s.payroll})`;
   const tw = s.lines.reduce((sum,r)=>sum+(parseFloat(r.total_wt)||0),0);
   const uc = new Set(s.lines.map(r=>r.customer_acc)).size;
   const routes = [...new Set(s.lines.map(r=>r.route).filter(Boolean))].join(', ') || '—';
@@ -7067,12 +7177,13 @@ function renderDashboard() {
   const tp = Object.entries(pq).sort((a,b)=>b[1]-a[1])[0];
   const dashTrade = data.reduce((s,r)=>s+(parseFloat(r.total_revenue)||0),0);
 
-  document.getElementById('dKg').textContent = tw>999?(tw/1000).toFixed(1)+'t':tw.toFixed(1);
-  document.getElementById('dLines').textContent = data.length;
-  document.getElementById('dSalesmen').textContent = usm;
-  document.getElementById('dCusts').textContent = uc;
-  document.getElementById('dTopProd').textContent = tp?tp[0].replace(/ \d+ML|\d+LT[R]?/g,'').trim().slice(0,20):'—';
-  document.getElementById('dTrade').textContent = dashTrade>0?'KES '+(dashTrade>999999?(dashTrade/1000000).toFixed(1)+'M':dashTrade>999?(dashTrade/1000).toFixed(0)+'K':Math.round(dashTrade).toLocaleString()):'—';
+  const dd = id => document.getElementById(id);
+  if(dd('dKg'))      dd('dKg').textContent      = tw>999?(tw/1000).toFixed(1)+'t':tw.toFixed(1);
+  if(dd('dLines'))   dd('dLines').textContent   = data.length;
+  if(dd('dSalesmen'))dd('dSalesmen').textContent= usm;
+  if(dd('dCusts'))   dd('dCusts').textContent   = uc;
+  if(dd('dTopProd')) dd('dTopProd').textContent  = tp?tp[0].replace(/ \d+ML|\d+LT[R]?/g,'').trim().slice(0,20):'—';
+  if(dd('dTrade'))   dd('dTrade').textContent   = dashTrade>0?'KES '+(dashTrade>999999?(dashTrade/1000000).toFixed(1)+'M':dashTrade>999?(dashTrade/1000).toFixed(0)+'K':Math.round(dashTrade).toLocaleString()):'—';
 
 
   if (activeDashTab==='overview') renderOverview(data);
@@ -7686,7 +7797,7 @@ function renderRevenueTab() {
   const fmt = v => v >= 1000000 ? 'KES '+(v/1000000).toFixed(2)+'M' : v >= 1000 ? 'KES '+(v/1000).toFixed(1)+'K' : 'KES '+Math.round(v).toLocaleString();
 
   if (!data.length) {
-    ['rvTotal','rvLines','rvAvgLine','rvTopSm'].forEach(id => document.getElementById(id).textContent = '—');
+    ['rvTotal','rvLines','rvAvgLine','rvTopSm'].forEach(id => { const e=document.getElementById(id); if(e) e.textContent='—'; });
     document.getElementById('rvRouteWrap').innerHTML = '<div class="empty" style="padding:24px"><p>No data for this period.</p></div>';
     document.getElementById('rvProductWrap').innerHTML = '';
     ['cRvSm','cRvCat','cRvDaily'].forEach(id => dc(id));
@@ -7837,10 +7948,7 @@ function renderTimingTab() {
   });
 
   if (!data.length) {
-    document.getElementById('tEarliest').textContent = '—';
-    document.getElementById('tLatest').textContent = '—';
-    document.getElementById('tAvgTime').textContent = '—';
-    document.getElementById('tPeakHour').textContent = '—';
+    ['tEarliest','tLatest','tAvgTime','tPeakHour'].forEach(id => { const e=document.getElementById(id); if(e) e.textContent='—'; });
     document.getElementById('timingTimelineWrap').innerHTML = '<div class="empty" style="padding:28px"><p>No orders in this period.</p></div>';
     document.getElementById('timingLogWrap').innerHTML = '';
     dc('cHourDist'); dc('cDayDist');
@@ -8028,103 +8136,108 @@ function renderTimingTab() {
 // PRODUCT MAPPING (SAP ↔ old code)
 // ═══════════════════════════════════════
 const PRODUCT_MAPPING = [
-  {sap:"44000000064",code:"20",desc:'GOLD CROWN TFA 1/2LT 1x 12',pkg:"Cartons",wt:6.0,price:636.0},
-  {sap:"44000000063",code:"21",desc:'KCC FRESH TFA 1x 12 x 1/2 lt',pkg:"Cartons",wt:6.0,price:624.0},
-  {sap:"44000000666",code:"83",desc:'TAIFA TFA 1*12*500 ML',pkg:"Cartons",wt:6.0,price:612.0},
-  {sap:"44000000736",code:"29",desc:'TAIFA TFA 1*24*250 ML',pkg:"Cartons",wt:6.0,price:678.48},
-  {sap:"44000000066",code:"23",desc:'GOLD CROWN TCA1 2DCL 1x 21',pkg:"Cartons",wt:4.2,price:525.0},
-  {sap:"44000000065",code:"27",desc:'KCC FRESH TCA1 2DL 1x 21',pkg:"Cartons",wt:4.2,price:504.0},
-  {sap:"44000000918",code:"12",desc:'TAIFA TCA DCL 1*21*200 ML',pkg:"Cartons",wt:4.2,price:525.0},
-  {sap:"44000000067",code:"28",desc:'KCC SCHOOL TCA1 2DL 1x 21',pkg:"Cartons",wt:4.2,price:860.0},
-  {sap:"44000000557",code:"24",desc:'ASEPTIC POUCH 18*500ML G/C',pkg:"Cartons",wt:6.0,price:612.0},
-  {sap:"44000001076",code:"30",desc:'esl 450 ml',pkg:"Cartons",wt:5.4,price:540.0},
-  {sap:"44000000856",code:"26a",desc:'ESL GOLD CROWN 200ML',pkg:"Cartons",wt:4.2,price:512.0},
+  {sap:"44000000064",code:"20",desc:'GOLD CROWN TFA 1/2LT 1x 12',pkg:"Cartons",wt:6,price:636},
+  {sap:"44000000063",code:"21",desc:'KCC FRESH TFA 1x 12 x 1/2 lt',pkg:"Cartons",wt:6,price:624},
+  {sap:"44000000666",code:"83",desc:'TAIFA TFA 1*12*500 ML',pkg:"Cartons",wt:6,price:612},
+  {sap:"44000000736",code:"29",desc:'TAIFA TFA 1*24*250 ML',pkg:"Cartons",wt:6,price:678.48},
+  {sap:"44000000066",code:"23",desc:'GOLD CROWN TCA1 2DCL 1x 21',pkg:"Cartons",wt:4.2,price:525},
+  {sap:"44000000065",code:"27",desc:'KCC FRESH TCA1 2DL 1x 21',pkg:"Cartons",wt:4.2,price:504},
+  {sap:"44000000918",code:"12",desc:'TAIFA TCA DCL 1*21*200 ML',pkg:"Cartons",wt:4.2,price:525},
+  {sap:"44000000067",code:"28",desc:'KCC SCHOOL TCA1 2DL 1x 21',pkg:"Cartons",wt:4.2,price:860},
+  {sap:"44000000557",code:"24",desc:'ASEPTIC POUCH 18*500ML G/C',pkg:"Cartons",wt:6,price:612},
+  {sap:"44000001076",code:"30",desc:'esl 450 ml',pkg:"Cartons",wt:5.4,price:540},
+  {sap:"44000000856",code:"26a",desc:'ESL GOLD GROWN 200 ML',pkg:"Cartons",wt:4.2,price:512},
   {sap:"44000001017",code:"13",desc:'TAIFA ESL -200 ML',pkg:"Cartons",wt:4.2,price:445.2},
-  {sap:"44000000797",code:"18",desc:'TBA G/C 1*12*1 LTR LACTOSE FREE',pkg:"Packs",wt:12.0,price:1920.0},
-  {sap:"44000000798",code:"17",desc:'LACTOSE FREE 12*500ML',pkg:"Cartons",wt:6.0,price:900.0},
-  {sap:"44000000656",code:"71",desc:'TBA GC 1LT',pkg:"Cartons",wt:4.0,price:1644.0},
-  {sap:"44000000626",code:"73C",desc:'UHT FULL CREAM 1L',pkg:"Cartons",wt:4.0,price:458.0},
-  {sap:"44000000616",code:"73B",desc:'UHT FULL CREAM WITH CUPS 1L',pkg:"Cartons",wt:12.0,price:1308.0},
-  {sap:"44000000062",code:"81",desc:'UHT FULL CREAM 500ML',pkg:"Cartons",wt:6.0,price:732.0},
-  {sap:"44000001007",code:"500",desc:'Gold Crown Water 300ML',pkg:"Trays",wt:7.2,price:456.0},
-  {sap:"44000001008",code:"501",desc:'Gold Crown Water 500ML',pkg:"Trays",wt:12.0,price:576.0},
-  {sap:"44000001078",code:"502",desc:'Gold Crown Water 1L',pkg:"Trays",wt:12.0,price:528.0},
-  {sap:"44000001079",code:"503",desc:'Gold Crown Water 1.5L',pkg:"Trays",wt:18.0,price:768.0},
-  {sap:"44000000033",code:"88",desc:'PLAIN MALA (1x16) 1/2 (TR)',pkg:"PCS",wt:0.5,price:85.0},
-  {sap:"44000000806",code:"110",desc:'MALA TR-1LITRE',pkg:"PCS",wt:0.5,price:165.0},
-  {sap:"44000000158",code:"69",desc:'MALA 1L BOTTLE',pkg:"PCS",wt:1.0,price:165.0},
-  {sap:"44000000159",code:"63",desc:'PLAIN MALA 1/2 LT BOTTLE',pkg:"PCS",wt:0.5,price:85.0},
-  {sap:"44000000536",code:"65",desc:'12*500ML SLEEVED MALA BOTTLE',pkg:"Trays",wt:6.0,price:956.28},
-  {sap:"44000000576",code:"60",desc:'BOTTLED MALA(1*12*250ML) SLEEVE',pkg:"Trays",wt:3.0,price:561.6},
-  {sap:"44000000817",code:"15",desc:'SWEETENED MALA 500ML',pkg:"Trays",wt:6.0,price:1072.92},
-  {sap:"44000001167",code:"10",desc:'SWEETENED MALA 1L',pkg:"PCS",wt:1.0,price:175.0},
-  {sap:"44000000818",code:"14",desc:'SWEETENED MALA 250ML',pkg:"Trays",wt:3.0,price:564.6},
-  {sap:"44000000436",code:"134",desc:'500ML FILPAK MALA',pkg:"Crates",wt:0.5,price:1260.0},
-  {sap:"44000000437",code:"135",desc:'MALA 200ML POUCH',pkg:"Crates",wt:0.2,price:630.0},
-  {sap:"44000001209",code:"9",desc:'SWEETENED MALA POUCH',pkg:"Crates",wt:0.5,price:1350.0},
-  {sap:"44000000024",code:"201",desc:'VANILLA YOGHURT 0.25LT CUPS',pkg:"Trays",wt:3.0,price:696.0},
-  {sap:"44000000025",code:"202",desc:'VANILLA YOGHURT 0.5LT CUPS',pkg:"Trays",wt:6.0,price:647.28},
-  {sap:"44000000936",code:"36",desc:'VANILLA CUP 100ML',pkg:"Trays",wt:1.2,price:200.0},
-  {sap:"44000000029",code:"204",desc:'STRAWBERRY YOGHURT 0.25LT CUPS',pkg:"Trays",wt:3.0,price:696.0},
-  {sap:"44000000030",code:"205",desc:'STRAWBERRY YOGHURT 0.5LT CUPS',pkg:"Trays",wt:6.0,price:647.28},
-  {sap:"44000000123",code:"216",desc:'COCONUT YOGHURT 0.25LT CUPS',pkg:"Trays",wt:3.0,price:696.0},
-  {sap:"44000000124",code:"217",desc:'COCONUT YOGHURT 0.5LT CUPS',pkg:"Trays",wt:6.0,price:647.28},
-  {sap:"44000000128",code:"219",desc:'NATURAL YOGHURT 0.25LT CUPS',pkg:"Trays",wt:3.0,price:756.0},
-  {sap:"44000000129",code:"220",desc:'NATURAL YOGHURT 0.5LT CUPS',pkg:"Trays",wt:6.0,price:647.28},
-  {sap:"44000000113",code:"210",desc:'PINEAPPLE YOGHURT 0.25LT CUPS',pkg:"Trays",wt:3.0,price:696.0},
-  {sap:"44000000114",code:"211",desc:'PINEAPPLE YOGHURT 0.5LT CUPS',pkg:"Trays",wt:6.0,price:647.28},
-  {sap:"44000000021",code:"40",desc:'KCC VANILLA YOGHURT (1x16) 1/2LT',pkg:"Trays",wt:8.0,price:1612.16},
-  {sap:"44000000026",code:"41",desc:'KCC STRAWBERRY YOGHURT (1x16) 1/2LT',pkg:"Trays",wt:8.0,price:1612.16},
-  {sap:"44000001097",code:"121",desc:'TCA 1*21*200ML STRAWBERRY SHAKE',pkg:"Trays",wt:4.2,price:777.0},
-  {sap:"44000001096",code:"120",desc:'TCA 1*21*200ML CHOCOLATE SHAKE',pkg:"Trays",wt:4.2,price:777.0},
-  {sap:"44000001098",code:"122",desc:'TCA 1*21*200ML VANILLA SHAKE',pkg:"Trays",wt:4.2,price:777.0},
-  {sap:"44000000052",code:"75",desc:'STRAWBERRY SHAKES 1*24*250ML',pkg:"Cartons",wt:6.0,price:1440.0},
-  {sap:"44000000053",code:"79",desc:'VANILLA SHAKES 1*24*250ML',pkg:"Cartons",wt:6.0,price:1440.0},
-  {sap:"44000000054",code:"77",desc:'CHOCOLATE SHAKES 1*24*250ML',pkg:"Cartons",wt:6.0,price:1440.0},
-  {sap:"44000000091",code:"432",desc:'RINDLESS CHEDDAR 150gms',pkg:"Cartons",wt:0.15,price:280.0},
-  {sap:"44000000090",code:"430",desc:'RINDLESS CHEDDAR 250gms',pkg:"Cartons",wt:0.25,price:450.0},
-  {sap:"44000000089",code:"433",desc:'RINDLESS CHEDDAR 500gms',pkg:"Cartons",wt:0.5,price:785.0},
-  {sap:"44000000088",code:"436",desc:'RINDLESS CHEDDAR 1KG',pkg:"Cartons",wt:1.0,price:1345.0},
-  {sap:"44000000176",code:"600",desc:'SALTED BUTTER TUBS 1*18*0.5KG',pkg:"Cartons",wt:9.0,price:16516.62},
-  {sap:"44000000177",code:"601",desc:'SALTED BUTTER TUBS 1*24*0.25KG',pkg:"Cartons",wt:6.0,price:12945.6},
-  {sap:"44000000178",code:"602",desc:'UNSALTED BUTTER TUBS 1*18*0.5KG',pkg:"Cartons",wt:9.0,price:16516.62},
-  {sap:"44000000179",code:"603",desc:'UNSALTED BUTTER TUBS 1*24*0.25KG',pkg:"Cartons",wt:6.0,price:12945.6},
-  {sap:"44000000041",code:"604",desc:'SALTED BUTTER 1*20*0.5KG',pkg:"Cartons",wt:10.0,price:18351.8},
-  {sap:"44000000042",code:"605",desc:'SALTED BUTTER 1*40*0.25KG',pkg:"Cartons",wt:10.0,price:21576.0},
-  {sap:"44000000040",code:"646",desc:'UNSALTED BUTTER 1*20*0.5KG',pkg:"Cartons",wt:10.0,price:18351.8},
-  {sap:"44000000546",code:"606",desc:'SALTED MINI BUTTER TUB 1x24x8GMS',pkg:"Cartons",wt:2.3,price:7807.68},
-  {sap:"44000000039",code:"757",desc:'BULK UNSALTED BUTTER 10KGS',pkg:"Cartons",wt:10.0,price:19400.0},
-  {sap:"44000000417",code:"758",desc:'BULK SALTED BUTTER 10KGS',pkg:"Cartons",wt:10.0,price:19400.0},
-  {sap:"44000000996",code:"1036",desc:'DRIED POWDER 1*12*400GRMS',pkg:"Bags",wt:4.8,price:6408.0},
-  {sap:"44000000986",code:"1037",desc:'DRIED MILK POWDER 1*12*900GRMS',pkg:"Bags",wt:10.8,price:14652.0},
-  {sap:"44000000997",code:"1038",desc:'DRIED POWDER 1*6*2.50KG TIN',pkg:"Bags",wt:15.0,price:17670.0},
-  {sap:"44000000044",code:"1031",desc:'DRIED WHOLE MILK POWDER 1x25KG',pkg:"Bags",wt:25.0,price:22000.0},
-  {sap:"44000000045",code:"1021",desc:'DRIED SKIMMED MILK POWDER 1x25KG',pkg:"Bags",wt:25.0,price:21000.0},
-  {sap:"44000000084",code:"885",desc:'SUPERFINE GHEE 20x1/2KG',pkg:"Cartons",wt:10.0,price:9440.0},
-  {sap:"44000000083",code:"882",desc:'SUPERFINE GHEE 12x1KG',pkg:"Cartons",wt:12.0,price:10284.0},
-  {sap:"44000000081",code:"876",desc:'SUPERFINE GHEE 6x3KG',pkg:"Cartons",wt:18.0,price:12327.0},
-  {sap:"44000000082",code:"877",desc:'SUPERFINE GHEE 6x2KG',pkg:"Cartons",wt:12.0,price:8574.0},
-  {sap:"44000000080",code:"851",desc:'SUPERFINE GHEE 1x18KG',pkg:"Buckets",wt:18.0,price:17280.0},
-  {sap:"44000000010",code:"68",desc:'GOLD CROWN 1X16X500ML (TR)',pkg:"PCS",wt:0.5,price:65.0},
-  {sap:"44000000006",code:"70",desc:'KCC FRESH MILK 1X16X500ML (TR)',pkg:"Crates",wt:8.0,price:956.16},
-  {sap:"44000000001",code:"55",desc:'GOLD CROWN FILPAK 1X18X500ML',pkg:"Crates",wt:9.0,price:936.0},
-  {sap:"44000000002",code:"59",desc:'GOLD CROWN FILPAK 1X45X200ML',pkg:"Crates",wt:9.0,price:945.0},
-  {sap:"44000000003",code:"84",desc:'KCC FRESH FILPAK 1X18X500ML',pkg:"Crates",wt:9.0,price:936.0},
-  {sap:"44000000004",code:"86",desc:'KCC FRESH FILPAK 1X45X200ML',pkg:"Crates",wt:9.0,price:900.0},
-  {sap:"44000000094",code:"85",desc:'TAIFA FRESH FILPAK 1X18X500ML',pkg:"Crates",wt:9.0,price:900.0},
-  {sap:"44000000096",code:"54",desc:'TAIFA FRESH FILPAK 1X45X200ML',pkg:"Crates",wt:9.0,price:360.0},
-  {sap:"44000001027",code:"97",desc:'KCC FRESH MILK 500ML BOTTLE',pkg:"PCS",wt:0.5,price:70.0},
-  {sap:"44000001026",code:"98",desc:'GOLD CROWN FRESH MILK 500ML BOTTLE',pkg:"PCS",wt:0.5,price:70.0},
-  {sap:"44000000013",code:"100",desc:'GOLD CROWN FRESH MILK 1LT BOTTLE',pkg:"PCS",wt:1.0,price:130.0},
-  {sap:"44000000014",code:"101",desc:'GOLD CROWN FRESH MILK 2LT BOTTLE',pkg:"PCS",wt:2.0,price:250.0},
-  {sap:"44000000015",code:"102",desc:'GOLD CROWN FRESH MILK 3LT BOTTLE',pkg:"PCS",wt:3.0,price:390.0},
-  {sap:"44000000016",code:"103",desc:'GOLD CROWN STANDARD 1LT BOTTLE',pkg:"PCS",wt:1.0,price:130.0},
-  {sap:"44000000017",code:"104",desc:'GOLD CROWN STANDARD 2LT BOTTLE',pkg:"PCS",wt:2.0,price:250.0},
-  {sap:"44000000018",code:"105",desc:'GOLD CROWN STANDARD 3LT BOTTLE',pkg:"PCS",wt:3.0,price:390.0},
-  {sap:"44000000019",code:"106",desc:'GOLD CROWN LOWFAT 2LT BOTTLE',pkg:"PCS",wt:2.0,price:250.0},
-  {sap:"44000000020",code:"107",desc:'GOLD CROWN LOWFAT 3LT BOTTLE',pkg:"PCS",wt:3.0,price:390.0},
-  {sap:"44000000876",code:"108",desc:'GOLD CROWN FRESH MILK 5LT BOTTLE',pkg:"PCS",wt:5.0,price:580.0},
-  {sap:"44000000000",code:"50",desc:'BULK FRESH MILK 20L PACK',pkg:"PCS",wt:20.0,price:2000.0}
+  {sap:"44000000797",code:"18",desc:'TBA G/C 1*12*1 LTR LACTOSE FREE',pkg:"Packs",wt:12,price:1920},
+  {sap:"44000000798",code:"17",desc:'LACTOSE FREE 12*500ML',pkg:"Cartons",wt:6,price:900},
+  {sap:"44000000656",code:"71",desc:'TBA GC 1LT',pkg:"Cartons",wt:4,price:1644},
+  {sap:"44000000626",code:"73C",desc:'UHT FULL CREAM 1L',pkg:"Cartons",wt:4,price:458},
+  {sap:"44000000616",code:"73B",desc:'UHT FULL CREAM WITH CUPS 1L',pkg:"Cartons",wt:12,price:1308},
+  {sap:"44000000062",code:"81",desc:'UHT FULL CREAM 500ML',pkg:"Cartons",wt:6,price:732},
+  {sap:"44000001007",code:"500",desc:'Gold Crown Purified Drinking Water 1*24*300ML Bottle',pkg:"Trays",wt:7.199999999999999,price:456},
+  {sap:"44000001008",code:"501",desc:'Gold Crown Purified Drinking Water 1*24*500ML Bottle',pkg:"Trays",wt:12,price:576},
+  {sap:"44000001078",code:"502",desc:'Gold Crown Purified Drinking Water 1*12*1L Bottle',pkg:"Trays",wt:12,price:528},
+  {sap:"44000001079",code:"503",desc:'Gold Crown Purified Drinking Water 1*12*1.5LTR Bottle',pkg:"Trays",wt:18,price:768},
+  {sap:"44000000033",code:"88",desc:'PLAIN MALA (1x16) 1/2 (TR)',pkg:"PCS",wt:0.5,price:85},
+  {sap:"44000000806",code:"110",desc:'MALA TR-1LITRE',pkg:"PCS",wt:0.5,price:165},
+  {sap:"44000000158",code:"69",desc:'MALA 1L BOTTLE',pkg:"PCS",wt:1,price:165},
+  {sap:"44000000159",code:"63",desc:'PLAIN MALA 1/2 LT BOTTLE',pkg:"PCS",wt:0.5,price:85},
+  {sap:"44000000536",code:"65",desc:'12*500 ML SLEEVED MALA BOTTLE',pkg:"Trays",wt:6,price:956.28},
+  {sap:"44000000576",code:"60",desc:'BOTTLED MALA(1*12*250ML) SLEEVE',pkg:"Trays",wt:3,price:561.5999999999999},
+  {sap:"44000000817",code:"15",desc:'SWEETENED MALA -500 ML',pkg:"Trays",wt:6,price:1072.92},
+  {sap:"44000001167",code:"10",desc:'SWEETENED MALA 1L',pkg:"PCS",wt:1,price:175},
+  {sap:"44000000818",code:"14",desc:'SWEETENED MALA -250 ML',pkg:"Trays",wt:3,price:564.5999999999999},
+  {sap:"44000000436",code:"134",desc:'500ML FILPAK MALA',pkg:"Crates",wt:0.5,price:1260},
+  {sap:"44000000437",code:"135",desc:'MALA 200ML POUCH',pkg:"Crates",wt:0.2,price:630},
+  {sap:"44000001209",code:"9",desc:'SWEETEND MALA POUCH',pkg:"Crates",wt:0.5,price:1350},
+  {sap:"44000000023",code:"200",desc:'VANNILA YOGHURT 0.15 LT CUPS',pkg:"",wt:0,price:0},
+  {sap:"44000000024",code:"201",desc:'VANNILA YOGHURT 0.25 LT CUPS',pkg:"Trays",wt:3,price:696},
+  {sap:"44000000025",code:"202",desc:'VANNILA YOGHURT 0.5 LT CUPS',pkg:"Trays",wt:6,price:647.28},
+  {sap:"44000000936",code:"36",desc:'VANILLA CUP 100 ML',pkg:"Trays",wt:1.2,price:200},
+  {sap:"44000000028",code:"203",desc:'STRAW BERRY YOGHURT 0.15 LT CUPS',pkg:"",wt:0,price:0},
+  {sap:"44000000029",code:"204",desc:'STRAW BERRY YOGHURT 0.25LT CUPS',pkg:"Trays",wt:3,price:696},
+  {sap:"44000000030",code:"205",desc:'STRAW BERRY YOGHURT 0.5LT CUPS',pkg:"Trays",wt:6,price:647.28},
+  {sap:"44000000123",code:"216",desc:'COCONUT YOGHURT 0.25LT CUPS',pkg:"Trays",wt:3,price:696},
+  {sap:"44000000124",code:"217",desc:'COCONUT YOGHURT 0.5LT CUPS',pkg:"Trays",wt:6,price:647.28},
+  {sap:"44000000127",code:"218",desc:'NATURAL YOGHURT 0.15 LT CUPS',pkg:"",wt:0,price:0},
+  {sap:"44000000128",code:"219",desc:'NATURAL YOGHURT 0.25LT CUPS',pkg:"Trays",wt:3,price:756},
+  {sap:"44000000129",code:"220",desc:'NATURAL YOGHURT 0.5LT CUPS',pkg:"Trays",wt:6,price:647.28},
+  {sap:"44000000113",code:"210",desc:'PINEAPPLE YOGHURT 0.25LT  CUPS',pkg:"Trays",wt:3,price:696},
+  {sap:"44000000114",code:"211",desc:'PINEAPPLE YOGHURT 0.5LT  CUPS',pkg:"Trays",wt:6,price:647.28},
+  {sap:"44000000021",code:"40",desc:'KCC VANILLA YOGHURT (1x16) 1/2LT (TR)',pkg:"Trays",wt:8,price:1612.16},
+  {sap:"44000000026",code:"41",desc:'KCC STRAWBERRY YOGHURT (1x16) 1/2LT (TR)',pkg:"Trays",wt:8,price:1612.16},
+  {sap:"44000001097",code:"121",desc:'TCA 1*21*200ML STRAWBERRY MILK SHAKE',pkg:"Trays",wt:4.2,price:777},
+  {sap:"44000001096",code:"120",desc:'TCA 1*21*200ML CHOCOLATE MILK SHAKE',pkg:"Trays",wt:4.2,price:777},
+  {sap:"44000001098",code:"122",desc:'TCA 1*21*200ML VANILLA MILK SHAKE',pkg:"Trays",wt:4.2,price:777},
+  {sap:"44000000052",code:"75",desc:'STRAWBERRY FLAVOUR 1*24*250 ML SHAKES',pkg:"Cartons",wt:6,price:1440},
+  {sap:"44000000053",code:"79",desc:'VANILLA FLAVOUR 1*24*250 ML SHAKES',pkg:"Cartons",wt:6,price:1440},
+  {sap:"44000000054",code:"77",desc:'CHOCOLATE FLAVOUR 1*24*250 ML SHAKES',pkg:"Cartons",wt:6,price:1440},
+  {sap:"44000000091",code:"432",desc:'RINDLESS CHEDDAR 150gms*90',pkg:"Cartons",wt:0.15,price:280},
+  {sap:"44000000090",code:"430",desc:'RINDLESS CHEDDAR 250gms',pkg:"Cartons",wt:0.25,price:450},
+  {sap:"44000000089",code:"433",desc:'RINDLESS CHEDDAR 500 gms',pkg:"Cartons",wt:0.5,price:785},
+  {sap:"44000000088",code:"436",desc:'RINDLESS CHEDDAR 1 KG',pkg:"Cartons",wt:1,price:1345},
+  {sap:"44000000176",code:"600",desc:'SALTED BUTTER TUBS 1*18* 0.5KG',pkg:"Cartons",wt:9,price:16516.62},
+  {sap:"44000000177",code:"601",desc:'SALTED BUTTER TUBS 1*24* 0.25KG',pkg:"Cartons",wt:6,price:12945.599999999999},
+  {sap:"44000000178",code:"602",desc:'UNSALTED BUTTER TUBS 1*18* 0.5KG',pkg:"Cartons",wt:9,price:16516.62},
+  {sap:"44000000179",code:"603",desc:'UNSALTED BUTTER TUBS 1*24* 0.25KG',pkg:"Cartons",wt:6,price:12945.599999999999},
+  {sap:"44000000041",code:"604",desc:'SALTED BUTTER 1*20*0.5KG',pkg:"Cartons",wt:10,price:18351.8},
+  {sap:"44000000042",code:"605",desc:'SALTED BUTTER 1*40*0.25KG',pkg:"Cartons",wt:10,price:21576},
+  {sap:"44000000040",code:"646",desc:'UNSALTED BUTTER 1*20* 0.5KG',pkg:"Cartons",wt:10,price:18351.8},
+  {sap:"44000000043",code:"709",desc:'SALTED MINI BUTTER 1x100x10 GMS x 12',pkg:"Cartons",wt:1.2,price:32532},
+  {sap:"44000000546",code:"606",desc:'SALTED MINI BUTTER TUB 1x24x8 GMS x 12',pkg:"Cartons",wt:2.3,price:7807.68},
+  {sap:"44000000039",code:"757",desc:'BULK UNSALTED BUTTER 10 KGS',pkg:"Cartons",wt:10,price:19400},
+  {sap:"44000000417",code:"758",desc:'BULK SALTED BUTTER 10 KGS',pkg:"Cartons",wt:10,price:19400},
+  {sap:"44000000996",code:"1036",desc:'DRIED POWDER 1*12*400 GRMS',pkg:"BAGS",wt:4.8,price:6408},
+  {sap:"44000000986",code:"1037",desc:'DRIED MILK POWDER 1*12*900 GRMS',pkg:"Bags",wt:10.8,price:14652},
+  {sap:"44000000997",code:"1038",desc:'DRIED POWDER 1*6*2.50 KG TIN',pkg:"Bags",wt:15,price:17670},
+  {sap:"44000000044",code:"1031",desc:'DRIED WHOLE MILK POWDER 1 x 25 KG BAG',pkg:"Bags",wt:25,price:22000},
+  {sap:"44000000045",code:"1021",desc:'DRIED SKIMMED MILK POWDER 1 x 25 KG BAG',pkg:"Bags",wt:25,price:21000},
+  {sap:"44000000084",code:"885",desc:'SUPERFINE GHEE 20 x 1/2KG TINS',pkg:"Cartons",wt:10,price:9440},
+  {sap:"44000000083",code:"882",desc:'SUPERFINE GHEE 12 x 1KG TINS',pkg:"Cartons",wt:12,price:10284},
+  {sap:"44000000081",code:"876",desc:'SUPERFINE GHEE 6 x 3KG TINS',pkg:"Cartons",wt:18,price:12327},
+  {sap:"44000000082",code:"877",desc:'SUPERFINE GHEE 6 x 2KG TINS',pkg:"Cartons",wt:12,price:8574},
+  {sap:"44000000080",code:"851",desc:'SUPERFINE GHEE 1 x 18KG PLASTIC',pkg:"Buckets",wt:18,price:17280},
+  {sap:"44000000010",code:"68",desc:'GOLD CROWN 1X16X500ML (TR)',pkg:"PCS",wt:0.5,price:65},
+  {sap:"44000000006",code:"70",desc:'KCC FRESH MILK 1X16X500ML (TR)',pkg:"Crates",wt:8,price:956.16},
+  {sap:"44000000001",code:"55",desc:'GOLD CROWN FILPAK 1X18X500ML POUCH',pkg:"Crates",wt:9,price:936},
+  {sap:"44000000002",code:"59",desc:'GOLD CROWN FILPAK 1X45X200ML POUCH',pkg:"Crates",wt:9,price:945},
+  {sap:"44000000003",code:"84",desc:'KCC FRESH FILPAK 1X18X500ML POUCH',pkg:"Crates",wt:9,price:936},
+  {sap:"44000000004",code:"86",desc:'KCC FRESH FILPAK 1X45X200ML POUCH',pkg:"Crates",wt:9,price:900},
+  {sap:"44000000094",code:"85",desc:'TAIFA FRESH FILPAK 1X18X500ML POUCH',pkg:"Crates",wt:9,price:900},
+  {sap:"44000000096",code:"54",desc:'TAIFA FRESH FILPAK 1X45X200ML POUCH',pkg:"Crates",wt:9,price:360},
+  {sap:"44000001027",code:"97",desc:'KCC FRESH MILK 500ML BOTTLE',pkg:"PCS",wt:0.5,price:70},
+  {sap:"44000001026",code:"98",desc:'GOLD CROWN FRESH MILK  500ML BOTTLE',pkg:"PCS",wt:0.5,price:70},
+  {sap:"44000000013",code:"100",desc:'GOLD CROWN FRESH MILK 1X35X1LT BOTTLE',pkg:"PCS",wt:1,price:130},
+  {sap:"44000000014",code:"101",desc:'GOLD CROWN FRESH MILK 1X18X2LT BOTTLE',pkg:"PCS",wt:2,price:250},
+  {sap:"44000000015",code:"102",desc:'GOLD CROWN FRESH MILK 1X10X3LT BOTTLE',pkg:"PCS",wt:3,price:390},
+  {sap:"44000000016",code:"103",desc:'GOLD CROWN STANDARD 1X35X1LT BOTTLE',pkg:"PCS",wt:1,price:130},
+  {sap:"44000000017",code:"104",desc:'GOLD CROWN STANDARD 1X18X2LT BOTTLE',pkg:"PCS",wt:2,price:250},
+  {sap:"44000000018",code:"105",desc:'GOLD CROWN STANDARD 1X10X3LT BOTTLE',pkg:"PCS",wt:3,price:390},
+  {sap:"44000000019",code:"106",desc:'GOLD CROWN LOWFAT 1X18X2LT BOTTLE',pkg:"PCS",wt:2,price:250},
+  {sap:"44000000020",code:"107",desc:'GOLD CROWN LOWFAT 1X10X3LT BOTTLE',pkg:"PCS",wt:3,price:390},
+  {sap:"44000000876",code:"108",desc:'GOLD CROWN FRESH MILK 5 LITRE BOTTLE',pkg:"PCS",wt:5,price:580},
+  {sap:"33000000004",code:"51",desc:'BULK FRESH MILK 50 LITRE CAN',pkg:"PCS",wt:50,price:4500},
+  {sap:"44000000000",code:"50",desc:'BULK FRESH MILK 20L PACK',pkg:"PCS",wt:20,price:2000}
 ];
 
 const SAP_TO_CODE = {};
@@ -8155,10 +8268,6 @@ let activeActualsTab = 'overview';
 let activeCompTab = 'customer';
 let actualsCharts = {};
 
-// ═══════════════════════════════════════
-// EXTEND switchMode to include actuals/comparison
-// ═══════════════════════════════════════
-const _origSwitchMode = switchMode;
 
 // ═══════════════════════════════════════
 // FILE UPLOAD
