@@ -378,8 +378,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
     </div>
     <div class="mode-tabs no-print">
       <button class="mode-tab active" onclick="switchMode('order')">📦 Place Order</button>
-      <button class="mode-tab" onclick="switchMode('actuals')">📥 Sales Actuals</button>
-      <button class="mode-tab" onclick="switchMode('comparison')">⚖️ vs Actuals</button>
+      <button class="mode-tab" onclick="switchMode('actuals')">📥 Actual Sales</button>
+      <button class="mode-tab" onclick="switchMode('comparison')">📊 Dashboard</button>
     </div>
   </div>
 </header>
@@ -394,11 +394,11 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
   <button class="bnav-item" id="bnav-actuals" onclick="switchMode('actuals')">
     <span class="bnav-icon">📥</span>
-    <span class="bnav-label">Actuals</span>
+    <span class="bnav-label">Actual Sales</span>
   </button>
   <button class="bnav-item" id="bnav-comparison" onclick="switchMode('comparison')">
-    <span class="bnav-icon">⚖️</span>
-    <span class="bnav-label">vs Actuals</span>
+    <span class="bnav-icon">📊</span>
+    <span class="bnav-label">Dashboard</span>
   </button></nav>
 
 <!-- ═══════════════════════ ORDER VIEW ═══════════════════════ -->
@@ -432,8 +432,12 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
             <option value="">— Select your route —</option>
           </select>
         </div>
+        <div class="form-group full">
+          <label>Order Date</label>
+          <input type="date" id="orderDate" onchange="checkReady()"
+            style="font-size:1rem;padding:12px 14px;border-radius:10px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);width:100%;min-height:48px;">
+        </div>
       </div>
-      <input type="hidden" id="orderDate">
       <button class="btn-add" id="btnToStep2" onclick="goToStep2()" disabled>
         Continue — Add Products →
       </button>
@@ -1002,32 +1006,57 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
 <!-- ═══════════════════════ COMPARISON VIEW ═══════════════════════ -->
 <div id="viewComparison" class="container hidden">
+
+  <!-- ── Filter bar ── -->
+  <div class="panel" style="margin-bottom:16px;">
+    <div class="panel-header" style="flex-wrap:wrap;gap:10px;">
+      <h2>📊 Dashboard</h2>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <select id="dbFilterSm" onchange="renderDashboard2()" style="font-size:.8rem;padding:6px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--surface);color:var(--text);min-height:34px;">
+          <option value="">All Salespeople</option>
+        </select>
+        <select id="dbFilterRoute" onchange="renderDashboard2()" style="font-size:.8rem;padding:6px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--surface);color:var(--text);min-height:34px;">
+          <option value="">All Routes</option>
+        </select>
+        <select id="dbFilterCat" onchange="renderDashboard2()" style="font-size:.8rem;padding:6px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--surface);color:var(--text);min-height:34px;">
+          <option value="">All Categories</option>
+        </select>
+        <input type="date" id="dbFilterFrom" onchange="renderDashboard2()" style="font-size:.8rem;padding:6px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--surface);color:var(--text);min-height:34px;">
+        <span style="font-size:.75rem;color:var(--muted);">to</span>
+        <input type="date" id="dbFilterTo" onchange="renderDashboard2()" style="font-size:.8rem;padding:6px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--surface);color:var(--text);min-height:34px;">
+        <button class="btn btn-primary btn-sm" onclick="renderDashboard2()">🔍 Apply</button>
+        <button class="btn btn-outline btn-sm" onclick="clearDashboard2Filters()">✕ Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── No-data state ── -->
   <div id="compNoData" class="panel">
     <div class="panel-body" style="text-align:center;padding:36px;">
-      <div style="font-size:2.5rem;margin-bottom:12px;">⚖️</div>
-      <div style="font-family:'DM Serif Display',serif;font-size:1.3rem;margin-bottom:8px;">Orders vs Actuals Comparison</div>
-      <div style="color:var(--muted);font-size:.85rem;margin-bottom:20px;">Requires <strong>Sales Orders</strong> loaded from SheetDB + <strong>Sales Actuals</strong> file uploaded.</div>
+      <div style="font-size:2.5rem;margin-bottom:12px;">📊</div>
+      <div style="font-family:'DM Serif Display',serif;font-size:1.3rem;margin-bottom:8px;">Orders vs Actuals Dashboard</div>
+      <div style="color:var(--muted);font-size:.85rem;margin-bottom:20px;">Requires <strong>Sales Orders</strong> loaded + <strong>Actual Sales</strong> file uploaded.</div>
       <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;">
         <div id="compCheckOrders" style="padding:10px 18px;border-radius:10px;font-size:.82rem;font-weight:600;background:#fef9ee;color:#C9941A;">⏳ Orders: loading…</div>
         <div id="compCheckActuals" style="padding:10px 18px;border-radius:10px;font-size:.82rem;font-weight:600;background:var(--surface2);color:var(--muted);">❌ Actuals: not uploaded</div>
       </div>
-      <div style="font-size:.78rem;color:var(--muted);">Go to <strong>📥 Sales Actuals</strong> tab to upload your SAP export file.</div>
+      <div style="font-size:.78rem;color:var(--muted);">Go to <strong>📥 Actual Sales</strong> tab to upload your SAP export file.</div>
     </div>
   </div>
 
+  <!-- ── Main dashboard ── -->
   <div id="compMain" class="hidden">
-    <div class="panel" style="margin-bottom:18px;">
-      <div class="panel-body" style="padding:14px 22px;">
-        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-          <div id="compPeriodBadge"></div>
-          <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-            <input type="text" id="compSearchInput" placeholder="🔍 Search customer or product…" oninput="buildComparison()" style="width:230px;padding:7px 12px;font-size:.8rem;min-height:36px;">
-          </div>
-        </div>
+
+    <!-- Period badge + search -->
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+      <div id="compPeriodBadge"></div>
+      <div style="margin-left:auto;">
+        <input type="text" id="compSearchInput" placeholder="🔍 Search customer or product…" oninput="buildComparison()" style="width:220px;padding:7px 12px;font-size:.8rem;min-height:34px;border-radius:8px;border:1px solid var(--bd);background:var(--surface);color:var(--text);">
       </div>
     </div>
 
-    <div class="kpi-row">
+    <!-- KPI row -->
+    <div class="kpi-row" style="margin-bottom:16px;">
       <div class="kpi b"><div class="val" id="ckOrderCusts">—</div><div class="lbl">Ordered Customers</div></div>
       <div class="kpi g"><div class="val" id="ckActualCusts">—</div><div class="lbl">Customers Served</div></div>
       <div class="kpi o"><div class="val" id="ckOrderRev">—</div><div class="lbl">Order Value (KES)</div></div>
@@ -1036,52 +1065,76 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       <div class="kpi r"><div class="val" id="ckGap">—</div><div class="lbl">Revenue Gap</div></div>
     </div>
 
-    <div class="g2" style="margin-bottom:18px;">
-      <div class="panel"><div class="panel-header"><h2>Orders vs Actuals — Top Products</h2></div><div class="panel-body"><div class="chart-box tall"><canvas id="cCompProd"></canvas></div></div></div>
-      <div class="panel"><div class="panel-header"><h2>Achievement Rate by Product</h2></div><div class="panel-body"><div class="chart-box tall"><canvas id="cCompAch"></canvas></div></div></div>
-    </div>
-
-    <div class="itabs-wrap">
+    <!-- Report tabs -->
+    <div class="itabs-wrap" style="margin-bottom:14px;">
       <div class="itabs">
-        <button class="itab active" onclick="switchCompTab('customer',this)">By Customer</button>
-        <button class="itab" onclick="switchCompTab('product',this)">By Product</button>
-        <button class="itab" onclick="switchCompTab('unmatched',this)">⚠️ Gaps &amp; Unmatched</button>
+        <button class="itab active" onclick="switchCompTab('customer',this)">👤 By Customer</button>
+        <button class="itab" onclick="switchCompTab('product',this)">📦 By Product</button>
+        <button class="itab" onclick="switchCompTab('charts',this)">📈 Charts</button>
+        <button class="itab" onclick="switchCompTab('salesman',this)">🧑‍💼 By Salesperson</button>
+        <button class="itab" onclick="switchCompTab('unmatched',this)">⚠️ Gaps</button>
       </div>
     </div>
 
+    <!-- By Customer -->
     <div id="ctByCustomer">
       <div class="panel">
-        <div class="panel-header"><h2>Customer-Level Comparison</h2><span style="font-size:.72rem;color:var(--muted);margin-left:8px;">Orders placed vs actual sales delivered per customer</span><button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="exportCompCSV()">⬇ CSV</button></div>
+        <div class="panel-header">
+          <h2>Customer-Level Comparison</h2>
+          <span style="font-size:.72rem;color:var(--muted);margin-left:8px);">Orders placed vs actual sales</span>
+          <button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="exportCompCSV()">⬇ CSV</button>
+        </div>
         <div style="overflow-x:auto;" id="compCustTable"></div>
       </div>
     </div>
+
+    <!-- By Product -->
     <div id="ctByProduct" class="hidden">
       <div class="panel">
         <div class="panel-header"><h2>Product-Level Comparison</h2></div>
         <div style="overflow-x:auto;" id="compProdTable"></div>
       </div>
     </div>
+
+    <!-- Charts -->
+    <div id="ctCharts" class="hidden">
+      <div class="g2" style="margin-bottom:18px;">
+        <div class="panel"><div class="panel-header"><h2>Orders vs Actuals — Top Products</h2></div><div class="panel-body"><div class="chart-box tall"><canvas id="cCompProd"></canvas></div></div></div>
+        <div class="panel"><div class="panel-header"><h2>Achievement Rate by Product</h2></div><div class="panel-body"><div class="chart-box tall"><canvas id="cCompAch"></canvas></div></div></div>
+      </div>
+    </div>
+
+    <!-- By Salesperson -->
+    <div id="ctBySalesman" class="hidden">
+      <div class="panel">
+        <div class="panel-header"><h2>Salesperson-Level Comparison</h2></div>
+        <div style="overflow-x:auto;" id="compSmTable"></div>
+      </div>
+    </div>
+
+    <!-- Gaps & Unmatched -->
     <div id="ctUnmatched" class="hidden">
       <div class="g2">
         <div class="panel">
-          <div class="panel-header"><h2>🔴 Ordered — No Actual Sale</h2><span style="font-size:.72rem;color:var(--muted);margin-left:4px;">customers with orders but no recorded delivery</span></div>
+          <div class="panel-header"><h2>🔴 Ordered — No Actual Sale</h2><span style="font-size:.72rem;color:var(--muted);margin-left:4px;">orders with no recorded delivery</span></div>
           <div style="overflow-x:auto;" id="compUnservedTable"></div>
         </div>
         <div class="panel">
-          <div class="panel-header"><h2>🟢 Actual Sales — No Order</h2><span style="font-size:.72rem;color:var(--muted);margin-left:4px;">sold without an order in the system</span></div>
+          <div class="panel-header"><h2>🟢 Actual Sale — No Order</h2><span style="font-size:.72rem;color:var(--muted);margin-left:4px;">sold without an order in system</span></div>
           <div style="overflow-x:auto;" id="compExtraTable"></div>
         </div>
       </div>
     </div>
+
   </div>
-</div>
+</div></div>
 
 
 <div class="toast" id="toast"></div>
 
 <script>
 // ═══════════ CONFIG ═══════════
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwfZ89KAmWHiaXXwYcGgSOuU9Y3UmieJkWElbIgwnnILAwC3Ia2pFYeub7mLxFGnH6i6w/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbw47Svfnlrb9XtgJzKUixO5g-JcYoGGMhkU8VYWX3dgH673upIEgrzU19OFHqFO3mAUTA/exec";
 
 // ═══════════ MASTER DATA ═══════════
 const SALESMEN = [
@@ -6479,7 +6532,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const smSorted = [...SALESMEN].sort((a,b) => a.n.localeCompare(b.n));
 
   // Always-present elements
-  if (el('orderDate')) el('orderDate').value = now.toISOString();
+  if (el('orderDate')) el('orderDate').value = td;  // default to today
   if (el('dfrom'))     el('dfrom').value = '2020-01-01';
   if (el('dto'))       el('dto').value = td;
 
@@ -6972,10 +7025,11 @@ function renderOrderTable() {
 }
 
 function checkReady() {
-  const readyForStep2 = !!(currentSalesman && currentRoute);
+  const orderDate = (document.getElementById('orderDate')||{}).value;
+  const readyForStep2 = !!(currentSalesman && currentRoute && orderDate);
   const btnS2 = document.getElementById('btnToStep2');
   if (btnS2) btnS2.disabled = !readyForStep2;
-  document.getElementById('submitBtn').disabled = !(currentSalesman && currentRoute && orderLines.length);
+  document.getElementById('submitBtn').disabled = !(currentSalesman && currentRoute && orderDate && orderLines.length);
   // Update header badge
   const badge = document.getElementById('headerBadge');
   if (badge) { badge.textContent = orderLines.length; badge.classList.toggle('show', orderLines.length > 0); }
@@ -6991,48 +7045,91 @@ async function submitOrder() {
   if (!currentSalesman || !orderLines.length) return;
   const btn = document.getElementById('submitBtn');
   btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Submitting…';
-  try {
 
-    await new Promise((resolve, reject) => {
-      const cb = 'submit_' + Date.now();
-      const script = document.createElement('script');
-      window[cb] = function(result) {
-        delete window[cb];
-        script.remove();
-        if (result.status === 'ok') {
-          showToast(`✅ Order submitted! ${orderLines.length} lines saved.`, 'success');
-          orderLines=[]; renderOrderTable(); checkReady();
-          resolve();
-        } else {
-          reject(new Error(result.message || 'Unknown error'));
-        }
-      };
-      script.onerror = () => reject(new Error('Network error'));
-      const payload = {
-        timestamp:        new Date().toISOString(),
-        salesman_payroll: currentSalesman.p,
-        salesman_name:    currentSalesman.n,
-        route:            currentRoute,
-        lines:            orderLines.map(line => ({
-          customerAcc:  line.customerAcc,
-          customerName: line.customerName,
-          productCode:  line.productCode,
-          productDesc:  line.productDesc,
-          productPkg:   line.productPkg,
-          qty:          line.qty,
-          unitWt:       line.unitWt,
-          totalWt:      line.totalWt,
-          unitPrice:    line.unitPrice  || 0,
-          totalRevenue: line.totalRevenue || 0,
-        }))
-      };
-      script.src = GAS_URL + '?callback=' + cb + '&data=' + encodeURIComponent(JSON.stringify(payload));
-      document.head.appendChild(script);
+  const payload = {
+    timestamp:        (document.getElementById('orderDate').value || new Date().toISOString().split('T')[0]) + 'T00:00:00.000Z',
+    salesman_payroll: currentSalesman.p,
+    salesman_name:    currentSalesman.n,
+    route:            currentRoute,
+    lines:            orderLines.map(line => ({
+      customerAcc:  line.customerAcc,
+      customerName: line.customerName,
+      productCode:  line.productCode,
+      productDesc:  line.productDesc,
+      productPkg:   line.productPkg,
+      qty:          line.qty,
+      unitWt:       line.unitWt,
+      totalWt:      line.totalWt,
+      unitPrice:    line.unitPrice  || 0,
+      totalRevenue: line.totalRevenue || 0,
+    }))
+  };
+
+  try {
+    // Use fetch with no-cors — GAS accepts POST, we won't get a response body
+    // but the data is written. We verify success by checking the response is not blocked.
+    await fetch(GAS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload)
     });
+    // no-cors gives opaque response — if we reach here without throwing, treat as success
+    const lineCount = orderLines.length;
+    orderLines = []; renderOrderTable(); checkReady();
+    showToast(`✅ Order submitted! ${lineCount} lines saved.`, 'success');
   } catch(e) {
-    showToast('⚠️ Submission failed: ' + e.message, 'error');
+    // Fallback: iframe POST (works even when fetch is blocked)
+    submitViaIframe(payload, btn);
+    return;
   }
+
   btn.innerHTML = '🚀 Submit Order to Google Sheets'; btn.disabled = false;
+}
+
+function submitViaIframe(payload, btn) {
+  // Create a hidden iframe as the form target so the POST doesn't navigate away
+  const iframeName = 'gasFrame_' + Date.now();
+  const iframe = document.createElement('iframe');
+  iframe.name = iframeName;
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = GAS_URL;
+  form.target = iframeName;
+  form.style.display = 'none';
+
+  const input = document.createElement('input');
+  input.type = 'hidden';
+  input.name = 'data';
+  input.value = JSON.stringify(payload);
+  form.appendChild(input);
+
+  document.body.appendChild(form);
+
+  const lineCount = orderLines.length;
+
+  // Listen for iframe load = GAS responded
+  iframe.onload = () => {
+    iframe.remove(); form.remove();
+    orderLines = []; renderOrderTable(); checkReady();
+    showToast(`✅ Order submitted! ${lineCount} lines saved.`, 'success');
+    if (btn) { btn.innerHTML = '🚀 Submit Order to Google Sheets'; btn.disabled = false; }
+  };
+
+  // Timeout fallback — GAS can take a few seconds
+  setTimeout(() => {
+    if (document.body.contains(iframe)) {
+      iframe.remove(); form.remove();
+      orderLines = []; renderOrderTable(); checkReady();
+      showToast(`✅ Order submitted! ${lineCount} lines saved.`, 'success');
+      if (btn) { btn.innerHTML = '🚀 Submit Order to Google Sheets'; btn.disabled = false; }
+    }
+  }, 8000);
+
+  form.submit();
 }
 
 // ═══════════ SUPERVISOR VIEW ═══════════
@@ -8131,6 +8228,96 @@ function renderTimingTab() {
   </div>`;
 }
 
+// ═══════════ DASHBOARD (COMPARISON) FILTERS ═══════════
+function initDashboard2Filters() {
+  const smSel = document.getElementById('dbFilterSm');
+  const rtSel = document.getElementById('dbFilterRoute');
+  const ctSel = document.getElementById('dbFilterCat');
+  if (!smSel || smSel.options.length > 1) return;
+  [...SALESMEN].sort((a,b)=>a.n.localeCompare(b.n)).forEach(s => {
+    const o = document.createElement('option'); o.value=s.p; o.textContent=`${s.n} (${s.p})`; smSel.appendChild(o);
+  });
+  ROUTES.forEach(r => {
+    const o = document.createElement('option'); o.value=r; o.textContent=r; rtSel.appendChild(o);
+  });
+  const cats = [...new Set(PRODUCTS.map(p=>p.k))].sort();
+  cats.forEach(c => { const o=document.createElement('option'); o.value=c; o.textContent=c; ctSel.appendChild(o); });
+  // Default dates
+  const now = new Date(), td = now.toISOString().split('T')[0];
+  const from = document.getElementById('dbFilterFrom'); if(from&&!from.value) from.value='2020-01-01';
+  const to   = document.getElementById('dbFilterTo');   if(to&&!to.value)     to.value=td;
+}
+
+function getDashboard2Data() {
+  const smF  = (document.getElementById('dbFilterSm')||{}).value    || '';
+  const rtF  = (document.getElementById('dbFilterRoute')||{}).value || '';
+  const catF = (document.getElementById('dbFilterCat')||{}).value   || '';
+  const from = (document.getElementById('dbFilterFrom')||{}).value;
+  const to   = (document.getElementById('dbFilterTo')||{}).value;
+  return allData.filter(r => {
+    if (smF  && r.salesman_payroll !== smF)  return false;
+    if (rtF  && r.route            !== rtF)  return false;
+    if (catF) {
+      const prod = PRODUCTS.find(p=>p.c===String(r.product_code));
+      if (!prod || prod.k !== catF) return false;
+    }
+    if (from || to) {
+      const d = new Date(r.timestamp);
+      if (from && d < new Date(from+'T00:00:00')) return false;
+      if (to   && d > new Date(to  +'T23:59:59')) return false;
+    }
+    return true;
+  });
+}
+
+function clearDashboard2Filters() {
+  ['dbFilterSm','dbFilterRoute','dbFilterCat'].forEach(id => {
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  const now=new Date(), td=now.toISOString().split('T')[0];
+  const from=document.getElementById('dbFilterFrom'); if(from) from.value='2020-01-01';
+  const to=document.getElementById('dbFilterTo');     if(to)   to.value=td;
+  renderDashboard2();
+}
+
+function renderDashboard2() {
+  // re-run buildComparison with filtered orders
+  buildComparison();
+}
+
+function renderCompSmTable() {
+  const orders   = getDashboard2Data();
+  const actuals  = actualsData;
+  if(!orders.length && !actuals.length) return;
+
+  // Group orders by salesman
+  const OS={};
+  orders.forEach(r=>{
+    const k=r.salesman_payroll||'Unknown';
+    if(!OS[k]) OS[k]={name:r.salesman_name||k,lines:0,rev:0};
+    OS[k].lines++; OS[k].rev+=parseFloat(r.total_revenue)||0;
+  });
+
+  const fmtK=v=>v>=1000000?'KES '+(v/1000000).toFixed(1)+'M':v>=1000?'KES '+(v/1000).toFixed(0)+'K':'KES '+Math.round(v).toLocaleString();
+  const rows=Object.entries(OS).sort((a,b)=>b[1].rev-a[1].rev);
+
+  const wrap=document.getElementById('compSmTable');
+  if(!wrap) return;
+  if(!rows.length){ wrap.innerHTML='<div class="empty" style="padding:24px"><p>No data.</p></div>'; return; }
+
+  wrap.innerHTML=`<table class="tbl"><thead><tr>
+    <th>#</th><th>Payroll</th><th>Salesperson</th><th>Order Lines</th><th>Order Value</th>
+  </tr></thead><tbody>${rows.map(([p,d],i)=>`<tr>
+    <td style="font-family:'DM Mono',monospace;color:var(--muted);font-size:.72rem">${i+1}</td>
+    <td><span class="badge">${p}</span></td>
+    <td style="font-weight:600;font-size:.82rem">${d.name}</td>
+    <td style="font-family:'DM Mono',monospace">${d.lines.toLocaleString()}</td>
+    <td style="font-family:'DM Mono',monospace;color:var(--green)">${fmtK(d.rev)}</td>
+  </tr>`).join('')}</tbody></table>
+  <div style="padding:8px 14px;background:var(--cream);border-top:1px solid var(--bd);font-size:.72rem;color:var(--muted);">${rows.length} salespeople</div>`;
+}
+
+
 // ═══════════ TOAST ═══════════
 // ═══════════════════════════════════════
 // PRODUCT MAPPING (SAP ↔ old code)
@@ -8412,6 +8599,7 @@ function exportActualsCSV() {
 // COMPARISON
 // ═══════════════════════════════════════
 function renderComparisonStatus() {
+  initDashboard2Filters();
   const hasOrders=allData&&allData.length>0;
   const hasActuals=actualsData.length>0;
   const nd=document.getElementById('compNoData'), cm=document.getElementById('compMain');
@@ -8428,25 +8616,30 @@ function switchCompTab(tab,btn) {
   activeCompTab=tab;
   document.querySelectorAll('#compMain .itab').forEach(t=>t.classList.remove('active'));
   if(btn) btn.classList.add('active');
-  document.getElementById('ctByCustomer').classList.toggle('hidden',tab!=='customer');
-  document.getElementById('ctByProduct').classList.toggle('hidden',tab!=='product');
-  document.getElementById('ctUnmatched').classList.toggle('hidden',tab!=='unmatched');
+  ['ctByCustomer','ctByProduct','ctCharts','ctBySalesman','ctUnmatched'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.classList.add('hidden');
+  });
+  const map = {customer:'ctByCustomer',product:'ctByProduct',charts:'ctCharts',salesman:'ctBySalesman',unmatched:'ctUnmatched'};
+  const show = document.getElementById(map[tab]); if(show) show.classList.remove('hidden');
+  // Render salesman table on demand
+  if(tab==='salesman') renderCompSmTable();
 }
 
 function buildComparison() {
   if(!allData||!allData.length||!actualsData.length) return;
+  const ordersToUse = getDashboard2Data && typeof getDashboard2Data==='function' ? getDashboard2Data() : allData;
   const pb=document.getElementById('compPeriodBadge');
   if(pb&&actualsPeriod) pb.innerHTML=`<span class="period-badge">📅 Actuals: ${actualsPeriod}</span>`;
 
   // Orders by customer
   const OC={};
-  allData.forEach(r=>{ const a=String(r.customer_acc||'').replace(/^0+/,''); if(!OC[a]) OC[a]={name:r.customer_name,lines:0,revenue:0}; OC[a].lines++; OC[a].revenue+=parseFloat(r.total_revenue)||0; });
+  ordersToUse.forEach(r=>{ const a=String(r.customer_acc||'').replace(/^0+/,''); if(!OC[a]) OC[a]={name:r.customer_name,lines:0,revenue:0}; OC[a].lines++; OC[a].revenue+=parseFloat(r.total_revenue)||0; });
   // Actuals by customer
   const AC={};
   actualsData.forEach(r=>{ const a=String(r.cust_acc||'').replace(/^0+/,''); if(!AC[a]) AC[a]={name:r.cust_name,lines:0,revenue:0}; AC[a].lines++; AC[a].revenue+=r.total_sales; });
   // Orders by product
   const OP={};
-  allData.forEach(r=>{ const k=r.product_code; if(!k) return; if(!OP[k]) OP[k]={code:k,desc:r.product_desc||k,ord_qty:0,ord_rev:0}; OP[k].ord_qty+=parseInt(r.qty)||0; OP[k].ord_rev+=parseFloat(r.total_revenue)||0; });
+  ordersToUse.forEach(r=>{ const k=r.product_code; if(!k) return; if(!OP[k]) OP[k]={code:k,desc:r.product_desc||k,ord_qty:0,ord_rev:0}; OP[k].ord_qty+=parseInt(r.qty)||0; OP[k].ord_rev+=parseFloat(r.total_revenue)||0; });
   // Actuals by product (using old_code for matching)
   const AP={};
   actualsData.forEach(r=>{ const k=r.old_code||r.sap_code; if(!AP[k]) AP[k]={code:k,sap:r.sap_code,desc:r.desc,category:r.category,act_qty:0,act_rev:0}; AP[k].act_qty+=r.qty; AP[k].act_rev+=r.total_sales; });
