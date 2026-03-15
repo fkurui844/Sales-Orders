@@ -10215,14 +10215,10 @@ function rebuildDropdowns() {
 
 // ── EXPORT CODE (for updating the HTML file) ──
 function exportDevCode() {
-  const smCode   = JSON.stringify(devSalesmen).replace(/},{/g,'},
-  {');
-  const rtCode   = JSON.stringify(devRoutes).replace(/,/g,',
-  ');
-  const prodCode = JSON.stringify(devProducts).replace(/},{/g,'},
-  {');
-  const custCode = JSON.stringify(devCustomers.slice(0,10)).replace(/},{/g,'},
-  {');
+  const smCode   = JSON.stringify(devSalesmen).replace(/},{/g,'},\n  {');
+  const rtCode   = JSON.stringify(devRoutes).replace(/,/g,',\n  ');
+  const prodCode = JSON.stringify(devProducts).replace(/},{/g,'},\n  {');
+  const custCode = JSON.stringify(devCustomers.slice(0,10)).replace(/},{/g,'},\n  {');
 
   const code = `// ── SALESMEN ──
 const SALESMEN = ${smCode};
