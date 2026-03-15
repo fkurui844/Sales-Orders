@@ -4,7 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sales Order System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Fallback fonts if Google Fonts fails to load */
+body { font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; }
+</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
@@ -7076,8 +7082,9 @@ function setFilter(type, btn) {
 }
 
 function applyFilter() {
-  const from = new Date(document.getElementById('dfrom').value+'T00:00:00');
-  const to   = new Date(document.getElementById('dto').value+'T23:59:59');
+  if (typeof allData==='undefined'||!allData) return;
+  const from = new Date((document.getElementById('dfrom').value||'2020-01-01')+'T00:00:00');
+  const to   = new Date((document.getElementById('dto').value||new Date().toISOString().split('T')[0])+'T23:59:59');
   filteredData = allData.filter(r => { if (!r.timestamp) return false; const d = new Date(r.timestamp); return d >= from && d <= to; });
 }
 
@@ -8100,6 +8107,7 @@ function getRouteDateRange() {
 }
 
 function renderRoutesTab() {
+  if (typeof allData === 'undefined' || !allData) return;
   const { from, to } = getRouteDateRange();
   const selectedRoute = document.getElementById('routeFilterSelect').value;
 
@@ -8253,13 +8261,12 @@ function renderRoutesTab() {
     </div>` : '<div class="empty" style="padding:24px"><p>No data for this period.</p></div>';
 
   // Store for trend re-render
-  window._routeTrendAllData = allRouteData;
+  window._routeTrendAllData = data;
   renderRouteTrend();
 }
 
 function renderRouteTrend() {
   const allData2 = (window._routeTrendAllData) || (typeof filteredData!=='undefined'?filteredData:null) || (typeof allData!=='undefined'?allData:null);
-  if (!allData2 || !allData2.length) return;
   if (!allData2 || !allData2.length) return;
   const canvas = document.getElementById('cRouteTrend');
   if (!canvas) return;
@@ -8571,6 +8578,7 @@ function setRevenueFilter(type, btn) {
 }
 
 function renderRevenueTab() {
+  if (typeof allData==='undefined'||!allData) return;
   const from = new Date((document.getElementById('rvDateFrom').value||'2020-01-01')+'T00:00:00');
   const to   = new Date((document.getElementById('rvDateTo').value||new Date().toISOString().split('T')[0])+'T23:59:59');
   const smFilter = document.getElementById('rvSmFilter').value;
@@ -8726,6 +8734,7 @@ function setTimingFilter(type, btn) {
 }
 
 function renderTimingTab() {
+  if (typeof allData==='undefined'||!allData) return;
   const from = new Date((document.getElementById('tDateFrom').value||'2020-01-01')+'T00:00:00');
   const to   = new Date((document.getElementById('tDateTo').value||new Date().toISOString().split('T')[0])+'T23:59:59');
   const smFilter = document.getElementById('timingSmFilter').value;
@@ -9142,6 +9151,7 @@ function updateDbActiveFilters() {
 }
 
 function getDashboard2Data() {
+  if (typeof allData==='undefined'||!allData) return [];
   const smF  = (document.getElementById('dbFilterSm')||{}).value    || '';
   const rtF  = (document.getElementById('dbFilterRoute')||{}).value || '';
   const catF = (document.getElementById('dbFilterCat')||{}).value   || '';
