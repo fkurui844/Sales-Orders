@@ -252,6 +252,22 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 .theme-opt.active { font-weight: 700; color: var(--gold); }
 
 
+/* ── Export searchable dropdowns ── */
+.exp-dd-wrap { position: relative; }
+.exp-dd-list {
+  display: none; position: absolute; top: calc(100% + 2px); left: 0; right: 0;
+  background: var(--surface); border: 1.5px solid var(--bd); border-radius: 8px;
+  box-shadow: 0 6px 20px var(--shadow); max-height: 200px; overflow-y: auto;
+  z-index: 500; scrollbar-width: thin;
+}
+.exp-dd-list.open { display: block; }
+.exp-dd-opt {
+  padding: 9px 14px; cursor: pointer; font-size: .82rem; color: var(--text);
+  transition: background .12s;
+}
+.exp-dd-opt:hover { background: var(--surface2); }
+.exp-dd-opt.selected { font-weight: 700; color: var(--gold); }
+
 /* ── Dashboard searchable filters ── */
 .db-dd-wrap { position: relative; }
 .db-dd-list {
@@ -998,38 +1014,49 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
             <label>Date To</label>
             <input type="date" id="expDateTo">
           </div>
+          <!-- Salesperson searchable -->
           <div class="form-group">
             <label>Salesperson</label>
-            <select id="expSalesman">
-              <option value="">All Salespeople</option>
-            </select>
+            <div class="exp-dd-wrap" id="expSmWrap">
+              <input type="text" id="expSmSearch" placeholder="🔍 Search name or payroll…"
+                oninput="expFilterList('sm')" onfocus="expShowDd('sm')"
+                autocomplete="off" style="width:100%;">
+              <input type="hidden" id="expSalesman">
+              <div class="exp-dd-list" id="expSmDd"></div>
+            </div>
           </div>
+          <!-- Route searchable -->
           <div class="form-group">
             <label>Route</label>
-            <select id="expRoute">
-              <option value="">All Routes</option>
-            </select>
+            <div class="exp-dd-wrap" id="expRouteWrap">
+              <input type="text" id="expRouteSearch" placeholder="🔍 Search route…"
+                oninput="expFilterList('route')" onfocus="expShowDd('route')"
+                autocomplete="off" style="width:100%;">
+              <input type="hidden" id="expRoute">
+              <div class="exp-dd-list" id="expRouteDd"></div>
+            </div>
           </div>
+          <!-- Category searchable -->
           <div class="form-group">
             <label>Product Category</label>
-            <select id="expCategory">
-              <option value="">All Categories</option>
-              <option>TFA</option><option>TCA</option><option>ESL</option>
-              <option>TBA</option><option>WATER</option><option>MALA</option>
-              <option>YOGHURT</option><option>SHAKES</option><option>CHEESE</option>
-              <option>BUTTER</option><option>POWDER</option><option>GHEE</option>
-            </select>
+            <div class="exp-dd-wrap" id="expCatWrap">
+              <input type="text" id="expCatSearch" placeholder="🔍 Search category…"
+                oninput="expFilterList('cat')" onfocus="expShowDd('cat')"
+                autocomplete="off" style="width:100%;">
+              <input type="hidden" id="expCategory">
+              <div class="exp-dd-list" id="expCatDd"></div>
+            </div>
           </div>
+          <!-- Channel searchable -->
           <div class="form-group">
             <label>Channel</label>
-            <select id="expChannel">
-              <option value="">All Channels</option>
-              <option>CARREFOUR</option><option>CHANDARANA</option><option>CLEANSHELF</option>
-              <option>EASTMATT</option><option>MAGUNAS</option><option>MATHAI</option>
-              <option>NAIVAS</option><option>QUICKMART</option><option>KHETIA</option>
-              <option>DISTRIBUTOR</option><option>WHOLESALER</option><option>INSTITUTION</option>
-              <option>EXPORTS</option>
-            </select>
+            <div class="exp-dd-wrap" id="expChWrap">
+              <input type="text" id="expChSearch" placeholder="🔍 Search channel…"
+                oninput="expFilterList('ch')" onfocus="expShowDd('ch')"
+                autocomplete="off" style="width:100%;">
+              <input type="hidden" id="expChannel">
+              <div class="exp-dd-list" id="expChDd"></div>
+            </div>
           </div>
         </div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
@@ -8099,6 +8126,7 @@ function renderRoutesTab() {
 let exportData = [];
 
 function initExportTab() {
+  initExpDropdowns();
   applyExportFilter();
 }
 
@@ -9219,6 +9247,82 @@ function renderChannelTab() {
     <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:600">${fmtK(r.rev)}</td>
   </tr>`).join('')}</tbody></table>
   <div style="padding:8px 14px;background:var(--cream);border-top:1px solid var(--bd);font-size:.72rem;color:var(--muted);">${rows.length} channels</div>`;
+}
+
+
+// ═══════════ EXPORT SEARCHABLE DROPDOWNS ═══════════
+let expLists = {};
+
+function initExpDropdowns() {
+  if (Object.keys(expLists).length) return; // already built
+  expLists.sm    = [...SALESMEN].sort((a,b)=>a.n.localeCompare(b.n)).map(s=>({val:s.p, label:`${s.n} (${s.p})`}));
+  expLists.route = ROUTES.map(r=>({val:r, label:r}));
+  expLists.cat   = [...new Set(PRODUCTS.map(p=>p.k))].sort().map(c=>({val:c,label:c}));
+  expLists.ch    = [...new Set(
+    typeof CUSTOMERS!=='undefined' ? CUSTOMERS.map(c=>c.ch).filter(Boolean) : []
+  )].sort().map(c=>({val:c,label:c}));
+  // Close on outside click
+  document.addEventListener('click', e => {
+    ['expSmWrap','expRouteWrap','expCatWrap','expChWrap'].forEach(id => {
+      const wrap = document.getElementById(id);
+      if (wrap && !wrap.contains(e.target)) {
+        const dd = wrap.querySelector('.exp-dd-list');
+        if (dd) dd.classList.remove('open');
+      }
+    });
+  });
+}
+
+function expShowDd(type) {
+  initExpDropdowns();
+  const wrapId = {sm:'expSmWrap',route:'expRouteWrap',cat:'expCatWrap',ch:'expChWrap'}[type];
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  expRenderDd(type, wrap.querySelector('input[type=text]').value.toLowerCase());
+  wrap.querySelector('.exp-dd-list').classList.add('open');
+}
+
+function expFilterList(type) {
+  initExpDropdowns();
+  const wrapId   = {sm:'expSmWrap',route:'expRouteWrap',cat:'expCatWrap',ch:'expChWrap'}[type];
+  const hiddenId = {sm:'expSalesman',route:'expRoute',cat:'expCategory',ch:'expChannel'}[type];
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  const q = wrap.querySelector('input[type=text]').value.toLowerCase();
+  expRenderDd(type, q);
+  wrap.querySelector('.exp-dd-list').classList.add('open');
+  const hid = document.getElementById(hiddenId);
+  if (hid) hid.value = ''; // clear until item selected
+}
+
+function expRenderDd(type, q) {
+  const wrapId   = {sm:'expSmWrap',route:'expRouteWrap',cat:'expCatWrap',ch:'expChWrap'}[type];
+  const hiddenId = {sm:'expSalesman',route:'expRoute',cat:'expCategory',ch:'expChannel'}[type];
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  const dd     = wrap.querySelector('.exp-dd-list');
+  const curVal = (document.getElementById(hiddenId)||{}).value || '';
+  const items  = (expLists[type]||[]).filter(i => !q || i.label.toLowerCase().includes(q));
+
+  dd.innerHTML = `<div class="exp-dd-opt" style="color:var(--muted);font-size:.75rem;"
+    onclick="expSelectItem('${type}','','')">✕ All / Clear</div>`
+    + items.slice(0, 100).map(i =>
+      `<div class="exp-dd-opt${i.val===curVal?' selected':''}"
+        onclick="expSelectItem('${type}','${i.val.replace(/'/g,"\'")}','${i.label.replace(/'/g,"\'")}')"
+       >${i.label}</div>`
+    ).join('');
+}
+
+function expSelectItem(type, val, label) {
+  const wrapId   = {sm:'expSmWrap',route:'expRouteWrap',cat:'expCatWrap',ch:'expChWrap'}[type];
+  const hiddenId = {sm:'expSalesman',route:'expRoute',cat:'expCategory',ch:'expChannel'}[type];
+  const searchId = {sm:'expSmSearch',route:'expRouteSearch',cat:'expCatSearch',ch:'expChSearch'}[type];
+  const wrap = document.getElementById(wrapId);
+  const hid  = document.getElementById(hiddenId);
+  const inp  = document.getElementById(searchId);
+  if (inp) inp.value  = val ? label : '';
+  if (hid) hid.value  = val;
+  if (wrap) wrap.querySelector('.exp-dd-list').classList.remove('open');
 }
 
 
