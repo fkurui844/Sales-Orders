@@ -450,7 +450,6 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <button class="sys-menu-item" onclick="openDashSection('overview')">📈 Overview</button>
         <button class="sys-menu-item" onclick="openDashSection('salesman')">👤 By Salesperson</button>
         <button class="sys-menu-item" onclick="openDashSection('products')">📦 By Product</button>
-        <button class="sys-menu-item" onclick="openDashSection('daily')">📅 Daily Trend</button>
         <button class="sys-menu-item" onclick="openDashSection('routes')">🗺️ By Route</button>
         <button class="sys-menu-item" onclick="openDashSection('revenue')">💰 Revenue</button>
         <button class="sys-menu-item" onclick="openDashSection('timing')">⏱️ Timing</button>
@@ -666,24 +665,9 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div class="kpi g"><div class="val" id="dTrade" style="font-size:1rem;">—</div><div class="lbl">Total Revenue</div></div>
       </div>
       <!-- Supervisor KPIs (hidden, used by renderSupervisor) -->
-      <div id="svKpiBlock" class="kpi-row" style="padding:6px 16px 0;">
-        <div class="kpi b"><div class="val" id="svSalesmen">—</div><div class="lbl">Active Salespeople</div></div>
-        <div class="kpi g"><div class="val" id="svLines">—</div><div class="lbl">Order Lines</div></div>
-        <div class="kpi o"><div class="val" id="svKg">—</div><div class="lbl">Total kg</div></div>
-        <div class="kpi p"><div class="val" id="svCusts">—</div><div class="lbl">Customers</div></div>
-        <div class="kpi g"><div class="val" id="svTrade" style="font-size:1rem;">—</div><div class="lbl">Revenue (KES)</div></div>
-      </div>
+
       <!-- Supervisor salesperson list (used by renderSupervisor/selectSvSm) -->
-      <div id="svGridBlock" class="supervisor-grid" style="padding:12px 16px;">
-        <div class="panel">
-          <div class="panel-header"><h2>Salespeople</h2></div>
-          <div style="padding:8px;"><div class="sm-list" id="svSmList"></div></div>
-        </div>
-        <div class="panel">
-          <div class="panel-header"><h2 id="svDetailTitle">Select a salesperson</h2><button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="exportCSV()">⬇ CSV</button></div>
-          <div id="svDetailBody"><div class="empty"><div class="ico">👈</div><p>Pick a salesperson from the list.</p></div></div>
-        </div>
-      </div>
+
 
 
 
@@ -731,7 +715,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
     <!-- All salesmen comparison -->
     <div class="g2" style="margin-top:20px;">
       <div class="panel"><div class="panel-header"><h2>kg by Salesperson</h2></div><div class="panel-body"><div class="chart-box tall"><canvas id="cAllSmKg"></canvas></div></div></div>
-      <div class="panel"><div class="panel-header"><h2>Lines by Salesperson</h2></div><div class="panel-body"><div class="chart-box tall"><canvas id="cAllSmLines"></canvas></div></div></div>
+      <div class="panel"><div class="panel-header"><h2>Daily Trend by Salesperson</h2></div><div class="panel-body"><div class="chart-box tall"><canvas id="cSmTrend"></canvas></div></div></div>
     </div>
     <div class="panel" style="margin-bottom:20px;">
       <div class="panel-header"><h2>All Salespeople Detail</h2></div>
@@ -742,6 +726,18 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       <div class="g2">
       <div class="panel"><div class="panel-header"><h2>Top Products — Total kg</h2></div><div class="panel-body"><div class="chart-box tall"><canvas id="cProdKg"></canvas></div></div></div>
       <div class="panel"><div class="panel-header"><h2>Category Mix</h2></div><div class="panel-body"><div class="chart-box tall"><canvas id="cCatMix"></canvas></div></div></div>
+    </div>
+    <div class="panel" style="margin-bottom:18px;">
+      <div class="panel-header"><h2>Daily Trend by Product</h2>
+        <div style="margin-left:auto;">
+          <select id="prodTrendFilter" onchange="renderProdTrend()" style="font-size:.78rem;padding:5px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--surface);color:var(--text);">
+            <option value="top5">Top 5 Products</option>
+            <option value="top10">Top 10 Products</option>
+            <option value="cat">By Category</option>
+          </select>
+        </div>
+      </div>
+      <div class="panel-body"><div class="chart-box tall"><canvas id="cProdTrend"></canvas></div></div>
     </div>
     <div class="panel"><div class="panel-header"><h2>All Products Ranked</h2></div><div style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch;" id="allProdTable"></div></div>
     </div>
@@ -813,6 +809,21 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       <div class="panel-header"><h2>All Routes Summary</h2></div>
       <div style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch;" id="allRoutesTable"></div>
     </div>
+
+    <div class="panel" style="margin-top:18px;">
+      <div class="panel-header">
+        <h2>Daily Trend by Route</h2>
+        <div style="margin-left:auto;">
+          <select id="routeTrendFilter" onchange="renderRouteTrend()" style="font-size:.78rem;padding:5px 10px;border-radius:8px;border:1px solid var(--bd);background:var(--surface);color:var(--text);">
+            <option value="top5">Top 5 Routes</option>
+            <option value="top10">Top 10 Routes</option>
+            <option value="all">All Routes</option>
+          </select>
+        </div>
+      </div>
+      <div class="panel-body"><div class="chart-box tall"><canvas id="cRouteTrend"></canvas></div></div>
+    </div>
+
     </div>
       <div id="dtRevenue" class="hidden">
       <div class="panel" style="margin-bottom:18px;">
@@ -6743,6 +6754,8 @@ const PRICES = {
 let orderLines = [], currentSalesman = null, currentRoute = null;
 let allData = [], filteredData = [];
 let activeSvSm = null, activeDashTab = 'overview';
+let routeDateFilter = 'today';
+let revenueDateFilter = 'today';
 let charts = {};
 
 const COLORS = ['#1A7A4A','#C9941A','#1A4A7A','#C0392B','#6C3483','#16A085','#E67E22','#2980B9','#8E44AD','#117A65','#D35400','#1F618D'];
@@ -6869,7 +6882,7 @@ function openDashSection(tab) {
   // Hide the header section for export tab
   // For export: hide entire header; for channel/customer/salesman: hide KPIs + supervisor grid
   const noHeader = ['export'];
-  const noKpis   = ['salesman','customer','channel'];
+  const noKpis   = ['salesman','customer','channel','products','daily','routes','revenue','timing','export'];
   const sysHeader = document.getElementById('systemPanelHeader');
   if (sysHeader) sysHeader.style.display = noHeader.includes(tab) ? 'none' : '';
 
@@ -6877,11 +6890,7 @@ function openDashSection(tab) {
   const globalKpis = document.querySelector('#systemPanelHeader .kpi-row');
   if (globalKpis) globalKpis.style.display = noKpis.includes(tab) ? 'none' : '';
 
-  // Supervisor KPI block + grid
-  const svKpi  = document.getElementById('svKpiBlock');
-  const svGrid = document.getElementById('svGridBlock');
-  if (svKpi)  svKpi.style.display  = noKpis.includes(tab) ? 'none' : '';
-  if (svGrid) svGrid.style.display = noKpis.includes(tab) ? 'none' : '';
+
 
   // Switch the tab
   switchDashTab(tab, null);
@@ -6958,10 +6967,15 @@ function switchDashTab(tab, btn) {
   activeDashTab = tab;
 
   // Show/hide dt panels
-  ['Overview','Salesman','Products','Daily','Routes','Revenue','Timing','Customer','Channel','Export'].forEach(t => {
+  ['Overview','Salesman','Products','Routes','Revenue','Timing','Customer','Channel','Export'].forEach(t => {
     const dtEl = document.getElementById('dt'+t);
     if (dtEl) dtEl.classList.toggle('hidden', t.toLowerCase() !== tab);
   });
+  // Hide individual salesperson panel when leaving salesman tab
+  if (tab !== 'salesman') {
+    const smp = document.getElementById('smDashPanel');
+    if (smp) smp.classList.add('hidden');
+  }
   renderDashboard();
 }
 
@@ -7652,12 +7666,14 @@ function renderSupervisor() {
   if(sv('svTrade'))    sv('svTrade').textContent    = totalTrade > 0 ? 'KES '+Math.round(totalTrade).toLocaleString() : '—';
 
   const el = document.getElementById('svSmList');
-  if (!sms.length) { el.innerHTML = '<div style="padding:14px;color:var(--muted);font-size:.82rem;">No orders yet.</div>'; return; }
-  el.innerHTML = sms.sort((a,b)=>a.name.localeCompare(b.name)).map(s=>`
-    <div class="sm-item ${activeSvSm===s.payroll?'active':''}" onclick="selectSvSm('${s.payroll}')">
-      <span>${s.name}</span><span class="cnt">${s.lines.length}</span>
-    </div>`).join('');
-  if (activeSvSm) { const a=g[activeSvSm]; if(a) renderSvDetail(a); }
+  if (el) {
+    if (!sms.length) { el.innerHTML = '<div style="padding:14px;color:var(--muted);font-size:.82rem;">No orders yet.</div>'; return; }
+    el.innerHTML = sms.sort((a,b)=>a.name.localeCompare(b.name)).map(s=>`
+      <div class="sm-item ${activeSvSm===s.payroll?'active':''}" onclick="selectSvSm('${s.payroll}')">
+        <span>${s.name}</span><span class="cnt">${s.lines.length}</span>
+      </div>`).join('');
+    if (activeSvSm) { const a=g[activeSvSm]; if(a) renderSvDetail(a); }
+  }
 }
 
 function selectSvSm(payroll) {
@@ -7672,7 +7688,7 @@ function renderSvDetail(s) {
   const tw = s.lines.reduce((sum,r)=>sum+(parseFloat(r.total_wt)||0),0);
   const uc = new Set(s.lines.map(r=>r.customer_acc)).size;
   const routes = [...new Set(s.lines.map(r=>r.route).filter(Boolean))].join(', ') || '—';
-  document.getElementById('svDetailBody').innerHTML = `
+  const sdb = document.getElementById('svDetailBody'); if (!sdb) return; sdb.innerHTML = `
     <div style="padding:10px 20px;border-bottom:1px solid var(--border);background:var(--cream);display:flex;gap:12px;flex-wrap:wrap;">
       <span class="pill green"><span class="dot"></span>${s.lines.length} lines</span>
       <span class="pill gold"><span class="dot"></span>${tw.toFixed(2)} kg</span>
@@ -7764,6 +7780,7 @@ function rankHtml(items, labelFn, valFn, colorFn) {
 
 // ═══════════ RENDER DASHBOARD ═══════════
 function renderDashboard() {
+  if (typeof filteredData==='undefined') return;
   const data = filteredData;
   // KPIs
   const tw = data.reduce((s,r)=>s+(parseFloat(r.total_wt)||0),0);
@@ -7785,7 +7802,6 @@ function renderDashboard() {
   if (activeDashTab==='overview') renderOverview(data);
   else if (activeDashTab==='salesman') renderSalesmanTab(data);
   else if (activeDashTab==='products') renderProductsTab(data);
-  else if (activeDashTab==='daily') renderDailyTab(data);
   else if (activeDashTab==='routes') renderRoutesTab();
   else if (activeDashTab==='export')   initExportTab();
   else if (activeDashTab==='customer') renderCustomerTab();
@@ -7816,9 +7832,59 @@ function renderSalesmanTab(data) {
   dc('cAllSmKg');
   const ctx1 = document.getElementById('cAllSmKg').getContext('2d');
   charts['cAllSmKg'] = new Chart(ctx1,{type:'bar',data:{labels:lbl,datasets:[{label:'kg',data:top15.map(s=>+s.kg.toFixed(2)),backgroundColor:top15.map((_,i)=>COLORS[i%COLORS.length]),borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{color:'#f0ede8'}},y:{grid:{display:false}}}}});
-  dc('cAllSmLines');
-  const ctx2 = document.getElementById('cAllSmLines').getContext('2d');
-  charts['cAllSmLines'] = new Chart(ctx2,{type:'bar',data:{labels:lbl,datasets:[{label:'Lines',data:top15.map(s=>s.lines),backgroundColor:top15.map((_,i)=>COLORS[i%COLORS.length]+'88'),borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,grid:{color:'#f0ede8'}},y:{grid:{display:false}}}}});
+
+  // ── Daily trend line chart — top 8 salesperson by kg ──
+  dc('cSmTrend');
+  const trendCtx = document.getElementById('cSmTrend');
+  if (trendCtx) {
+    const top8 = sms.slice(0, 8);
+
+    // Build sorted unique date list
+    const allDates = [...new Set(data.map(r => dkey(r.timestamp)))].sort();
+
+    // Aggregate kg per salesman per day
+    const smDayKg = {};
+    data.forEach(r => {
+      const k = r.salesman_payroll;
+      const d = dkey(r.timestamp);
+      if (!smDayKg[k]) smDayKg[k] = {};
+      smDayKg[k][d] = (smDayKg[k][d] || 0) + (parseFloat(r.total_wt) || 0);
+    });
+
+    const datasets = top8.map((s, i) => ({
+      label: s.name,
+      data: allDates.map(d => +(smDayKg[s.payroll]?.[d] || 0).toFixed(1)),
+      borderColor: COLORS[i % COLORS.length],
+      backgroundColor: COLORS[i % COLORS.length] + '22',
+      borderWidth: 2,
+      pointRadius: 3,
+      pointHoverRadius: 5,
+      tension: 0.4,
+      fill: false,
+    }));
+
+    charts['cSmTrend'] = new Chart(trendCtx.getContext('2d'), {
+      type: 'line',
+      data: { labels: allDates, datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12 } },
+          tooltip: {
+            callbacks: {
+              label: i => `${i.dataset.label}: ${i.raw} kg`
+            }
+          }
+        },
+        scales: {
+          x: { ticks: { font: { size: 9 }, maxTicksLimit: 10 }, grid: { display: false } },
+          y: { beginAtZero: true, ticks: { callback: v => v + ' kg', font: { size: 9 } } }
+        }
+      }
+    });
+  }
+
 
   // Detail table
   document.getElementById('allSmTable').innerHTML = `<table class="tbl"><thead><tr><th>#</th><th>Salesperson</th><th>Payroll</th><th>Lines</th><th>Customers</th><th>Total kg</th></tr></thead><tbody>
@@ -7900,6 +7966,72 @@ function renderProductsTab(data) {
       <td style="font-family:'DM Mono',monospace;font-weight:600;color:var(--green)">${p.kg.toFixed(2)}</td>
     </tr>`).join('')}</tbody></table>`;
 }
+  window._prodTrendData = data;
+  renderProdTrend();
+
+function renderProdTrend() {
+  const data = window._prodTrendData || (typeof filteredData !== 'undefined' ? filteredData : null) || (typeof allData !== 'undefined' ? allData : null);
+  if (!data || !data.length) return;
+  const mode = (document.getElementById('prodTrendFilter')||{}).value || 'top5';
+  const canvas = document.getElementById('cProdTrend');
+  if (!canvas) return;
+  const allDates = [...new Set(data.map(r => dkey(r.timestamp)))].sort();
+  let datasets = [];
+  if (mode === 'cat') {
+    const catDayKg = {};
+    data.forEach(r => {
+      const p = PRODUCTS.find(p => p.c === String(r.product_code||''));
+      const cat = p ? p.k : 'OTHER';
+      const d = dkey(r.timestamp);
+      if (!catDayKg[cat]) catDayKg[cat] = {};
+      catDayKg[cat][d] = (catDayKg[cat][d]||0) + (parseFloat(r.total_wt)||0);
+    });
+    const catTotals = Object.entries(catDayKg)
+      .map(([cat, days]) => ({ cat, total: Object.values(days).reduce((s,v)=>s+v,0) }))
+      .sort((a,b) => b.total - a.total);
+    datasets = catTotals.map((ct, i) => ({
+      label: ct.cat,
+      data: allDates.map(d => +((catDayKg[ct.cat][d])||0).toFixed(1)),
+      borderColor: COLORS[i%COLORS.length],
+      backgroundColor: COLORS[i%COLORS.length]+'22',
+      borderWidth:2, pointRadius:3, pointHoverRadius:5, tension:0.4, fill:false
+    }));
+  } else {
+    const n = mode === 'top10' ? 10 : 5;
+    const top = getProdData(data).slice(0, n);
+    const prodDayKg = {};
+    data.forEach(r => {
+      const k = String(r.product_code||'');
+      const d = dkey(r.timestamp);
+      if (!prodDayKg[k]) prodDayKg[k] = {};
+      prodDayKg[k][d] = (prodDayKg[k][d]||0) + (parseFloat(r.total_wt)||0);
+    });
+    datasets = top.map((p, i) => ({
+      label: p.desc.length > 22 ? p.desc.slice(0,22)+'\u2026' : p.desc,
+      data: allDates.map(d => +((prodDayKg[p.code]||{})[d]||0).toFixed(1)),
+      borderColor: COLORS[i%COLORS.length],
+      backgroundColor: COLORS[i%COLORS.length]+'22',
+      borderWidth:2, pointRadius:3, pointHoverRadius:5, tension:0.4, fill:false
+    }));
+  }
+  dc('cProdTrend');
+  charts['cProdTrend'] = new Chart(canvas.getContext('2d'), {
+    type: 'line',
+    data: { labels: allDates, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position:'bottom', labels:{ font:{size:10}, boxWidth:12 } },
+        tooltip: { callbacks: { label: i => i.dataset.label+': '+i.raw+' kg' } }
+      },
+      scales: {
+        x: { ticks:{ font:{size:9}, maxTicksLimit:10 }, grid:{display:false} },
+        y: { beginAtZero:true, ticks:{ callback: v => v+' kg', font:{size:9} } }
+      }
+    }
+  });
+}
+
 
 // ═══════════ DAILY TREND TAB ═══════════
 function renderDailyTab(data) {
@@ -7946,7 +8078,6 @@ function renderDailyTab(data) {
 }
 
 // ═══════════ ROUTES TAB ═══════════
-let routeDateFilter = 'today';
 
 function setRouteFilter(type, btn) {
   routeDateFilter = type;
@@ -8120,6 +8251,66 @@ function renderRoutesTab() {
       <span style="font-family:'DM Mono',monospace;font-size:.8rem;font-weight:600;color:var(--green)">${routeEntries.reduce((s,e)=>s+e[1].kg,0).toFixed(2)} kg</span>
       <span style="font-family:'DM Mono',monospace;font-size:.8rem;color:var(--muted)">${routeEntries.length} routes</span>
     </div>` : '<div class="empty" style="padding:24px"><p>No data for this period.</p></div>';
+
+  // Store for trend re-render
+  window._routeTrendAllData = allRouteData;
+  renderRouteTrend();
+}
+
+function renderRouteTrend() {
+  const allData2 = (window._routeTrendAllData) || (typeof filteredData!=='undefined'?filteredData:null) || (typeof allData!=='undefined'?allData:null);
+  if (!allData2 || !allData2.length) return;
+  if (!allData2 || !allData2.length) return;
+  const canvas = document.getElementById('cRouteTrend');
+  if (!canvas) return;
+
+  const mode = (document.getElementById('routeTrendFilter')||{}).value || 'top5';
+
+  // Get all unique dates
+  const allDates = [...new Set(allData2.map(r => dkey(r.timestamp)))].sort();
+
+  // Aggregate kg per route per day
+  const routeDayKg = {};
+  allData2.forEach(r => {
+    const rt = r.route || 'Unknown';
+    const d  = dkey(r.timestamp);
+    if (!routeDayKg[rt]) routeDayKg[rt] = {};
+    routeDayKg[rt][d] = (routeDayKg[rt][d] || 0) + (parseFloat(r.total_wt) || 0);
+  });
+
+  // Sort routes by total kg, pick top N
+  const sorted = Object.entries(routeDayKg)
+    .map(([rt, days]) => ({ rt, total: Object.values(days).reduce((s,v)=>s+v,0) }))
+    .sort((a,b) => b.total - a.total);
+
+  const n = mode === 'top10' ? 10 : mode === 'all' ? sorted.length : 5;
+  const topRoutes = sorted.slice(0, n);
+
+  const datasets = topRoutes.map((r, i) => ({
+    label: r.rt,
+    data: allDates.map(d => +((routeDayKg[r.rt][d]) || 0).toFixed(1)),
+    borderColor: COLORS[i % COLORS.length],
+    backgroundColor: COLORS[i % COLORS.length] + '22',
+    borderWidth: 2, pointRadius: 3, pointHoverRadius: 5,
+    tension: 0.4, fill: false
+  }));
+
+  dc('cRouteTrend');
+  charts['cRouteTrend'] = new Chart(canvas.getContext('2d'), {
+    type: 'line',
+    data: { labels: allDates, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12 } },
+        tooltip: { callbacks: { label: i => i.dataset.label + ': ' + i.raw + ' kg' } }
+      },
+      scales: {
+        x: { ticks: { font: { size: 9 }, maxTicksLimit: 10 }, grid: { display: false } },
+        y: { beginAtZero: true, ticks: { callback: v => v + ' kg', font: { size: 9 } } }
+      }
+    }
+  });
 }
 
 // ═══════════ EXPORT TAB ═══════════
@@ -8366,7 +8557,6 @@ function downloadExcel() {
 }
 
 // ═══════════ REVENUE TAB ═══════════
-let revenueDateFilter = 'today';
 
 function setRevenueFilter(type, btn) {
   revenueDateFilter = type;
@@ -8731,11 +8921,12 @@ function renderTimingTab() {
 }
 
 function renderDashboard2() {
-  // re-run buildComparison with filtered orders
+  if (typeof allData==='undefined') return;
   buildComparison();
 }
 
 function renderCompSmTable() {
+  if (typeof allData==='undefined') return;
   const orders  = getDashboard2Data();
   const hasAct  = actualsData.length > 0;
   if (!orders.length) {
@@ -8989,6 +9180,7 @@ function clearDashboard2Filters() {
 
 // ═══════════ BY CUSTOMER TAB ═══════════
 function renderCustomerTab() {
+  if (typeof filteredData==='undefined' || typeof allData==='undefined') return;
   const q = (document.getElementById('custSearchInput')||{}).value || '';
   const tag   = document.getElementById('custActiveTag');
   const title = document.getElementById('custPanelTitle');
@@ -9172,6 +9364,7 @@ function clearChannelFilter() {
 // ═══════════ BY CHANNEL TAB ═══════════
 function renderChannelTab() {
   const selectedCh = (document.getElementById('channelSelected')||{}).value || '';
+  if (typeof filteredData==='undefined' || typeof allData==='undefined') return;
   const baseData   = filteredData.length ? filteredData : allData;
   const CUST_CH = {};
   if (typeof CUSTOMERS !== 'undefined') {
