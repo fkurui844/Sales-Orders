@@ -908,7 +908,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
                 onfocus="showChannelList()"
                 autocomplete="off"
                 style="width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.88rem;">
-              <div id="channelDdList" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1.5px solid var(--bd);border-radius:10px;box-shadow:0 6px 20px var(--shadow);max-height:220px;overflow-y:auto;z-index:5000;"></div>
+              <div id="channelDdAnchor" style="position:relative;height:0;"></div>
               <input type="hidden" id="channelSelected">
             </div>
             <button class="btn btn-primary btn-sm" onclick="applyChannelFilter()">🔍 Apply</button>
@@ -1271,6 +1271,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
 
 <div class="toast" id="toast"></div>
+<div id="channelDdList" style="display:none;position:fixed;background:var(--surface);border:1.5px solid var(--bd);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:220px;overflow-y:auto;z-index:99999;min-width:220px;"></div>
 
 <script>
 // ═══════════ CONFIG ═══════════
@@ -8467,6 +8468,15 @@ function renderCompSmTable() {
 let dbLists = { sm: [], route: [], cat: [] };
 
 function initDashboard2Filters() {
+  // Reposition channel dropdown on scroll or resize
+  window.addEventListener('scroll', () => {
+    const dd = document.getElementById('channelDdList');
+    if (dd && dd.style.display !== 'none') positionChannelDd();
+  }, true);
+  window.addEventListener('resize', () => {
+    const dd = document.getElementById('channelDdList');
+    if (dd && dd.style.display !== 'none') positionChannelDd();
+  });
   // Build lists
   dbLists.sm    = [...SALESMEN].sort((a,b)=>a.n.localeCompare(b.n)).map(s=>({val:s.p, label:`${s.n} (${s.p})`}));
   dbLists.route = ROUTES.map(r=>({val:r, label:r}));
@@ -8694,13 +8704,25 @@ function getChannelList() {
 
 function showChannelList() {
   filterChannelList();
+  positionChannelDd();
   document.getElementById('channelDdList').style.display = 'block';
+}
+
+function positionChannelDd() {
+  const anchor = document.getElementById('channelSearchInput');
+  const dd     = document.getElementById('channelDdList');
+  if (!anchor || !dd) return;
+  const rect = anchor.getBoundingClientRect();
+  dd.style.top   = (rect.bottom + window.scrollY + 4) + 'px';
+  dd.style.left  = rect.left + 'px';
+  dd.style.width = rect.width + 'px';
 }
 
 function filterChannelList() {
   const q   = (document.getElementById('channelSearchInput')||{}).value.toLowerCase();
   const dd  = document.getElementById('channelDdList');
   if (!dd) return;
+  positionChannelDd();
   const all = getChannelList();
   const filtered = q ? all.filter(c => c.toLowerCase().includes(q)) : all;
   const cur = (document.getElementById('channelSelected')||{}).value || '';
