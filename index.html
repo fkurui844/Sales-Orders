@@ -8623,35 +8623,113 @@ function renderDashboard2() {
 }
 
 function renderCompSmTable() {
-  const orders   = getDashboard2Data();
-  const actuals  = actualsData;
-  if(!orders.length && !actuals.length) return;
+  const orders  = getDashboard2Data();
+  const hasAct  = actualsData.length > 0;
+  if (!orders.length) {
+    const wrap = document.getElementById('compSmTable');
+    if (wrap) wrap.innerHTML = '<div class="empty" style="padding:24px"><p>No order data.</p></div>';
+    return;
+  }
 
-  // Group orders by salesman
-  const OS={};
-  orders.forEach(r=>{
-    const k=r.salesman_payroll||'Unknown';
-    if(!OS[k]) OS[k]={name:r.salesman_name||k,lines:0,rev:0};
-    OS[k].lines++; OS[k].rev+=parseFloat(r.total_revenue)||0;
+  const fmtK = v => v >= 1000000 ? 'KES ' + (v/1000000).toFixed(1) + 'M'
+                  : v >= 1000    ? 'KES ' + (v/1000).toFixed(0)    + 'K'
+                  : 'KES ' + Math.round(v).toLocaleString();
+
+  // ── Build customer→salesman map from orders ──
+  const custToSm = {};
+  orders.forEach(r => {
+    const acc = String(r.customer_acc||'').replace(/^0+/,'');
+    if (acc) custToSm[acc] = { payroll: r.salesman_payroll||'?', name: r.salesman_name||'?' };
   });
 
-  const fmtK=v=>v>=1000000?'KES '+(v/1000000).toFixed(1)+'M':v>=1000?'KES '+(v/1000).toFixed(0)+'K':'KES '+Math.round(v).toLocaleString();
-  const rows=Object.entries(OS).sort((a,b)=>b[1].rev-a[1].rev);
+  // ── Aggregate actuals by salesman (via customer lookup) ──
+  const AS = {};
+  if (hasAct) {
+    actualsData.forEach(r => {
+      const acc = String(r.cust_acc||'').replace(/^0+/,'');
+      const sm  = custToSm[acc];
+      if (!sm) return; // customer not in orders — unattributed
+      const k = sm.payroll;
+      if (!AS[k]) AS[k] = { name: sm.name, act_lines: 0, act_rev: 0 };
+      AS[k].act_lines++;
+      AS[k].act_rev += parseFloat(r.total_sales) || 0;
+    });
+  }
 
-  const wrap=document.getElementById('compSmTable');
-  if(!wrap) return;
-  if(!rows.length){ wrap.innerHTML='<div class="empty" style="padding:24px"><p>No data.</p></div>'; return; }
+  // ── Aggregate orders by salesman ──
+  const OS = {};
+  orders.forEach(r => {
+    const k = r.salesman_payroll || '?';
+    if (!OS[k]) OS[k] = { name: r.salesman_name || k, ord_lines: 0, ord_rev: 0 };
+    OS[k].ord_lines++;
+    OS[k].ord_rev += parseFloat(r.total_revenue) || 0;
+  });
 
-  wrap.innerHTML=`<table class="tbl"><thead><tr>
-    <th>#</th><th>Payroll</th><th>Salesperson</th><th>Order Lines</th><th>Order Value</th>
-  </tr></thead><tbody>${rows.map(([p,d],i)=>`<tr>
-    <td style="font-family:'DM Mono',monospace;color:var(--muted);font-size:.72rem">${i+1}</td>
-    <td><span class="badge">${p}</span></td>
-    <td style="font-weight:600;font-size:.82rem">${d.name}</td>
-    <td style="font-family:'DM Mono',monospace">${d.lines.toLocaleString()}</td>
-    <td style="font-family:'DM Mono',monospace;color:var(--green)">${fmtK(d.rev)}</td>
-  </tr>`).join('')}</tbody></table>
-  <div style="padding:8px 14px;background:var(--cream);border-top:1px solid var(--bd);font-size:.72rem;color:var(--muted);">${rows.length} salespeople</div>`;
+  // ── Merge ──
+  const allKeys = new Set([...Object.keys(OS), ...Object.keys(AS)]);
+  const rows = [...allKeys].map(k => {
+    const o = OS[k] || { name: k,   ord_lines: 0, ord_rev: 0 };
+    const a = AS[k] || { act_lines: 0, act_rev: 0 };
+    const ach = o.ord_rev > 0 ? (a.act_rev / o.ord_rev * 100) : null;
+    const gap = a.act_rev - o.ord_rev;
+    return { payroll: k, name: o.name, ...o, ...a, ach, gap };
+  }).sort((a, b) => b.ord_rev - a.ord_rev);
+
+  const achBadge = (pct) => {
+    if (pct === null) return '<span class="ach-badge ach-zero">—</span>';
+    if (pct >= 100)   return `<span class="ach-badge ach-over">${pct.toFixed(0)}%</span>`;
+    if (pct >= 70)    return `<span class="ach-badge ach-partial">${pct.toFixed(0)}%</span>`;
+    return `<span class="ach-badge ach-low">${pct.toFixed(0)}%</span>`;
+  };
+
+  const wrap = document.getElementById('compSmTable');
+  if (!wrap) return;
+
+  // Headers — show actuals columns only if actuals are loaded
+  const actCols = hasAct ? `
+    <th style="color:var(--green);">Actual Sales</th>
+    <th>Achievement</th>
+    <th>Variance</th>` : '';
+
+  const actHeaders = hasAct
+    ? `<th style="color:var(--green);font-size:.7rem;">ACTUAL SALES (KES)</th>
+       <th style="font-size:.7rem;">ACHIEVEMENT</th>
+       <th style="font-size:.7rem;">VARIANCE (KES)</th>`
+    : '';
+
+  wrap.innerHTML = `
+    <table class="tbl">
+      <thead><tr>
+        <th>#</th>
+        <th>Payroll</th>
+        <th>Salesperson</th>
+        <th>Order Lines</th>
+        <th style="color:var(--blue-light);font-size:.7rem;">ORDER VALUE (KES)</th>
+        ${actHeaders}
+      </tr></thead>
+      <tbody>${rows.map((r, i) => {
+        const actCells = hasAct ? `
+          <td style="font-family:'DM Mono',monospace;font-weight:600;color:var(--green);">
+            ${r.act_rev > 0 ? fmtK(r.act_rev) : '<span style="color:var(--muted)">—</span>'}
+          </td>
+          <td>${achBadge(r.ach)}</td>
+          <td style="font-family:'DM Mono',monospace;font-size:.8rem;font-weight:600;color:${r.gap >= 0 ? 'var(--green)' : 'var(--red)'}">
+            ${r.ord_rev > 0 || r.act_rev > 0 ? (r.gap >= 0 ? '+' : '') + fmtK(r.gap) : '—'}
+          </td>` : '';
+        return `<tr>
+          <td style="font-family:'DM Mono',monospace;color:var(--muted);font-size:.72rem">${i+1}</td>
+          <td><span class="badge">${r.payroll}</span></td>
+          <td style="font-weight:600;font-size:.82rem">${r.name}</td>
+          <td style="font-family:'DM Mono',monospace">${r.ord_lines.toLocaleString()}</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--blue-light);">${fmtK(r.ord_rev)}</td>
+          ${actCells}
+        </tr>`;
+      }).join('')}</tbody>
+    </table>
+    <div style="padding:8px 14px;background:var(--cream);border-top:1px solid var(--bd);font-size:.72rem;color:var(--muted);">
+      ${rows.length} salespeople
+      ${hasAct ? ' · <span style="color:var(--gold)">Actuals attributed via customer matching</span>' : ' · <em>Upload Actual Sales to see variance</em>'}
+    </div>`;
 }
 
 
