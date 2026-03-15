@@ -6,6 +6,7 @@
 <title>Sales Order System</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
 :root {
@@ -7950,115 +7951,115 @@ function downloadCSVExport() {
 function downloadExcel() {
   if (!exportData.length) return showToast('No data to export. Apply filters first.', 'error');
 
-  // Build Excel XML (SpreadsheetML) - works without any library
-  const headers = ['Date','Time','Salesperson','Payroll','Route','Customer ACC','Customer Name','Channel','Product Code','Product Description','Category','Packaging','Qty','Unit Wt (kg)','Total Wt (kg)'];
+  if (typeof XLSX === 'undefined') {
+    showToast('⚠️ Excel library not loaded. Try again in a moment.', 'error');
+    return;
+  }
 
-  const esc = v => String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const getChannel = acc => {
+    if (typeof CUSTOMERS === 'undefined') return '';
+    const a = String(acc||'').replace(/^0+/,'');
+    const c = CUSTOMERS.find(c => String(c.a).replace(/^0+/,'') === a);
+    return c ? (c.ch||'') : '';
+  };
 
-  const headerRow = headers.map(h => `<Cell><Data ss:Type="String">${esc(h)}</Data></Cell>`).join('');
+  // ── Sheet 1: Orders ──
+  const ordersData = exportData.map(r => {
+    const dt   = r.timestamp ? new Date(r.timestamp) : null;
+    const prod = PRODUCTS.find(p => p.c === String(r.product_code||''));
+    return {
+      'Date':             dt ? dt.toLocaleDateString('en-KE',{day:'2-digit',month:'short',year:'numeric'}) : '',
+      'Time':             dt ? dt.toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'}) : '',
+      'Salesperson':      r.salesman_name    || '',
+      'Payroll':          r.salesman_payroll || '',
+      'Route':            r.route            || '',
+      'Customer ACC':     r.customer_acc     || '',
+      'Customer Name':    r.customer_name    || '',
+      'Channel':          getChannel(r.customer_acc),
+      'Product Code':     r.product_code     || '',
+      'Product Description': r.product_desc  || '',
+      'Category':         prod ? prod.k      : '',
+      'Packaging':        r.packaging        || '',
+      'Qty':              parseFloat(r.qty)  || 0,
+      'Unit Wt (kg)':     parseFloat(r.unit_wt)    || 0,
+      'Total Wt (kg)':    parseFloat(r.total_wt)   || 0,
+      'Unit Price (KES)': parseFloat(r.unit_price) || 0,
+      'Total Revenue (KES)': parseFloat(r.total_revenue) || 0,
+    };
+  });
 
-  const dataRows = exportData.map(r => {
-    const dt = r.timestamp ? new Date(r.timestamp) : null;
-    const ch = getExportChannel(r.customer_acc);
-    const prod = PRODUCTS.find(p => p.c === r.product_code);
-    const cells = [
-      dt ? dt.toLocaleDateString('en-KE',{day:'2-digit',month:'short',year:'numeric'}) : '',
-      dt ? dt.toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'}) : '',
-      r.salesman_name||'', r.salesman_payroll||'', r.route||'',
-      r.customer_acc||'', r.customer_name||'', ch,
-      r.product_code||'', r.product_desc||'', prod?prod.k:'', r.packaging||'',
-      r.qty||'', parseFloat(r.unit_wt||0).toFixed(2), parseFloat(r.total_wt||0).toFixed(2)
-    ];
-    const cellXml = cells.map((c,i) => {
-      const type = (i>=12) ? 'Number' : 'String';
-      const val = (i>=12) ? parseFloat(c)||0 : esc(c);
-      return `<Cell><Data ss:Type="${type}">${val}</Data></Cell>`;
-    }).join('');
-    return `<Row>${cellXml}</Row>`;
-  }).join('');
-
-  // Summary sheet rows
-  const totalKg = exportData.reduce((s,r)=>s+(parseFloat(r.total_wt)||0),0);
-  const uniqueSm = new Set(exportData.map(r=>r.salesman_payroll)).size;
-  const uniqueRoutes = [...new Set(exportData.map(r=>r.route).filter(Boolean))];
-
-  // Route summary
+  // ── Sheet 2: By Route ──
   const routeMap = {};
   exportData.forEach(r => {
-    const rt = r.route||'Unknown';
-    if (!routeMap[rt]) routeMap[rt] = {lines:0,kg:0};
-    routeMap[rt].lines++; routeMap[rt].kg += parseFloat(r.total_wt)||0;
+    const k = r.route||'Unknown';
+    if (!routeMap[k]) routeMap[k] = {lines:0, kg:0, rev:0};
+    routeMap[k].lines++;
+    routeMap[k].kg  += parseFloat(r.total_wt)||0;
+    routeMap[k].rev += parseFloat(r.total_revenue)||0;
   });
-  const routeSummaryRows = Object.entries(routeMap).sort((a,b)=>b[1].kg-a[1].kg).map(([rt,v]) =>
-    `<Row><Cell><Data ss:Type="String">${esc(rt)}</Data></Cell><Cell><Data ss:Type="Number">${v.lines}</Data></Cell><Cell><Data ss:Type="Number">${v.kg.toFixed(2)}</Data></Cell></Row>`
-  ).join('');
+  const routeData = Object.entries(routeMap).sort((a,b)=>b[1].kg-a[1].kg).map(([rt,v]) => ({
+    'Route': rt, 'Order Lines': v.lines,
+    'Total kg': parseFloat(v.kg.toFixed(2)),
+    'Revenue (KES)': parseFloat(v.rev.toFixed(2))
+  }));
 
-  // Salesman summary
+  // ── Sheet 3: By Salesperson ──
   const smMap = {};
   exportData.forEach(r => {
-    const k = r.salesman_payroll;
-    if (!smMap[k]) smMap[k] = {name:r.salesman_name||k, lines:0, kg:0};
-    smMap[k].lines++; smMap[k].kg += parseFloat(r.total_wt)||0;
+    const k = r.salesman_payroll||'?';
+    if (!smMap[k]) smMap[k] = {name:r.salesman_name||k, lines:0, kg:0, rev:0};
+    smMap[k].lines++;
+    smMap[k].kg  += parseFloat(r.total_wt)||0;
+    smMap[k].rev += parseFloat(r.total_revenue)||0;
   });
-  const smSummaryRows = Object.values(smMap).sort((a,b)=>b.kg-a.kg).map(s =>
-    `<Row><Cell><Data ss:Type="String">${esc(s.name)}</Data></Cell><Cell><Data ss:Type="Number">${s.lines}</Data></Cell><Cell><Data ss:Type="Number">${s.kg.toFixed(2)}</Data></Cell></Row>`
-  ).join('');
+  const smData = Object.values(smMap).sort((a,b)=>b.kg-a.kg).map(s => ({
+    'Salesperson': s.name, 'Order Lines': s.lines,
+    'Total kg': parseFloat(s.kg.toFixed(2)),
+    'Revenue (KES)': parseFloat(s.rev.toFixed(2))
+  }));
 
-  // Product summary
+  // ── Sheet 4: By Product ──
   const prodMap = {};
   exportData.forEach(r => {
     const k = r.product_code||'?';
-    if (!prodMap[k]) prodMap[k] = {desc:r.product_desc||k, qty:0, kg:0};
-    prodMap[k].qty += parseInt(r.qty)||0; prodMap[k].kg += parseFloat(r.total_wt)||0;
+    if (!prodMap[k]) prodMap[k] = {desc:r.product_desc||k, code:k, qty:0, kg:0, rev:0};
+    prodMap[k].qty += parseInt(r.qty)||0;
+    prodMap[k].kg  += parseFloat(r.total_wt)||0;
+    prodMap[k].rev += parseFloat(r.total_revenue)||0;
   });
-  const prodSummaryRows = Object.values(prodMap).sort((a,b)=>b.kg-a.kg).map(p =>
-    `<Row><Cell><Data ss:Type="String">${esc(p.desc)}</Data></Cell><Cell><Data ss:Type="Number">${p.qty}</Data></Cell><Cell><Data ss:Type="Number">${p.kg.toFixed(2)}</Data></Cell></Row>`
-  ).join('');
+  const prodData = Object.values(prodMap).sort((a,b)=>b.kg-a.kg).map(p => ({
+    'Product Code': p.code, 'Product': p.desc,
+    'Qty': p.qty,
+    'Total kg': parseFloat(p.kg.toFixed(2)),
+    'Revenue (KES)': parseFloat(p.rev.toFixed(2))
+  }));
 
-  const styleXml = `<Styles>
-    <Style ss:ID="header"><Font ss:Bold="1"/><Interior ss:Color="#1A1A1A" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style>
-    <Style ss:ID="subheader"><Font ss:Bold="1"/><Interior ss:Color="#C9941A" ss:Pattern="Solid"/><Font ss:Color="#FFFFFF" ss:Bold="1"/></Style>
-    <Style ss:ID="green"><Font ss:Color="#1A7A4A" ss:Bold="1"/></Style>
-  </Styles>`;
+  // ── Build workbook ──
+  const wb = XLSX.utils.book_new();
 
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<?mso-application progid="Excel.Sheet"?>
-<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
-  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
-  ${styleXml}
-  <Worksheet ss:Name="Orders">
-    <Table>
-      <Row>${headerRow}</Row>
-      ${dataRows}
-    </Table>
-  </Worksheet>
-  <Worksheet ss:Name="By Route">
-    <Table>
-      <Row><Cell><Data ss:Type="String">Route</Data></Cell><Cell><Data ss:Type="String">Order Lines</Data></Cell><Cell><Data ss:Type="String">Total kg</Data></Cell></Row>
-      ${routeSummaryRows}
-      <Row><Cell><Data ss:Type="String">TOTAL</Data></Cell><Cell><Data ss:Type="Number">${exportData.length}</Data></Cell><Cell><Data ss:Type="Number">${totalKg.toFixed(2)}</Data></Cell></Row>
-    </Table>
-  </Worksheet>
-  <Worksheet ss:Name="By Salesperson">
-    <Table>
-      <Row><Cell><Data ss:Type="String">Salesperson</Data></Cell><Cell><Data ss:Type="String">Order Lines</Data></Cell><Cell><Data ss:Type="String">Total kg</Data></Cell></Row>
-      ${smSummaryRows}
-    </Table>
-  </Worksheet>
-  <Worksheet ss:Name="By Product">
-    <Table>
-      <Row><Cell><Data ss:Type="String">Product</Data></Cell><Cell><Data ss:Type="String">Qty</Data></Cell><Cell><Data ss:Type="String">Total kg</Data></Cell></Row>
-      ${prodSummaryRows}
-    </Table>
-  </Worksheet>
-</Workbook>`;
+  const wsOrders = XLSX.utils.json_to_sheet(ordersData);
+  wsOrders['!cols'] = [
+    {wch:12},{wch:8},{wch:18},{wch:8},{wch:14},{wch:10},{wch:28},{wch:14},
+    {wch:8},{wch:30},{wch:10},{wch:10},{wch:6},{wch:10},{wch:10},{wch:12},{wch:14}
+  ];
+  XLSX.utils.book_append_sheet(wb, wsOrders, 'Orders');
 
-  const blob = new Blob([xml], {type:'application/vnd.ms-excel'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `orders_export_${new Date().toISOString().split('T')[0]}.xls`;
-  a.click();
-  showToast(`✅ Exported ${exportData.length} rows — 4 sheets included`, 'success');
+  const wsRoute = XLSX.utils.json_to_sheet(routeData);
+  wsRoute['!cols'] = [{wch:20},{wch:12},{wch:12},{wch:16}];
+  XLSX.utils.book_append_sheet(wb, wsRoute, 'By Route');
+
+  const wsSm = XLSX.utils.json_to_sheet(smData);
+  wsSm['!cols'] = [{wch:22},{wch:12},{wch:12},{wch:16}];
+  XLSX.utils.book_append_sheet(wb, wsSm, 'By Salesperson');
+
+  const wsProd = XLSX.utils.json_to_sheet(prodData);
+  wsProd['!cols'] = [{wch:10},{wch:34},{wch:8},{wch:12},{wch:16}];
+  XLSX.utils.book_append_sheet(wb, wsProd, 'By Product');
+
+  // ── Download ──
+  const filename = `orders_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+  XLSX.writeFile(wb, filename);
+  showToast(`✅ Exported ${exportData.length} rows — 4 sheets`, 'success');
 }
 
 // ═══════════ REVENUE TAB ═══════════
