@@ -567,7 +567,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       <button onclick="closeSystemPanel()" style="background:rgba(255,255,255,0.12);border:none;color:white;width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
     <!-- Content area — dashboard tabs rendered here -->
-    <div style="background:var(--surface);border:1px solid var(--bd);border-top:none;border-radius:0 0 12px 12px;padding:0 0 8px;">
+    <div style="background:var(--surface);border:1px solid var(--bd);border-top:none;border-radius:0 0 12px 12px;padding:0 0 8px;overflow:visible;">
 
       <div id="systemPanelHeader">
       <!-- Date filter -->
@@ -619,7 +619,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
       </div><!-- /systemPanelHeader -->
 
-      <div style="padding:8px 0;">
+      <div style="padding:8px 0;overflow:visible;">
       <div id="dtOverview">
       <div class="g2">
       <div class="panel"><div class="panel-header"><h2>Daily Volume (kg)</h2></div><div class="panel-body"><div class="chart-box"><canvas id="cDailyKg"></canvas></div></div></div>
@@ -897,18 +897,18 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       <div id="dtChannel" class="hidden">
 
       <!-- Channel selector -->
-      <div class="panel" style="margin-bottom:14px;">
+      <div class="panel" style="margin-bottom:14px;overflow:visible;">
         <div class="panel-header"><h2>📡 By Channel</h2></div>
-        <div class="panel-body" style="padding:14px 16px;">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-            <div style="position:relative;flex:1;min-width:200px;max-width:360px;">
+        <div class="panel-body" style="padding:14px 16px;overflow:visible;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;overflow:visible;">
+            <div style="position:relative;flex:1;min-width:200px;max-width:360px;overflow:visible;">
               <input type="text" id="channelSearchInput"
                 placeholder="🔍 Type channel name… (e.g. NAIVAS, DISTRIBUTOR)"
                 oninput="filterChannelList()"
                 onfocus="showChannelList()"
                 autocomplete="off"
                 style="width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.88rem;">
-              <div id="channelDdList" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1.5px solid var(--bd);border-radius:10px;box-shadow:0 6px 20px var(--shadow);max-height:220px;overflow-y:auto;z-index:500;"></div>
+              <div id="channelDdList" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--surface);border:1.5px solid var(--bd);border-radius:10px;box-shadow:0 6px 20px var(--shadow);max-height:220px;overflow-y:auto;z-index:5000;"></div>
               <input type="hidden" id="channelSelected">
             </div>
             <button class="btn btn-primary btn-sm" onclick="applyChannelFilter()">🔍 Apply</button>
