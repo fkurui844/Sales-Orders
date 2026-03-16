@@ -18,17 +18,13 @@ function positionDd(ddId, inputId) {
   var inp = document.getElementById(inputId);
   var dd  = document.getElementById(ddId);
   if (!inp || !dd) return;
-  // Use rAF to ensure layout is complete before measuring
-  requestAnimationFrame(function() {
-    var r = inp.getBoundingClientRect();
-    if (r.width === 0) return; // not visible yet
-    dd.style.position = 'fixed';
-    dd.style.top      = (r.bottom + 1) + 'px';
-    dd.style.left     = r.left + 'px';
-    dd.style.width    = r.width + 'px';
-    dd.style.display  = 'block';
-    dd.style.zIndex   = '999999';
-  });
+  var r = inp.getBoundingClientRect();
+  dd.style.position = 'fixed';
+  dd.style.top      = (r.bottom + 1) + 'px';
+  dd.style.left     = r.left + 'px';
+  dd.style.width    = r.width + 'px';
+  dd.style.display  = 'block';
+  dd.style.zIndex   = '999999';
   // Close the other dd
   var other = document.getElementById(ddId === 'custDd' ? 'prodDd' : 'custDd');
   if (other) other.style.display = 'none';
@@ -7717,10 +7713,27 @@ function clearProd() {
 }
 
 function filterCust() {
-  const q = document.getElementById('custSearch').value.toLowerCase();
+  const q  = (document.getElementById('custSearch').value || '').toLowerCase().trim();
   const dd = document.getElementById('custDd');
-  const list = (q.length < 1 ? CUSTOMERS.slice(0,30) : CUSTOMERS.filter(c => c.a.includes(q)||c.n.toLowerCase().includes(q)||c.ch.toLowerCase().includes(q))).slice(0,40);
-  dd.innerHTML = list.length ? list.map(c => `<div class="dd-opt" onclick="selCust('${c.a}','${c.n.replace(/'/g,"\\'")}',' ${c.ch}')"><span>${c.n}</span><span class="sub">${c.a} · ${c.ch}</span></div>`).join('') : '<div class="dd-opt" style="color:var(--muted)">No matches</div>';
+  if (!dd) return;
+  const safe = CUSTOMERS.map(c => ({...c, ch: c.ch||'', n: c.n||'', a: String(c.a||'')}));
+  const list = q.length < 1
+    ? safe.slice(0, 40)
+    : safe.filter(c =>
+        c.a.includes(q) ||
+        c.n.toLowerCase().includes(q) ||
+        c.ch.toLowerCase().includes(q)
+      ).slice(0, 40);
+  if (!list.length) {
+    dd.innerHTML = '<div class="dd-opt" style="color:var(--muted)">No matches</div>';
+  } else {
+    dd.innerHTML = list.map(c =>
+      `<div class="dd-opt" onclick="selCust('${c.a}','${c.n.replace(/'/g,"\'")}','${c.ch}')">
+        <span>${c.n}</span>
+        <span class="sub">${c.a}${c.ch?' · '+c.ch:''}</span>
+      </div>`
+    ).join('');
+  }
   dd.style.display = 'block';
 }
 
@@ -7789,13 +7802,24 @@ function clearCust() {
 }
 
 function filterProd() {
-  const q = document.getElementById('prodSearch').value.toLowerCase();
+  const q  = (document.getElementById('prodSearch').value || '').toLowerCase().trim();
   const dd = document.getElementById('prodDd');
-  const list = (q.length < 1 ? PRODUCTS.slice(0,20) : PRODUCTS.filter(p => p.c.toLowerCase().includes(q)||p.d.toLowerCase().includes(q)||p.k.toLowerCase().includes(q))).slice(0,30);
-  dd.innerHTML = list.length ? list.map(p => `<div class="dd-opt" onclick="selProd('${p.c}','${p.d.replace(/'/g,"\\'")}','${p.k}',${p.w})"><span>[${p.c}] ${p.d}</span><span class="sub">${p.w}kg·${p.k}</span></div>`).join('') : '<div class="dd-opt" style="color:var(--muted)">No matches</div>';
+  if (!dd) return;
+  const list = q.length < 1
+    ? PRODUCTS.slice(0, 30)
+    : PRODUCTS.filter(p =>
+        (p.c||'').toLowerCase().includes(q) ||
+        (p.d||'').toLowerCase().includes(q) ||
+        (p.k||'').toLowerCase().includes(q)
+      ).slice(0, 30);
+  dd.innerHTML = list.length
+    ? list.map(p => `<div class="dd-opt" onclick="selProd('${p.c}','${p.d.replace(/'/g,"\'")}','${p.k||''}',${p.w||0})">
+        <span>[${p.c}] ${p.d}</span>
+        <span class="sub">${p.w}kg · ${p.k}</span>
+      </div>`).join('')
+    : '<div class="dd-opt" style="color:var(--muted)">No matches</div>';
   dd.style.display = 'block';
 }
-
 function selProd(c, d, k, w) {
   document.getElementById('prodSearch').value = '';
   document.getElementById('pCode').value = c;
