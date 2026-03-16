@@ -9266,9 +9266,9 @@ function renderProductsTab(data) {
       <td style="font-family:'DM Mono',monospace">${p.qty}</td>
       <td style="font-family:'DM Mono',monospace;font-weight:600;color:var(--green)">${p.kg.toFixed(2)}</td>
     </tr>`).join('')}</tbody></table>`;
-}
   window._prodTrendData = data;
   renderProdTrend();
+}
 
 function renderProdTrend() {
   const data = window._prodTrendData || (typeof filteredData !== 'undefined' ? filteredData : null) || (typeof allData !== 'undefined' ? allData : null);
