@@ -1828,7 +1828,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
 <script>
 // ═══════════ CONFIG ═══════════
-const GAS_URL = "https://script.google.com/macros/s/AKfycby12dfz0GrUTkE7Np_kKBVVzkfOCVgmQzldpagjTXWsGLQhZ-DS_3o-7Rhx0vvXCMdHFQ/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbykScqOteogilldRj70Ac60ebyxVmFY17ygsh_ZxW3b93Lw9Xxml-FcFpC85vP1WA4SvQ/exec";
 
 // ═══════════ MASTER DATA ═══════════
 const SALESMEN = [
@@ -7666,7 +7666,9 @@ function loadData() {
           allData = rows.map(r => ({
             timestamp:        r.timestamp,
             location:         r.location || '',
-            order_type:       r.order_type || 'order',
+            order_type:       r.order_type
+                              ? r.order_type
+                              : (String(r.customer_acc||'').startsWith('PROJ-') ? 'projection' : 'order'),
             salesman_payroll: String(r.salesman_payroll || ''),
             salesman_name:    r.salesman_name,
             route:            r.route,
@@ -8705,11 +8707,18 @@ function renderProjectionReport() {
     return true;
   });
 
-  // Projections — order_type = 'projection'
-  const projData  = base.filter(r => r.order_type === 'projection');
+  // Projections — order_type = 'projection' OR customer_acc starts with 'PROJ-'
+  const projData = base.filter(r =>
+    r.order_type === 'projection' ||
+    String(r.customer_acc || '').startsWith('PROJ-')
+  );
   // Actuals — full orders where product is FRESH MILK
   const freshProds = new Set(PRODUCTS.filter(p=>p.k==='FRESH MILK').map(p=>p.c));
-  const actData   = base.filter(r => r.order_type !== 'projection' && freshProds.has(String(r.product_code)));
+  const actData = base.filter(r =>
+    r.order_type !== 'projection' &&
+    !String(r.customer_acc || '').startsWith('PROJ-') &&
+    freshProds.has(String(r.product_code))
+  );
 
   // ── KPI row ──
   const totalProjKg = projData.reduce((s,r)=>s+(parseFloat(r.total_wt)||0),0);
@@ -8909,12 +8918,15 @@ function renderProjectionComparison(data) {
 
   // Get today's projections (morning) — Fresh Milk only
   const projections = data.filter(r =>
-    r.order_type === 'projection' && dkey(r.timestamp) === today
+    (r.order_type === 'projection' || String(r.customer_acc || '').startsWith('PROJ-'))
+    && dkey(r.timestamp) === today
   );
 
   // Get today's full orders — Fresh Milk only
   const fullOrders = data.filter(r =>
-    r.order_type !== 'projection' && dkey(r.timestamp) === today &&
+    r.order_type !== 'projection' &&
+    !String(r.customer_acc || '').startsWith('PROJ-') &&
+    dkey(r.timestamp) === today &&
     PRODUCTS.find(p => p.c === String(r.product_code) && p.k === 'FRESH MILK')
   );
 
