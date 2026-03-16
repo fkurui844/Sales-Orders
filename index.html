@@ -423,7 +423,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 <body>
 
 <header>
-  <div class="logo" onclick="openDevPanel()" style="cursor:pointer;" title="Developer Settings">Sales<span>Order</span></div>
+  <div class="logo" id="logoTap" style="cursor:default;" onclick="_devTap()">Sales<span>Order</span></div>
   <div class="header-right">
     <span class="header-badge" id="headerBadge">0</span>
     <button id="themeToggleBtn" onclick="toggleTheme()"
@@ -502,6 +502,20 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
           </div>
           <input type="hidden" id="salesmanSelect">
         </div>
+        <div class="form-group full">
+          <label>Your Location</label>
+          <div class="dd-wrap" id="locDdWrap" style="position:relative;">
+            <input type="text" id="locSearch"
+              placeholder="🔍 Type location… (e.g. Nairobi, Mombasa)"
+              oninput="filterLocations();"
+              onfocus="filterLocations();document.getElementById('locDd').style.display='block';"
+              autocomplete="off" autocorrect="off" autocapitalize="off"
+              style="width:100%;">
+            <div class="dd-list" id="locDd" style="display:none;max-height:220px;overflow-y:auto;"></div>
+          </div>
+          <input type="hidden" id="locationSelect">
+        </div>
+
         <div class="form-group full">
           <label>Your Route</label>
           <div class="dd-wrap" id="routeDdWrap" style="position:relative;">
@@ -1536,9 +1550,10 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <button class="dev-tab" onclick="switchDevTab('routes',this)">🗺️ Routes</button>
         <button class="dev-tab" onclick="switchDevTab('products',this)">📦 Products</button>
         <button class="dev-tab" onclick="switchDevTab('customers',this)">🏪 Customers</button>
+        <button class="dev-tab" onclick="switchDevTab('locations',this)">🏢 Locations</button>
       </div>
       <!-- Tab content -->
-      <div style="flex:1;overflow-y:auto;padding:18px 24px;" id="devContent"></div>
+      <div style="flex:1;overflow-y:auto;padding:18px 24px;max-height:calc(90vh - 160px);-webkit-overflow-scrolling:touch;" id="devContent"></div>
       <!-- Footer -->
       <div style="padding:14px 24px;border-top:1px solid var(--bd);display:flex;gap:10px;align-items:center;background:var(--cream);">
         <button onclick="saveDevChanges()" style="padding:10px 18px;background:#1A7A4A;color:#fff;border:none;border-radius:10px;font-size:.85rem;font-weight:600;cursor:pointer;">⚡ Apply Now</button>
@@ -1568,7 +1583,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
 <script>
 // ═══════════ CONFIG ═══════════
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzM6FTEKDWVCh-pg83BvMYqSMw8le6Ni6KpmuUE3ZFw2uzrvjP62CQt7e_-eQpr93nx6w/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbx7ScjMZZg4ILr7Uz4QzN7_09Py6ZCriiFcBw35N-skFq1-9vCp7s5tDPEqkOi-olxJNQ/exec";
 
 // ═══════════ MASTER DATA ═══════════
 const SALESMEN = [
@@ -6963,9 +6978,14 @@ let actualsData = [];
 let exportData = [];
 let actualsPeriod = '';
 let charts = {};
+let currentLocation = null;
+const LOCATIONS = [
+  'NAIROBI','MOMBASA','NAKURU','KISUMU',
+  'SOTIK','ELDORET','NANYUKI','NYAHURURU'
+];
 const DEV_PASSWORD = 'Festoo';
 let devUnlocked = false;
-let devSalesmen = [], devRoutes = [], devProducts = [], devCustomers = [];
+let devSalesmen = [], devRoutes = [], devProducts = [], devCustomers = [], devLocations = [];
 let devTab = 'salesmen';
 
 const COLORS = ['#1A7A4A','#C9941A','#1A4A7A','#C0392B','#6C3483','#16A085','#E67E22','#2980B9','#8E44AD','#117A65','#D35400','#1F618D'];
@@ -7398,6 +7418,7 @@ function loadData() {
         try {
           allData = rows.map(r => ({
             timestamp:        r.timestamp,
+            location:         r.location || '',
             salesman_payroll: String(r.salesman_payroll || ''),
             salesman_name:    r.salesman_name,
             route:            r.route,
@@ -7587,6 +7608,37 @@ document.addEventListener('click', e => {
   }
 }, true);
 
+function filterLocations() {
+  const q  = (document.getElementById('locSearch').value || '').toLowerCase().trim();
+  const dd = document.getElementById('locDd');
+  if (!dd) return;
+  const list = q ? LOCATIONS.filter(l => l.toLowerCase().includes(q)) : LOCATIONS;
+  dd.innerHTML = list.map(l =>
+    `<div class="dd-opt" onclick="selectLocation('${l}')">
+      <span>🏢 ${l}</span>
+    </div>`
+  ).join('') || '<div class="dd-opt" style="color:var(--muted)">No match</div>';
+  dd.style.display = 'block';
+}
+
+function selectLocation(val) {
+  currentLocation = val;
+  const inp = document.getElementById('locSearch');
+  const hid = document.getElementById('locationSelect');
+  const dd  = document.getElementById('locDd');
+  if (inp) inp.value  = val;
+  if (hid) hid.value  = val;
+  if (dd)  dd.style.display = 'none';
+  checkReady();
+}
+
+// Close locDd on outside click
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('locDdWrap');
+  const dd   = document.getElementById('locDd');
+  if (wrap && dd && !wrap.contains(e.target)) dd.style.display = 'none';
+});
+
 function filterRoutes() {
   const q   = (document.getElementById('routeSearch')||{}).value.toLowerCase().trim();
   const dd  = document.getElementById('routeDd');
@@ -7693,6 +7745,8 @@ function goToStep2() {
   document.getElementById('step2').classList.add('active');
   document.getElementById('summaryName').textContent = currentSalesman.n + ' (' + currentSalesman.p + ')';
   document.getElementById('summaryRoute').textContent = '📍 ' + currentRoute;
+  const summaryLoc = document.getElementById('summaryLoc');
+  if (summaryLoc) summaryLoc.textContent = '🏢 ' + currentLocation;
   setTimeout(() => document.getElementById('custSearch').focus(), 100);
 }
 
@@ -7997,7 +8051,7 @@ function renderOrderTable() {
 
 function checkReady() {
   const orderDate = (document.getElementById('orderDate')||{}).value;
-  const readyForStep2 = !!(currentSalesman && currentRoute && orderDate);
+  const readyForStep2 = !!(currentSalesman && currentRoute && currentLocation && orderDate);
   const btnS2 = document.getElementById('btnToStep2');
   if (btnS2) btnS2.disabled = !readyForStep2;
   document.getElementById('submitBtn').disabled = !(currentSalesman && currentRoute && orderDate && orderLines.length);
@@ -8019,6 +8073,7 @@ async function submitOrder() {
 
   const payload = {
     timestamp:        (document.getElementById('orderDate').value || new Date().toISOString().split('T')[0]) + 'T00:00:00.000Z',
+    location:         currentLocation || '',
     salesman_payroll: currentSalesman.p,
     salesman_name:    currentSalesman.n,
     route:            currentRoute,
@@ -10355,11 +10410,34 @@ function showToast(msg, type='success') {
 
 // Working copies — edited in panel, applied on save
 
+// 5-tap secret to open dev panel
+var _devTapCount = 0;
+var _devTapTimer = null;
+
+function _devTap() {
+  _devTapCount++;
+  clearTimeout(_devTapTimer);
+  _devTapTimer = setTimeout(function() { _devTapCount = 0; }, 2000);
+  if (_devTapCount >= 5) {
+    _devTapCount = 0;
+    clearTimeout(_devTapTimer);
+    openDevPanel();
+  } else if (_devTapCount >= 2) {
+    // Subtle flash to show it's registering
+    var logo = document.getElementById('logoTap');
+    if (logo) {
+      logo.style.opacity = '0.5';
+      setTimeout(function(){ logo.style.opacity = '1'; }, 80);
+    }
+  }
+}
+
 function openDevPanel() {
   devSalesmen  = SALESMEN.map(s => ({...s}));
   devRoutes    = [...ROUTES];
   devProducts  = PRODUCTS.map(p => ({...p}));
   devCustomers = CUSTOMERS.map(c => ({...c}));
+  devLocations  = [...LOCATIONS];
 
   loadGhConfig();
 
@@ -10404,20 +10482,46 @@ function switchDevTab(tab, btn) {
   renderDevTab();
 }
 
+function renderDevLocations(c) {
+  c.innerHTML = `
+    <div class="dev-section-title">Locations <span class="dev-badge">${devLocations.length}</span></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:14px;max-height:380px;overflow-y:auto;">
+      ${devLocations.map((l,i) => `
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input class="dev-inp" value="${l}" oninput="devLocations[${i}]=this.value">
+          <button class="dev-del" onclick="devLocations.splice(${i},1);renderDevTab()">🗑</button>
+        </div>`).join('')}
+    </div>
+    <div class="dev-add">
+      <input class="dev-inp" id="newLoc" placeholder="New location (e.g. THIKA)">
+      <button onclick="devAddLocation()" style="padding:7px 14px;background:var(--dark);color:#fff;border:none;border-radius:8px;font-size:.82rem;cursor:pointer;white-space:nowrap;">+ Add</button>
+    </div>`;
+}
+
+function devAddLocation() {
+  const v = (document.getElementById('newLoc').value || '').trim().toUpperCase();
+  if (!v) return;
+  if (devLocations.includes(v)) return showToast('Location already exists','error');
+  devLocations.push(v);
+  renderDevTab();
+  showToast('Added: ' + v, 'success');
+}
+
 function renderDevTab() {
   const c = document.getElementById('devContent');
   if (!c) return;
   if (devTab === 'salesmen')  renderDevSalesmen(c);
-  else if (devTab === 'routes')   renderDevRoutes(c);
-  else if (devTab === 'products') renderDevProducts(c);
+  else if (devTab === 'routes')    renderDevRoutes(c);
+  else if (devTab === 'products')  renderDevProducts(c);
   else if (devTab === 'customers') renderDevCustomers(c);
+  else if (devTab === 'locations') renderDevLocations(c);
 }
 
 // ── SALESMEN ──
 function renderDevSalesmen(c) {
   c.innerHTML = `
     <div class="dev-section-title">Salespeople <span class="dev-badge">${devSalesmen.length}</span></div>
-    <div id="devSmList">
+    <div id="devSmList" style="max-height:400px;overflow-y:auto;-webkit-overflow-scrolling:touch;">
       ${devSalesmen.map((s,i) => `
         <div class="dev-row">
           <input class="dev-inp" style="max-width:110px;" value="${s.p}" placeholder="Payroll" oninput="devSalesmen[${i}].p=this.value">
@@ -10445,7 +10549,7 @@ function devAddSalesman() {
 function renderDevRoutes(c) {
   c.innerHTML = `
     <div class="dev-section-title">Routes <span class="dev-badge">${devRoutes.length}</span></div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:14px;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:14px;max-height:380px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:4px;">
       ${devRoutes.map((r,i) => `
         <div style="display:flex;gap:6px;align-items:center;">
           <input class="dev-inp" value="${r}" oninput="devRoutes[${i}]=this.value">
@@ -10471,6 +10575,7 @@ function renderDevProducts(c) {
   const cats = [...new Set(devProducts.map(p=>p.k))].sort();
   c.innerHTML = `
     <div class="dev-section-title">Products <span class="dev-badge">${devProducts.length}</span></div>
+    <div style="max-height:400px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:4px;">
     ${cats.map(cat => `
       <div style="margin-bottom:16px;">
         <div style="font-size:.72rem;font-weight:700;color:var(--gold);letter-spacing:.06em;margin-bottom:6px;">${cat}</div>
@@ -10485,6 +10590,7 @@ function renderDevProducts(c) {
           </div>`;
         }).join('')}
       </div>`).join('')}
+    </div>
     <div class="dev-add" style="flex-wrap:wrap;">
       <input class="dev-inp" style="max-width:70px;" id="newProdC" placeholder="Code">
       <input class="dev-inp" style="flex:2;min-width:160px;" id="newProdD" placeholder="Description">
@@ -10512,6 +10618,7 @@ function renderDevCustomers(c) {
   const channels = [...new Set(devCustomers.map(x=>x.ch||'OTHER'))].sort();
   c.innerHTML = `
     <div class="dev-section-title">Customers / Outlets <span class="dev-badge">${devCustomers.length}</span></div>
+    <div style="max-height:380px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:4px;" id="devCustScroll">
     <div style="margin-bottom:12px;">
       <input type="text" id="devCustSearch" placeholder="🔍 Search customer…" oninput="renderDevCustomers(document.getElementById('devContent'))"
         style="width:100%;padding:8px 12px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.82rem;">
@@ -10536,6 +10643,7 @@ function renderDevCustomers(c) {
         </div>`;
       }).join('');
     })()}
+    </div>
     <div class="dev-add" style="flex-wrap:wrap;">
       <input class="dev-inp" style="max-width:90px;" id="newCustA" placeholder="Acc #">
       <input class="dev-inp" style="flex:2;min-width:160px;" id="newCustN" placeholder="Customer Name">
@@ -10561,6 +10669,12 @@ function saveDevChanges() {
   ROUTES.length   = 0; devRoutes.forEach(r => ROUTES.push(r));
   PRODUCTS.length = 0; devProducts.forEach(p => PRODUCTS.push(p));
   CUSTOMERS.length = 0; devCustomers.forEach(c => CUSTOMERS.push(c));
+  LOCATIONS.length = 0; devLocations.forEach(l => LOCATIONS.push(l));
+  // Rebuild location dropdown
+  const locInp = document.getElementById('locSearch');
+  if (locInp && currentLocation && !LOCATIONS.includes(currentLocation)) {
+    currentLocation = null; if (locInp) locInp.value = '';
+  }
 
   // Rebuild PRICES from products
   devProducts.forEach(p => { if (p.p) PRICES[p.c] = { trade: p.p, unit: 'per carton' }; });
@@ -10650,6 +10764,7 @@ function showOrderConfirm(payload, lineCount) {
   if (meta) meta.innerHTML = [
     ['👤 Salesperson', payload.salesman_name],
     ['🆔 Payroll',     payload.salesman_payroll],
+    ['🏢 Location',    payload.location || '—'],
     ['🗺️ Route',       payload.route],
     ['📅 Date',        orderDate],
   ].map(([l,v]) => `
@@ -10799,6 +10914,7 @@ function buildOrderText(p) {
   let txt = '📦 *SALES ORDER*\n';
   txt += '━━━━━━━━━━━━━━━━━━━━\n';
   txt += `👤 ${p.salesman_name} (${p.salesman_payroll})\n`;
+  txt += `🏢 Location: ${p.location || '—'}\n`;
   txt += `🗺️ Route: ${p.route}\n`;
   txt += `📅 Date: ${date}\n`;
   txt += '━━━━━━━━━━━━━━━━━━━━\n\n';
@@ -11202,7 +11318,11 @@ function buildUpdatedHtml() {
 
   // Replace CUSTOMERS array
   const custJson = JSON.stringify(devCustomers, null, 0);
-  src = src.replace(/const CUSTOMERS = \[[\s\S]*?\];/, 'const CUSTOMERS = ' + custJson + ';');
+  src = src.replace(/const CUSTOMERS = \[\s\S]*?\];/, 'const CUSTOMERS = ' + custJson + ';');
+
+  // Replace LOCATIONS array
+  const locsJson = JSON.stringify(devLocations, null, 0);
+  src = src.replace(/const LOCATIONS = \[\s\S]*?\];/, 'const LOCATIONS = ' + locsJson + ';');
 
   // Replace PRICES object
   const newPrices = {};
