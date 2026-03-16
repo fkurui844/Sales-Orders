@@ -1231,67 +1231,66 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       </div>
 
       <div id="dtProjection" class="hidden">
-        <!-- Date + searchable filters -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;padding:0 0 14px 0;align-items:end;">
+        <!-- Filter panel -->
+        <div style="background:var(--surface);border:1px solid var(--bd);border-radius:14px;padding:14px 16px;margin-bottom:16px;">
 
-          <!-- Date From -->
-          <div>
-            <label style="font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px;">Date From</label>
-            <input type="date" id="projFrom" onchange="renderProjectionReport()"
-              style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.82rem;">
+          <!-- Row 1: Dates -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+            <div>
+              <label style="font-size:.66rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px;">Date From</label>
+              <input type="date" id="projFrom" onchange="renderProjectionReport()"
+                style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--bg);color:var(--text);font-size:.82rem;box-sizing:border-box;">
+            </div>
+            <div>
+              <label style="font-size:.66rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px;">Date To</label>
+              <input type="date" id="projTo" onchange="renderProjectionReport()"
+                style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--bg);color:var(--text);font-size:.82rem;box-sizing:border-box;">
+            </div>
           </div>
 
-          <!-- Date To -->
-          <div>
-            <label style="font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px;">Date To</label>
-            <input type="date" id="projTo" onchange="renderProjectionReport()"
-              style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.82rem;">
-          </div>
-
-          <!-- Location searchable -->
-          <div style="position:relative;z-index:50;">
-            <label style="font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px;">Location</label>
-            <div style="position:relative;">
-              <input type="text" id="projLocSearch" placeholder="All Locations"
-                oninput="projFilterDd('loc')" onfocus="projFilterDd('loc')"
-                autocomplete="off"
-                style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.82rem;box-sizing:border-box;">
+          <!-- Row 2: Location + Route -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+            <div style="position:relative;z-index:50;">
+              <label style="font-size:.66rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px;">Location</label>
+              <input type="text" id="projLocSearch" placeholder="🔍 All Locations"
+                oninput="projFilterDd('loc')" onfocus="projFilterDd('loc')" autocomplete="off"
+                style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--bg);color:var(--text);font-size:.82rem;box-sizing:border-box;">
               <input type="hidden" id="projLocFilter">
-              <div id="projLocDd" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1.5px solid var(--bd);border-radius:0 0 8px 8px;max-height:200px;overflow-y:auto;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.15);"></div>
+              <div id="projLocDd" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1.5px solid var(--bd);border-radius:0 0 8px 8px;max-height:180px;overflow-y:auto;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.15);"></div>
             </div>
-          </div>
-
-          <!-- Route searchable -->
-          <div style="position:relative;z-index:40;">
-            <label style="font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px;">Route</label>
-            <div style="position:relative;">
-              <input type="text" id="projRouteSearch" placeholder="All Routes"
-                oninput="projFilterDd('route')" onfocus="projFilterDd('route')"
-                autocomplete="off"
-                style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.82rem;box-sizing:border-box;">
+            <div style="position:relative;z-index:40;">
+              <label style="font-size:.66rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px;">Route</label>
+              <input type="text" id="projRouteSearch" placeholder="🔍 All Routes"
+                oninput="projFilterDd('route')" onfocus="projFilterDd('route')" autocomplete="off"
+                style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--bg);color:var(--text);font-size:.82rem;box-sizing:border-box;">
               <input type="hidden" id="projRouteFilter">
-              <div id="projRouteDd" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1.5px solid var(--bd);border-radius:0 0 8px 8px;max-height:200px;overflow-y:auto;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.15);"></div>
+              <div id="projRouteDd" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1.5px solid var(--bd);border-radius:0 0 8px 8px;max-height:180px;overflow-y:auto;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.15);"></div>
             </div>
           </div>
 
-          <!-- Salesperson searchable -->
-          <div style="position:relative;z-index:30;">
-            <label style="font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px;">Salesperson</label>
-            <div style="position:relative;">
-              <input type="text" id="projSmSearch" placeholder="All Salespeople"
-                oninput="projFilterDd('sm')" onfocus="projFilterDd('sm')"
-                autocomplete="off"
-                style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.82rem;box-sizing:border-box;">
-              <input type="hidden" id="projSmFilter">
-              <div id="projSmDd" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1.5px solid var(--bd);border-radius:0 0 8px 8px;max-height:200px;overflow-y:auto;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.15);"></div>
-            </div>
+          <!-- Row 3: Salesperson (full width) -->
+          <div style="position:relative;z-index:30;margin-bottom:12px;">
+            <label style="font-size:.66rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px;">Salesperson</label>
+            <input type="text" id="projSmSearch" placeholder="🔍 All Salespeople"
+              oninput="projFilterDd('sm')" onfocus="projFilterDd('sm')" autocomplete="off"
+              style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--bg);color:var(--text);font-size:.82rem;box-sizing:border-box;">
+            <input type="hidden" id="projSmFilter">
+            <div id="projSmDd" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1.5px solid var(--bd);border-radius:0 0 8px 8px;max-height:180px;overflow-y:auto;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.15);"></div>
           </div>
 
-          <!-- Export button -->
-          <div style="display:flex;align-items:flex-end;">
+          <!-- Row 4: Action buttons -->
+          <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;">
+            <button onclick="renderProjectionReport()"
+              style="padding:10px;background:var(--dark);color:#fff;border:none;border-radius:9px;font-size:.84rem;font-weight:700;cursor:pointer;letter-spacing:.02em;">
+              🔍 Apply Filter
+            </button>
+            <button onclick="projClearFilters()"
+              style="padding:10px 14px;background:var(--surface);color:var(--text);border:1.5px solid var(--bd);border-radius:9px;font-size:.82rem;cursor:pointer;white-space:nowrap;">
+              ✕ Clear
+            </button>
             <button onclick="exportProjectionCsv()"
-              style="width:100%;padding:9px 12px;background:var(--dark);color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;">
-              📥 Export CSV
+              style="padding:10px 14px;background:#1A4A7A;color:#fff;border:none;border-radius:9px;font-size:.82rem;font-weight:600;cursor:pointer;white-space:nowrap;">
+              📥 CSV
             </button>
           </div>
 
@@ -7428,7 +7427,7 @@ function openDashSection(tab) {
   if (titleEl) titleEl.textContent = titles[tab] || tab;
   // Hide the header section for export tab
   // For export: hide entire header; for channel/customer/salesman: hide KPIs + supervisor grid
-  const noHeader = ['export'];
+  const noHeader = ['export', 'projection'];
   const noKpis   = ['salesman','customer','channel','products','daily','routes','revenue','timing','export','projection'];
   const sysHeader = document.getElementById('systemPanelHeader');
   if (sysHeader) sysHeader.style.display = noHeader.includes(tab) ? 'none' : '';
@@ -8713,6 +8712,21 @@ function rankHtml(items, labelFn, valFn, colorFn) {
 // ═══════════ RENDER DASHBOARD ═══════════
 // ── Projection filter searchable dropdowns ──
 var _projFilterData = { loc: [], route: [], sm: [] };
+
+function projClearFilters() {
+  ['projLocSearch','projRouteSearch','projSmSearch'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  ['projLocFilter','projRouteFilter','projSmFilter'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const pf = document.getElementById('projFrom');
+  const pt = document.getElementById('projTo');
+  const today = new Date().toISOString().split('T')[0];
+  if (pf) pf.value = '2020-01-01';
+  if (pt) pt.value = today;
+  renderProjectionReport();
+}
 
 function projInitFilters() {
   _projFilterData.loc   = ['', ...[...new Set(allData.map(r=>r.location).filter(Boolean))].sort()];
