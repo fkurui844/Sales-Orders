@@ -10445,88 +10445,80 @@ function closeDupWarning(proceed) {
 // FEATURE 3: ROUTE COVERAGE
 // ═══════════════════════════════════════════════════
 function renderRouteCoverage(data, selectedRoute) {
-  const wrap = document.getElementById('routeCoverageWrap');
+  var wrap = document.getElementById('routeCoverageWrap');
   if (!wrap) return;
   if (!selectedRoute) {
     wrap.innerHTML = '<div class="empty" style="padding:24px"><p>Select a route above to see coverage.</p></div>';
     return;
   }
 
-  // All customers on this route from master data
-  const routeCustomers = CUSTOMERS.filter(c =>
-    (c.loc || '').toUpperCase().includes(selectedRoute.toUpperCase()) ||
-    // fallback: customers who have ever ordered on this route
-    allData.some(r => r.route === selectedRoute && String(r.customer_acc) === String(c.a))
-  );
+  // Customers on this route (ever ordered on it)
+  var orderedOnRoute = data.filter(function(r){ return r.route === selectedRoute; });
+  var orderedAccs = {};
+  orderedOnRoute.forEach(function(r){ orderedAccs[String(r.customer_acc)] = true; });
 
-  // Customers who DID order in the current data set
-  const orderedAccs = new Set(data.filter(r => r.route === selectedRoute).map(r => String(r.customer_acc)));
+  // All known customers on this route from CUSTOMERS master
+  var routeCusts = CUSTOMERS.filter(function(c){
+    return (c.loc||'').toUpperCase().indexOf(selectedRoute.toUpperCase()) > -1 ||
+      orderedAccs[String(c.a)];
+  });
 
-  // Build coverage rows
-  const ordered  = routeCustomers.filter(c => orderedAccs.has(String(c.a)));
-  const notOrdered = routeCustomers.filter(c => !orderedAccs.has(String(c.a)));
+  var ordered    = routeCusts.filter(function(c){ return orderedAccs[String(c.a)]; });
+  var notOrdered = routeCusts.filter(function(c){ return !orderedAccs[String(c.a)]; });
+  var coveragePct = routeCusts.length > 0 ? Math.round(ordered.length / routeCusts.length * 100) : 0;
+  var barColor = coveragePct >= 70 ? 'var(--green)' : coveragePct >= 40 ? 'var(--gold)' : '#C0392B';
 
-  // Also include customers in data but not in master
-  const dataCustomers = [...new Set(
-    data.filter(r => r.route === selectedRoute).map(r => JSON.stringify({a:r.customer_acc,n:r.customer_name}))
-  )].map(s => JSON.parse(s));
+  var html_out = '';
 
-  const coveragePct = routeCustomers.length > 0
-    ? Math.round(ordered.length / routeCustomers.length * 100) : 0;
+  // Header bar
+  html_out += '<div style="padding:14px 18px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;border-bottom:1px solid var(--bd);">';
+  html_out += '<div><span style="font-family:DM Mono,monospace;font-size:1.6rem;font-weight:700;color:' + barColor + '">' + coveragePct + '%</span>';
+  html_out += '<span style="font-size:.75rem;color:var(--muted);margin-left:4px">coverage</span></div>';
+  html_out += '<div style="flex:1;min-width:120px;"><div style="height:8px;background:var(--bd);border-radius:4px;overflow:hidden;">';
+  html_out += '<div style="height:100%;width:' + coveragePct + '%;background:' + barColor + ';border-radius:4px;transition:width .4s;"></div></div></div>';
+  html_out += '<div style="font-size:.8rem;color:var(--muted);">';
+  html_out += '<span style="color:var(--green);font-weight:700">' + ordered.length + ' ordered</span> · ';
+  html_out += '<span style="color:#C0392B;font-weight:700">' + notOrdered.length + ' not ordered</span>';
+  if (routeCusts.length) html_out += ' · ' + routeCusts.length + ' total';
+  html_out += '</div></div>';
 
-  wrap.innerHTML = `
-    <div style="padding:14px 18px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;border-bottom:1px solid var(--bd);">
-      <div>
-        <span style="font-family:'DM Mono',monospace;font-size:1.6rem;font-weight:700;color:${coveragePct>=70?'var(--green)':coveragePct>=40?'var(--gold)':'var(--red)'}">${coveragePct}%</span>
-        <span style="font-size:.75rem;color:var(--muted);margin-left:4px;">coverage</span>
-      </div>
-      <div style="flex:1;min-width:120px;">
-        <div style="height:8px;background:var(--bd);border-radius:4px;overflow:hidden;">
-          <div style="height:100%;width:${coveragePct}%;background:${coveragePct>=70?'var(--green)':coveragePct>=40?'var(--gold)':'#C0392B'};border-radius:4px;transition:width .4s;"></div>
-        </div>
-      </div>
-      <div style="font-size:.8rem;color:var(--muted);">
-        <span style="color:var(--green);font-weight:700">${ordered.length} ordered</span> · 
-        <span style="color:#C0392B;font-weight:700">${notOrdered.length} not ordered</span>
-        ${routeCustomers.length>0?` · ${routeCustomers.length} total`:''}
-      </div>
-    </div>
-    ${notOrdered.length ? `
-    <div style="padding:10px 18px 4px;font-size:.7rem;font-weight:700;color:#C0392B;text-transform:uppercase;letter-spacing:.06em;">
-      ❌ Not Ordered (${notOrdered.length})
-    </div>
-    <table class="tbl"><tbody>
-      ${notOrdered.map(c => `<tr>
-        <td><span class="badge">${c.a}</span></td>
-        <td style="font-size:.82rem;font-weight:500;color:#C0392B">${c.n}</td>
-        <td><span style="font-size:.7rem;background:#fdf0ef;color:#C0392B;padding:2px 8px;border-radius:10px;">${c.ch||'—'}</span></td>
-      </tr>`).join('')}
-    </tbody></table>` : ''}
-    ${ordered.length ? `
-    <div style="padding:10px 18px 4px;font-size:.7rem;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.06em;">
-      ✅ Ordered (${ordered.length})
-    </div>
-    <table class="tbl"><tbody>
-      ${ordered.map(c => {
-        const lines = data.filter(r => r.route===selectedRoute && String(r.customer_acc)===String(c.a));
-        const kg = lines.reduce((s,r)=>s+(parseFloat(r.total_wt)||0),0);
-        return `<tr>
-          <td><span class="badge">${c.a}</span></td>
-          <td style="font-size:.82rem;font-weight:500">${c.n}</td>
-          <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:600">${kg.toFixed(1)} kg</td>
-          <td style="font-size:.72rem;color:var(--muted)">${lines.length} line${lines.length>1?'s':''}</td>
-        </tr>`;
-      }).join('')}
-    </tbody></table>` : ''}`;
+  // Not ordered section
+  if (notOrdered.length) {
+    html_out += '<div style="padding:10px 18px 4px;font-size:.7rem;font-weight:700;color:#C0392B;text-transform:uppercase;letter-spacing:.06em;">&#10060; Not Ordered (' + notOrdered.length + ')</div>';
+    html_out += '<table class="tbl"><tbody>';
+    notOrdered.forEach(function(c){
+      html_out += '<tr>';
+      html_out += '<td><span class="badge">' + c.a + '</span></td>';
+      html_out += '<td style="font-size:.82rem;font-weight:500;color:#C0392B">' + c.n + '</td>';
+      html_out += '<td><span style="font-size:.7rem;background:#fdf0ef;color:#C0392B;padding:2px 8px;border-radius:10px;">' + (c.ch||'—') + '</span></td>';
+      html_out += '</tr>';
+    });
+    html_out += '</tbody></table>';
+  }
+
+  // Ordered section
+  if (ordered.length) {
+    html_out += '<div style="padding:10px 18px 4px;font-size:.7rem;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.06em;">&#10003; Ordered (' + ordered.length + ')</div>';
+    html_out += '<table class="tbl"><tbody>';
+    ordered.forEach(function(c){
+      var lines = data.filter(function(r){ return r.route === selectedRoute && String(r.customer_acc) === String(c.a); });
+      var kg = lines.reduce(function(s,r){ return s + (parseFloat(r.total_wt)||0); }, 0);
+      html_out += '<tr>';
+      html_out += '<td><span class="badge">' + c.a + '</span></td>';
+      html_out += '<td style="font-size:.82rem;font-weight:500">' + c.n + '</td>';
+      html_out += '<td style="font-family:DM Mono,monospace;color:var(--green);font-weight:600">' + kg.toFixed(1) + ' kg</td>';
+      html_out += '<td style="font-size:.72rem;color:var(--muted)">' + lines.length + ' line' + (lines.length>1?'s':'') + '</td>';
+      html_out += '</tr>';
+    });
+    html_out += '</tbody></table>';
+  }
+
+  if (!ordered.length && !notOrdered.length) {
+    html_out = '<div class="empty" style="padding:24px"><p>No customer data for this route.</p></div>';
+  }
+
+  wrap.innerHTML = html_out;
 }
-
-// ═══════════════════════════════════════════════════
-// FEATURE 4: AUTO-REFRESH
-// ═══════════════════════════════════════════════════
-let _autoRefreshTimer = null;
-let _autoRefreshInterval = 5 * 60 * 1000; // 5 minutes
-let _autoRefreshCountdown = 0;
-let _autoRefreshCountdownTimer = null;
 
 function startAutoRefresh() {
   stopAutoRefresh();
