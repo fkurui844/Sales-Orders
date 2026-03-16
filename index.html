@@ -535,6 +535,26 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
             style="font-size:1rem;padding:12px 14px;border-radius:10px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);width:100%;min-height:48px;">
         </div>
       </div>
+      <!-- Order Type selector -->
+      <div style="margin-bottom:14px;">
+        <label style="font-size:.72rem;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:8px;">Order Type</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <button id="btnTypeProjection" onclick="setOrderType('projection')"
+            style="padding:14px 10px;border-radius:12px;border:2px solid var(--bd);background:var(--surface);cursor:pointer;text-align:center;transition:all .2s;">
+            <div style="font-size:1.3rem;">🌅</div>
+            <div style="font-size:.82rem;font-weight:700;margin-top:4px;color:var(--text);">Morning Projection</div>
+            <div style="font-size:.68rem;color:var(--muted);margin-top:2px;">Fresh Milk only · 8AM–2PM</div>
+          </button>
+          <button id="btnTypeOrder" onclick="setOrderType('order')"
+            style="padding:14px 10px;border-radius:12px;border:2px solid var(--bd);background:var(--surface);cursor:pointer;text-align:center;transition:all .2s;">
+            <div style="font-size:1.3rem;">📦</div>
+            <div style="font-size:.82rem;font-weight:700;margin-top:4px;color:var(--text);">Full Order</div>
+            <div style="font-size:.68rem;color:var(--muted);margin-top:2px;">All products · Actual orders</div>
+          </button>
+        </div>
+        <div id="orderTypeWarning" style="display:none;margin-top:8px;padding:8px 12px;background:#fef9ee;border:1px solid #f0d060;border-radius:8px;font-size:.78rem;color:#C9941A;"></div>
+      </div>
+
       <button class="btn-add" id="btnToStep2" onclick="goToStep2()" disabled>
         Continue — Add Products →
       </button>
@@ -543,6 +563,9 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
   <!-- STEP 2: Add items -->
   <div class="panel hidden" id="stepPanel2" style="overflow:visible;">
+    <div id="projectionBanner" style="display:none;background:#fef9ee;border-bottom:2px solid #C9941A;padding:10px 18px;font-size:.82rem;font-weight:600;color:#C9941A;">
+      🌅 MORNING PROJECTION MODE — Fresh Milk products only
+    </div>
     <div class="panel-header">
       <span>🛒</span><h2>Add Products</h2>
       <span id="lineCountBadge" style="margin-left:auto;font-family:'DM Mono',monospace;font-size:.76rem;color:var(--muted);">0 lines</span>
@@ -735,6 +758,16 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       <div class="panel"><div class="panel-header"><h2>Top Salespeople — kg</h2></div><div class="panel-body" id="rankSmKg"></div></div>
       <div class="panel"><div class="panel-header"><h2>Top Products — Qty</h2></div><div class="panel-body" id="rankProdQty"></div></div>
     </div>
+
+    <!-- Projection vs Actual Fresh Milk -->
+    <div class="panel" id="projVsActualPanel" style="margin-top:4px;">
+      <div class="panel-header">
+        <h2>🌅 Fresh Milk — Projection vs Actual Orders</h2>
+        <span style="font-size:.72rem;color:var(--muted);margin-left:8px;">Today's morning projections compared to midday full orders</span>
+      </div>
+      <div id="projVsActualWrap" style="padding:0;overflow-x:auto;"></div>
+    </div>
+
     </div>
       <div id="dtSalesman" class="hidden">
       <!-- Salesperson selector for individual dash -->
@@ -6979,6 +7012,7 @@ let exportData = [];
 let actualsPeriod = '';
 let charts = {};
 let currentLocation = null;
+let currentOrderType = null; // 'projection' | 'order'
 const LOCATIONS = [
   'NAIROBI','MOMBASA','NAKURU','KISUMU',
   'SOTIK','ELDORET','NANYUKI','NYAHURURU'
@@ -7419,6 +7453,7 @@ function loadData() {
           allData = rows.map(r => ({
             timestamp:        r.timestamp,
             location:         r.location || '',
+            order_type:       r.order_type || 'order',
             salesman_payroll: String(r.salesman_payroll || ''),
             salesman_name:    r.salesman_name,
             route:            r.route,
@@ -7608,6 +7643,42 @@ document.addEventListener('click', e => {
   }
 }, true);
 
+function setOrderType(type) {
+  const now  = new Date();
+  const hour = now.getHours();
+  const warn = document.getElementById('orderTypeWarning');
+
+  if (type === 'projection') {
+    if (hour < 8 || hour >= 14) {
+      if (warn) {
+        warn.style.display = 'block';
+        warn.textContent = '⚠️ Projections are typically placed between 8AM–2PM. Current time: ' +
+          now.toLocaleTimeString('en-KE',{hour:'2-digit',minute:'2-digit'}) + '. You may still proceed.';
+      }
+    } else {
+      if (warn) warn.style.display = 'none';
+    }
+  } else {
+    if (warn) warn.style.display = 'none';
+  }
+
+  currentOrderType = type;
+
+  // Style buttons
+  const projBtn  = document.getElementById('btnTypeProjection');
+  const orderBtn = document.getElementById('btnTypeOrder');
+  if (projBtn) {
+    projBtn.style.borderColor  = type==='projection' ? '#C9941A' : 'var(--bd)';
+    projBtn.style.background   = type==='projection' ? '#fef9ee' : 'var(--surface)';
+  }
+  if (orderBtn) {
+    orderBtn.style.borderColor = type==='order' ? '#1A7A4A' : 'var(--bd)';
+    orderBtn.style.background  = type==='order' ? '#e8f8f0' : 'var(--surface)';
+  }
+
+  checkReady();
+}
+
 function filterLocations() {
   const q  = (document.getElementById('locSearch').value || '').toLowerCase().trim();
   const dd = document.getElementById('locDd');
@@ -7738,6 +7809,8 @@ function onRouteChange(val) {
 }
 
 function goToStep2() {
+  // Set product filter based on order type
+  window._projectionMode = (currentOrderType === 'projection');
   if (!currentSalesman || !currentRoute) return;
   document.getElementById('stepPanel1').classList.add('hidden');
   document.getElementById('stepPanel2').classList.remove('hidden');
@@ -7747,10 +7820,21 @@ function goToStep2() {
   document.getElementById('summaryRoute').textContent = '📍 ' + currentRoute;
   const summaryLoc = document.getElementById('summaryLoc');
   if (summaryLoc) summaryLoc.textContent = '🏢 ' + currentLocation;
+  const summaryType = document.getElementById('summaryOrderType');
+  if (summaryType) {
+    summaryType.textContent = currentOrderType === 'projection' ? '🌅 Morning Projection' : '📦 Full Order';
+    summaryType.style.color = currentOrderType === 'projection' ? 'var(--gold)' : 'var(--green)';
+  }
   setTimeout(() => document.getElementById('custSearch').focus(), 100);
 }
 
 function goToStep1() {
+  currentOrderType = null;
+  window._projectionMode = false;
+  const projBtn  = document.getElementById('btnTypeProjection');
+  const orderBtn = document.getElementById('btnTypeOrder');
+  if (projBtn)  { projBtn.style.borderColor='var(--bd)'; projBtn.style.background='var(--surface)'; }
+  if (orderBtn) { orderBtn.style.borderColor='var(--bd)'; orderBtn.style.background='var(--surface)'; }
   document.getElementById('stepPanel2').classList.add('hidden');
   document.getElementById('stepPanel1').classList.remove('hidden');
   document.getElementById('step1').classList.add('active'); document.getElementById('step1').classList.remove('done');
@@ -7866,9 +7950,13 @@ function filterProd() {
   const q  = (document.getElementById('prodSearch').value || '').toLowerCase().trim();
   const dd = document.getElementById('prodDd');
   if (!dd) return;
+  // In projection mode, show FRESH MILK only
+  const baseProds = window._projectionMode
+    ? PRODUCTS.filter(p => p.k === 'FRESH MILK')
+    : PRODUCTS;
   const list = q.length < 1
-    ? PRODUCTS.slice(0, 30)
-    : PRODUCTS.filter(p =>
+    ? baseProds.slice(0, 30)
+    : baseProds.filter(p =>
         (p.c||'').toLowerCase().includes(q) ||
         (p.d||'').toLowerCase().includes(q) ||
         (p.k||'').toLowerCase().includes(q)
@@ -8016,6 +8104,11 @@ function removeLine(i) { orderLines.splice(i,1); renderOrderTable(); checkReady(
 
 function renderOrderTable() {
   const w = document.getElementById('orderTableWrap');
+  // Show projection banner if in projection mode
+  const projBanner = document.getElementById('projectionBanner');
+  if (projBanner) {
+    projBanner.style.display = window._projectionMode ? 'block' : 'none';
+  }
   document.getElementById('lineCountBadge').textContent = `${orderLines.length} line${orderLines.length!==1?'s':''}`;
   if (!orderLines.length) {
     w.innerHTML = '<div class="empty" style="padding:20px;"><div class="ico">🛒</div><p>No items yet — search and add above.</p></div>';
@@ -8051,7 +8144,7 @@ function renderOrderTable() {
 
 function checkReady() {
   const orderDate = (document.getElementById('orderDate')||{}).value;
-  const readyForStep2 = !!(currentSalesman && currentRoute && currentLocation && orderDate);
+  const readyForStep2 = !!(currentSalesman && currentRoute && currentLocation && orderDate && currentOrderType);
   const btnS2 = document.getElementById('btnToStep2');
   if (btnS2) btnS2.disabled = !readyForStep2;
   document.getElementById('submitBtn').disabled = !(currentSalesman && currentRoute && orderDate && orderLines.length);
@@ -8074,6 +8167,7 @@ async function submitOrder() {
   const payload = {
     timestamp:        (document.getElementById('orderDate').value || new Date().toISOString().split('T')[0]) + 'T00:00:00.000Z',
     location:         currentLocation || '',
+    order_type:       currentOrderType || 'order',
     salesman_payroll: currentSalesman.p,
     salesman_name:    currentSalesman.n,
     route:            currentRoute,
@@ -8329,7 +8423,76 @@ function renderDashboard() {
   else if (activeDashTab==='timing') renderTimingTab();
 }
 
+function renderProjectionComparison(data) {
+  const wrap = document.getElementById('projVsActualWrap');
+  if (!wrap) return;
+
+  const today = new Date().toISOString().split('T')[0];
+
+  // Get today's projections (morning) — Fresh Milk only
+  const projections = data.filter(r =>
+    r.order_type === 'projection' && dkey(r.timestamp) === today
+  );
+
+  // Get today's full orders — Fresh Milk only
+  const fullOrders = data.filter(r =>
+    r.order_type !== 'projection' && dkey(r.timestamp) === today &&
+    PRODUCTS.find(p => p.c === String(r.product_code) && p.k === 'FRESH MILK')
+  );
+
+  if (!projections.length && !fullOrders.length) {
+    wrap.innerHTML = '<div class="empty" style="padding:20px"><p>No projection or Fresh Milk orders today yet.</p></div>';
+    return;
+  }
+
+  // Group by salesman
+  const smMap = {};
+  [...projections, ...fullOrders].forEach(r => {
+    const k = r.salesman_payroll;
+    if (!smMap[k]) smMap[k] = { name: r.salesman_name || k, proj_kg: 0, order_kg: 0, proj_lines: 0, order_lines: 0 };
+  });
+
+  projections.forEach(r => {
+    smMap[r.salesman_payroll].proj_kg    += parseFloat(r.total_wt) || 0;
+    smMap[r.salesman_payroll].proj_lines += 1;
+  });
+  fullOrders.forEach(r => {
+    smMap[r.salesman_payroll].order_kg    += parseFloat(r.total_wt) || 0;
+    smMap[r.salesman_payroll].order_lines += 1;
+  });
+
+  const rows = Object.values(smMap).sort((a,b) => b.proj_kg - a.proj_kg);
+
+  wrap.innerHTML = `<table class="tbl"><thead><tr>
+    <th>Salesperson</th>
+    <th style="color:var(--gold);">🌅 Projected kg</th>
+    <th style="color:var(--green);">📦 Ordered kg</th>
+    <th>Variance</th>
+    <th>Status</th>
+  </tr></thead><tbody>
+  ${rows.map(r => {
+    const variance = r.order_kg - r.proj_kg;
+    const pct = r.proj_kg > 0 ? (r.order_kg / r.proj_kg * 100).toFixed(0) : null;
+    const status = !r.proj_kg ? '<span style="color:var(--muted);font-size:.75rem;">No projection</span>'
+      : !r.order_kg ? '<span style="color:#C0392B;font-size:.75rem;">⚠️ Not ordered yet</span>'
+      : variance > 0 ? `<span style="color:#1A7A4A;font-size:.75rem;">▲ +${pct}%</span>`
+      : variance < 0 ? `<span style="color:#C0392B;font-size:.75rem;">▼ ${pct}%</span>`
+      : '<span style="color:var(--green);font-size:.75rem;">✓ Exact</span>';
+    return `<tr style="background:${!r.order_kg && r.proj_kg ? '#fdf0ef' : r.order_kg > r.proj_kg*1.1 ? '#e8f8f0' : r.order_kg < r.proj_kg*0.9 && r.order_kg > 0 ? '#fef9ee' : 'transparent'}">
+      <td style="font-weight:600">${r.name}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--gold);font-weight:600">${r.proj_kg > 0 ? r.proj_kg.toFixed(1)+' kg' : '—'}</td>
+      <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:600">${r.order_kg > 0 ? r.order_kg.toFixed(1)+' kg' : '—'}</td>
+      <td style="font-family:'DM Mono',monospace;font-weight:600;color:${variance >= 0 ? 'var(--green)' : '#C0392B'}">${r.proj_kg > 0 && r.order_kg > 0 ? (variance >= 0 ? '+' : '') + variance.toFixed(1)+' kg' : '—'}</td>
+      <td>${status}</td>
+    </tr>`;
+  }).join('')}</tbody></table>
+  <div style="padding:8px 14px;background:var(--cream);border-top:1px solid var(--bd);font-size:.72rem;color:var(--muted);">
+    Today · ${rows.length} salespeople · 🟡 Over-ordered · 🔴 Under-ordered · ⬜ On target
+  </div>`;
+}
+
 function renderOverview(data) {
+  renderProjectionComparison(data);
   const daily = getDaily(data);
   const dlabels = daily.map(d=>new Date(d.date).toLocaleDateString('en-KE',{day:'2-digit',month:'short'}));
   makeLine('cDailyKg', dlabels, [{ label:'kg', data:daily.map(d=>+d.kg.toFixed(2)), borderColor:'#1A7A4A', backgroundColor:'rgba(26,122,74,0.1)', fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:'#1A7A4A' }]);
@@ -10764,6 +10927,7 @@ function showOrderConfirm(payload, lineCount) {
   if (meta) meta.innerHTML = [
     ['👤 Salesperson', payload.salesman_name],
     ['🆔 Payroll',     payload.salesman_payroll],
+    ['📋 Order Type',  payload.order_type === 'projection' ? '🌅 Morning Projection' : '📦 Full Order'],
     ['🏢 Location',    payload.location || '—'],
     ['🗺️ Route',       payload.route],
     ['📅 Date',        orderDate],
@@ -10914,6 +11078,7 @@ function buildOrderText(p) {
   let txt = '📦 *SALES ORDER*\n';
   txt += '━━━━━━━━━━━━━━━━━━━━\n';
   txt += `👤 ${p.salesman_name} (${p.salesman_payroll})\n`;
+  txt += `📋 Type: ${p.order_type === 'projection' ? '🌅 PROJECTION' : '📦 FULL ORDER'}\n`;
   txt += `🏢 Location: ${p.location || '—'}\n`;
   txt += `🗺️ Route: ${p.route}\n`;
   txt += `📅 Date: ${date}\n`;
