@@ -540,13 +540,13 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
           <input type="text" id="custSearch" placeholder="🔍  Search by name or account…" oninput="filterCust()" onfocus="filterCust();document.getElementById('custDd').style.display='block';document.getElementById('prodDd').style.display='none';" autocomplete="off">
           <div class="dd-list" id="custDd"></div>
           <input type="hidden" id="custAcc"><input type="hidden" id="custName">
-          <div class="selected-box" id="custSelectedBox">
-            <div>
-              <div class="selected-box-text" id="custSelectedName"></div>
-              <div class="selected-box-sub" id="custSelectedSub"></div>
-            </div>
-            <button class="selected-box-clear" onclick="clearCust()">✕</button>
+        </div>
+        <div class="selected-box" id="custSelectedBox">
+          <div>
+            <div class="selected-box-text" id="custSelectedName"></div>
+            <div class="selected-box-sub" id="custSelectedSub"></div>
           </div>
+          <button class="selected-box-clear" onclick="clearCust()">✕</button>
         </div>
       </div>
 
@@ -557,13 +557,13 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
           <input type="text" id="prodSearch" placeholder="🔍  Search by name or code…" oninput="filterProd()" onfocus="filterProd();document.getElementById('prodDd').style.display='block';document.getElementById('custDd').style.display='none';" autocomplete="off">
           <div class="dd-list" id="prodDd"></div>
           <input type="hidden" id="pCode"><input type="hidden" id="pDesc"><input type="hidden" id="pPkg"><input type="hidden" id="pWt">
-          <div class="selected-box" id="prodSelectedBox">
-            <div>
-              <div class="selected-box-text" id="prodSelectedName"></div>
-              <div class="selected-box-sub" id="prodSelectedSub"></div>
-            </div>
-            <button class="selected-box-clear" onclick="clearProd()">✕</button>
+        </div>
+        <div class="selected-box" id="prodSelectedBox">
+          <div>
+            <div class="selected-box-text" id="prodSelectedName"></div>
+            <div class="selected-box-sub" id="prodSelectedSub"></div>
           </div>
+          <button class="selected-box-clear" onclick="clearProd()">✕</button>
         </div>
       </div>
 
