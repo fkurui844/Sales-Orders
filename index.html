@@ -564,7 +564,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
   <!-- STEP 2: Add items -->
   <div class="panel hidden" id="stepPanel2" style="overflow:visible;">
     <div id="projectionBanner" style="display:none;background:#fef9ee;border-bottom:2px solid #C9941A;padding:10px 18px;font-size:.82rem;font-weight:600;color:#C9941A;">
-      🌅 MORNING PROJECTION MODE — Fresh Milk products only
+      🌅 MORNING PROJECTION — Route: <span id="projRouteName"></span> · Fresh Milk products only · No customer required
     </div>
     <div class="panel-header">
       <span>🛒</span><h2>Add Products</h2>
@@ -580,7 +580,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       </div>
 
       <!-- Customer search -->
-      <div class="form-group" style="margin-bottom:14px;position:relative;z-index:10;">
+      <div id="custFormGroup" class="form-group" style="margin-bottom:14px;position:relative;z-index:10;">
         <label onclick="document.getElementById('custSearch').focus();" style="cursor:pointer;">Customer</label>
         <div class="dd-wrap" id="custDdWrap" style="overflow:visible;">
           <input type="text" id="custSearch" placeholder="🔍  Search by name or account…"
@@ -603,7 +603,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
       <!-- Product search -->
       <div class="form-group" style="margin-bottom:14px;position:relative;z-index:1;">
-        <label onclick="document.getElementById('prodSearch').focus();" style="cursor:pointer;">Product</label>
+        <label id="prodFormLabel" onclick="document.getElementById('prodSearch').focus();" style="cursor:pointer;">Product</label>
         <div class="dd-wrap" id="prodDdWrap" style="overflow:visible;">
           <input type="text" id="prodSearch" placeholder="🔍  Search by name or code…"
   oninput="filterProd();"
@@ -7811,6 +7811,17 @@ function onRouteChange(val) {
 function goToStep2() {
   // Set product filter based on order type
   window._projectionMode = (currentOrderType === 'projection');
+  // Show/hide customer section
+  const custSection = document.getElementById('custFormGroup');
+  const nextCustBtn = document.getElementById('nextCustBtn');
+  if (custSection) custSection.style.display = window._projectionMode ? 'none' : '';
+  if (nextCustBtn) nextCustBtn.style.display = 'none';
+  // Update product label
+  const prodLabel = document.getElementById('prodFormLabel');
+  if (prodLabel) prodLabel.textContent = window._projectionMode ? 'Fresh Milk Product' : 'Product';
+  // Update add button text
+  const addBtn = document.getElementById('addLineBtn');
+  if (addBtn) addBtn.textContent = window._projectionMode ? '+ Add to Projection' : '+ Add to Order';
   if (!currentSalesman || !currentRoute) return;
   document.getElementById('stepPanel1').classList.add('hidden');
   document.getElementById('stepPanel2').classList.remove('hidden');
@@ -7825,6 +7836,8 @@ function goToStep2() {
     summaryType.textContent = currentOrderType === 'projection' ? '🌅 Morning Projection' : '📦 Full Order';
     summaryType.style.color = currentOrderType === 'projection' ? 'var(--gold)' : 'var(--green)';
   }
+  const projRouteName = document.getElementById('projRouteName');
+  if (projRouteName) projRouteName.textContent = currentRoute || '';
   setTimeout(() => document.getElementById('custSearch').focus(), 100);
 }
 
@@ -8043,14 +8056,16 @@ function usePcsResult() {
 }
 
 function addLine() {
-  const ca = document.getElementById('custAcc').value;
-  const cn = document.getElementById('custName').value;
+  // In projection mode, customer = the route (no specific customer)
+  const isProj = window._projectionMode;
+  const ca = isProj ? ('PROJ-' + (currentRoute||'ROUTE').replace(/\s/g,'-')) : document.getElementById('custAcc').value;
+  const cn = isProj ? ('PROJECTION: ' + (currentRoute||'Route')) : document.getElementById('custName').value;
   const pc = document.getElementById('pCode').value;
   const pd = document.getElementById('pDesc').value;
   const pk = document.getElementById('pPkg').value;
   const pw = parseFloat(document.getElementById('pWt').value)||0;
   const qty = parseFloat(document.getElementById('qtyInput').value);
-  if (!ca) return showToast('Select a customer','error');
+  if (!ca && !isProj) return showToast('Select a customer','error');
   if (!pc) return showToast('Select a product','error');
   if (!qty||qty<=0) return showToast('Enter a valid quantity','error');
 
@@ -8067,19 +8082,22 @@ function addLine() {
   const row = document.getElementById('pcsConverterRow');
   if (row) row.style.display = 'none';
 
-  // Show "Next Customer" button and update customer box label
-  const nextBtn = document.getElementById('nextCustBtn');
-  if (nextBtn) nextBtn.style.display = 'block';
-
-  // Count products for this customer
-  const custLines = orderLines.filter(l => l.customerAcc === ca).length;
-  const custBox = document.getElementById('custSelectedName');
-  if (custBox) custBox.textContent = cn + ` (${custLines} product${custLines>1?'s':''} added)`;
-
-  // Focus product search for next product
-  setTimeout(() => document.getElementById('prodSearch').focus(), 100);
-  renderOrderTable(); checkReady();
-  showToast(`✅ Added! Add another product for ${cn} or tap "Next Customer"`, 'success');
+  if (isProj) {
+    // Projection mode — no customer, just reset product + qty, ready for next product
+    setTimeout(() => document.getElementById('prodSearch').focus(), 100);
+    renderOrderTable(); checkReady();
+    showToast(`✅ Added to projection! Add another Fresh Milk product or Submit.`, 'success');
+  } else {
+    // Full order mode — show Next Customer button, update customer label
+    const nextBtn = document.getElementById('nextCustBtn');
+    if (nextBtn) nextBtn.style.display = 'block';
+    const custLines = orderLines.filter(l => l.customerAcc === ca).length;
+    const custBox = document.getElementById('custSelectedName');
+    if (custBox) custBox.textContent = cn + ` (${custLines} product${custLines>1?'s':''} added)`;
+    setTimeout(() => document.getElementById('prodSearch').focus(), 100);
+    renderOrderTable(); checkReady();
+    showToast(`✅ Added! Add another product for ${cn} or tap "Next Customer"`, 'success');
+  }
 }
 
 function nextCustomer() {
@@ -8102,7 +8120,52 @@ function nextCustomer() {
 
 function removeLine(i) { orderLines.splice(i,1); renderOrderTable(); checkReady(); }
 
+function renderProjectionTable() {
+  const wrap = document.getElementById('orderTableWrap');
+  if (!wrap) return;
+  if (!orderLines.length) {
+    wrap.innerHTML = '<div class="empty" style="padding:20px;"><div class="ico">🌅</div><p>No products added yet — search Fresh Milk products above.</p></div>';
+    return;
+  }
+  const totalKg  = orderLines.reduce((s,l) => s + (parseFloat(l.totalWt)||0), 0);
+  const totalQty = orderLines.reduce((s,l) => s + (parseFloat(l.qty)||0), 0);
+  wrap.innerHTML = `
+    <div style="padding:10px 16px;background:#fef9ee;border-bottom:1px solid #f0d060;font-size:.78rem;font-weight:600;color:#C9941A;">
+      🌅 PROJECTION for route: <b>${currentRoute||'—'}</b>
+    </div>
+    <table class="tbl">
+      <thead><tr>
+        <th>Product</th>
+        <th>Qty</th>
+        <th>Total kg</th>
+        <th></th>
+      </tr></thead>
+      <tbody>
+        ${orderLines.map((l,i) => `<tr>
+          <td>
+            <div style="font-weight:600;font-size:.84rem;">[${l.productCode}] ${l.productDesc}</div>
+            <div style="font-size:.7rem;color:var(--muted);">${l.productPkg}</div>
+          </td>
+          <td style="font-family:'DM Mono',monospace;font-weight:700;">${l.qty}</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:600;">${parseFloat(l.totalWt).toFixed(1)} kg</td>
+          <td><button onclick="removeLine(${i})" style="background:none;border:none;color:#C0392B;font-size:1.1rem;cursor:pointer;padding:4px;">🗑</button></td>
+        </tr>`).join('')}
+      </tbody>
+      <tfoot>
+        <tr style="background:var(--cream);font-weight:700;">
+          <td>TOTAL</td>
+          <td style="font-family:'DM Mono',monospace;">${totalQty}</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--green);">${totalKg.toFixed(1)} kg</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>`;
+}
+
 function renderOrderTable() {
+  if (window._projectionMode) {
+    return renderProjectionTable();
+  }
   const w = document.getElementById('orderTableWrap');
   // Show projection banner if in projection mode
   const projBanner = document.getElementById('projectionBanner');
@@ -8449,7 +8512,7 @@ function renderProjectionComparison(data) {
   const smMap = {};
   [...projections, ...fullOrders].forEach(r => {
     const k = r.salesman_payroll;
-    if (!smMap[k]) smMap[k] = { name: r.salesman_name || k, proj_kg: 0, order_kg: 0, proj_lines: 0, order_lines: 0 };
+    if (!smMap[k]) smMap[k] = { name: r.salesman_name || k, route: r.route || '', proj_kg: 0, order_kg: 0, proj_lines: 0, order_lines: 0 };
   });
 
   projections.forEach(r => {
@@ -8465,6 +8528,7 @@ function renderProjectionComparison(data) {
 
   wrap.innerHTML = `<table class="tbl"><thead><tr>
     <th>Salesperson</th>
+    <th>Route</th>
     <th style="color:var(--gold);">🌅 Projected kg</th>
     <th style="color:var(--green);">📦 Ordered kg</th>
     <th>Variance</th>
@@ -8480,6 +8544,7 @@ function renderProjectionComparison(data) {
       : '<span style="color:var(--green);font-size:.75rem;">✓ Exact</span>';
     return `<tr style="background:${!r.order_kg && r.proj_kg ? '#fdf0ef' : r.order_kg > r.proj_kg*1.1 ? '#e8f8f0' : r.order_kg < r.proj_kg*0.9 && r.order_kg > 0 ? '#fef9ee' : 'transparent'}">
       <td style="font-weight:600">${r.name}</td>
+      <td style="font-size:.78rem;color:var(--muted)">${r.route || '—'}</td>
       <td style="font-family:'DM Mono',monospace;color:var(--gold);font-weight:600">${r.proj_kg > 0 ? r.proj_kg.toFixed(1)+' kg' : '—'}</td>
       <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:600">${r.order_kg > 0 ? r.order_kg.toFixed(1)+' kg' : '—'}</td>
       <td style="font-family:'DM Mono',monospace;font-weight:600;color:${variance >= 0 ? 'var(--green)' : '#C0392B'}">${r.proj_kg > 0 && r.order_kg > 0 ? (variance >= 0 ? '+' : '') + variance.toFixed(1)+' kg' : '—'}</td>
