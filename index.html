@@ -1492,7 +1492,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
   <div id="devPanel" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(92vw,820px);max-height:90vh;display:flex;flex-direction:column;background:var(--surface);border-radius:20px;box-shadow:0 24px 80px rgba(0,0,0,.4);overflow:hidden;">
 
     <!-- Lock screen -->
-    <div id="devLock" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:52px 32px;gap:20px;">
+    <div id="devLock" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 32px;gap:16px;">
       <div style="font-size:2.4rem;">🔐</div>
       <div style="font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--dark);">Developer Settings</div>
       <div style="font-size:.82rem;color:var(--muted);">Enter password to access master data management</div>
@@ -1501,6 +1501,25 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         style="width:100%;max-width:280px;padding:12px 16px;border-radius:10px;border:1.5px solid var(--bd);background:var(--bg);color:var(--text);font-size:1rem;text-align:center;letter-spacing:.2em;">
       <div id="devPwError" style="color:#C0392B;font-size:.78rem;display:none;">Incorrect password</div>
       <button onclick="checkDevPw()" style="padding:11px 32px;background:var(--dark);color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer;">Unlock →</button>
+
+      <!-- GitHub config (shown after unlock, but set up here first time) -->
+      <div style="width:100%;max-width:360px;border-top:1px solid var(--bd);padding-top:16px;margin-top:4px;">
+        <div style="font-size:.7rem;font-weight:700;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">⚙️ GitHub Connection (one-time setup)</div>
+        <input type="text" id="ghOwner" placeholder="GitHub username / org"
+          style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid var(--bd);background:var(--bg);color:var(--text);font-size:.82rem;margin-bottom:6px;"
+          value="">
+        <input type="text" id="ghRepo" placeholder="Repository name (e.g. salesorder)"
+          style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid var(--bd);background:var(--bg);color:var(--text);font-size:.82rem;margin-bottom:6px;"
+          value="">
+        <input type="text" id="ghFile" placeholder="File path (e.g. index.html)"
+          style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid var(--bd);background:var(--bg);color:var(--text);font-size:.82rem;margin-bottom:6px;"
+          value="index.html">
+        <input type="password" id="ghToken" placeholder="GitHub Personal Access Token"
+          style="width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid var(--bd);background:var(--bg);color:var(--text);font-size:.82rem;margin-bottom:6px;">
+        <div style="font-size:.68rem;color:var(--muted);">Token needs <b>repo</b> scope. Stored in browser only. <a href="https://github.com/settings/tokens/new?scopes=repo" target="_blank" style="color:var(--gold);">Generate token →</a></div>
+        <button onclick="saveGhConfig()" style="margin-top:8px;width:100%;padding:9px;background:#1A7A4A;color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;">💾 Save GitHub Config</button>
+        <div id="ghConfigStatus" style="font-size:.72rem;margin-top:6px;text-align:center;"></div>
+      </div>
     </div>
 
     <!-- Main panel (hidden until unlocked) -->
@@ -1522,9 +1541,10 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       <div style="flex:1;overflow-y:auto;padding:18px 24px;" id="devContent"></div>
       <!-- Footer -->
       <div style="padding:14px 24px;border-top:1px solid var(--bd);display:flex;gap:10px;align-items:center;background:var(--cream);">
-        <button onclick="saveDevChanges()" style="padding:10px 28px;background:#1A7A4A;color:#fff;border:none;border-radius:10px;font-size:.88rem;font-weight:600;cursor:pointer;">💾 Save & Apply Changes</button>
-        <button onclick="exportDevCode()" style="padding:10px 18px;background:var(--surface);color:var(--text);border:1.5px solid var(--bd);border-radius:10px;font-size:.82rem;cursor:pointer;">📋 Copy Code</button>
-        <span id="devSaveMsg" style="font-size:.78rem;color:#1A7A4A;margin-left:8px;"></span>
+        <button onclick="saveDevChanges()" style="padding:10px 18px;background:#1A7A4A;color:#fff;border:none;border-radius:10px;font-size:.85rem;font-weight:600;cursor:pointer;">⚡ Apply Now</button>
+        <button onclick="pushToGitHub()" id="ghPushBtn" style="padding:10px 18px;background:#1A4A7A;color:#fff;border:none;border-radius:10px;font-size:.85rem;font-weight:600;cursor:pointer;">🚀 Push to GitHub</button>
+        <button onclick="exportDevCode()" style="padding:10px 14px;background:var(--surface);color:var(--text);border:1.5px solid var(--bd);border-radius:10px;font-size:.78rem;cursor:pointer;">📋 Copy</button>
+        <span id="devSaveMsg" style="font-size:.78rem;color:#1A7A4A;margin-left:4px;"></span>
       </div>
     </div>
   </div>
@@ -6943,6 +6963,10 @@ let actualsData = [];
 let exportData = [];
 let actualsPeriod = '';
 let charts = {};
+const DEV_PASSWORD = 'Festoo';
+let devUnlocked = false;
+let devSalesmen = [], devRoutes = [], devProducts = [], devCustomers = [];
+let devTab = 'salesmen';
 
 const COLORS = ['#1A7A4A','#C9941A','#1A4A7A','#C0392B','#6C3483','#16A085','#E67E22','#2980B9','#8E44AD','#117A65','#D35400','#1F618D'];
 
@@ -10328,15 +10352,8 @@ function showToast(msg, type='success') {
   setTimeout(()=>t.classList.remove('show'), 4000);
 }
 // ═══════════ DEVELOPER PANEL ═══════════
-const DEV_PASSWORD = 'Festoo';
-let devTab = 'salesmen';
-let devUnlocked = false;
 
 // Working copies — edited in panel, applied on save
-let devSalesmen = [];
-let devRoutes   = [];
-let devProducts = [];
-let devCustomers = [];
 
 function openDevPanel() {
   devSalesmen  = SALESMEN.map(s => ({...s}));
@@ -10344,8 +10361,12 @@ function openDevPanel() {
   devProducts  = PRODUCTS.map(p => ({...p}));
   devCustomers = CUSTOMERS.map(c => ({...c}));
 
+  loadGhConfig();
+
   const overlay = document.getElementById('devOverlay');
-  overlay.style.display = 'block';
+  overlay.style.display = 'flex';
+  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center';
   if (!devUnlocked) {
     document.getElementById('devLock').style.display = 'flex';
     document.getElementById('devMain').style.display = 'none';
@@ -11036,6 +11057,165 @@ switchMode = function(m) {
     stopAutoRefresh();
   }
 };
+
+// ═══════════════════════════════════════════════════
+// GITHUB INTEGRATION
+// ═══════════════════════════════════════════════════
+
+function saveGhConfig() {
+  const owner = document.getElementById('ghOwner').value.trim();
+  const repo  = document.getElementById('ghRepo').value.trim();
+  const file  = document.getElementById('ghFile').value.trim() || 'index.html';
+  const token = document.getElementById('ghToken').value.trim();
+  const status = document.getElementById('ghConfigStatus');
+
+  if (!owner || !repo || !token) {
+    status.textContent = '❌ Fill in all fields';
+    status.style.color = '#C0392B';
+    return;
+  }
+
+  localStorage.setItem('gh_owner', owner);
+  localStorage.setItem('gh_repo',  repo);
+  localStorage.setItem('gh_file',  file);
+  localStorage.setItem('gh_token', token);
+
+  status.textContent = '✅ Saved! Now unlock and push changes.';
+  status.style.color = '#1A7A4A';
+}
+
+function loadGhConfig() {
+  const owner = localStorage.getItem('gh_owner') || '';
+  const repo  = localStorage.getItem('gh_repo')  || '';
+  const file  = localStorage.getItem('gh_file')  || 'index.html';
+  const token = localStorage.getItem('gh_token') || '';
+  const el = id => document.getElementById(id);
+  if (el('ghOwner')) el('ghOwner').value = owner;
+  if (el('ghRepo'))  el('ghRepo').value  = repo;
+  if (el('ghFile'))  el('ghFile').value  = file;
+  if (el('ghToken')) el('ghToken').value = token;
+}
+
+async function pushToGitHub() {
+  const owner = localStorage.getItem('gh_owner');
+  const repo  = localStorage.getItem('gh_repo');
+  const file  = localStorage.getItem('gh_file') || 'index.html';
+  const token = localStorage.getItem('gh_token');
+  const msg   = document.getElementById('devSaveMsg');
+  const btn   = document.getElementById('ghPushBtn');
+
+  if (!owner || !repo || !token) {
+    showToast('⚠️ Set up GitHub config first (scroll down in the unlock screen)', 'error');
+    return;
+  }
+
+  // First apply changes to memory
+  saveDevChanges();
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Pushing…';
+  if (msg) { msg.textContent = 'Contacting GitHub…'; msg.style.color = 'var(--gold)'; }
+
+  try {
+    // Step 1: Get current file SHA
+    const metaUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${file}`;
+    const metaRes = await fetch(metaUrl, {
+      headers: {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+
+    if (!metaRes.ok) {
+      const err = await metaRes.json();
+      throw new Error(err.message || `GitHub API ${metaRes.status}`);
+    }
+
+    const meta = await metaRes.json();
+    const sha  = meta.sha;
+
+    // Step 2: Build updated HTML with new master data
+    const updatedHtml = buildUpdatedHtml();
+
+    // Step 3: Base64 encode
+    const encoded = btoa(unescape(encodeURIComponent(updatedHtml)));
+
+    // Step 4: Push
+    const pushRes = await fetch(metaUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: `🔧 Dev: Update master data — ${new Date().toLocaleDateString('en-KE')}`,
+        content: encoded,
+        sha: sha
+      })
+    });
+
+    if (!pushRes.ok) {
+      const err = await pushRes.json();
+      throw new Error(err.message || `Push failed: ${pushRes.status}`);
+    }
+
+    const result = await pushRes.json();
+    const commitUrl = result.commit?.html_url || '#';
+
+    btn.textContent = '✅ Pushed!';
+    if (msg) {
+      msg.innerHTML = `✅ Live in ~30s · <a href="${commitUrl}" target="_blank" style="color:var(--gold)">View commit →</a>`;
+      msg.style.color = '#1A7A4A';
+    }
+    showToast('🚀 Pushed to GitHub! Vercel will redeploy in ~30 seconds.', 'success');
+
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = '🚀 Push to GitHub';
+    }, 5000);
+
+  } catch(e) {
+    console.error('GitHub push failed:', e);
+    btn.disabled = false;
+    btn.textContent = '🚀 Push to GitHub';
+    if (msg) { msg.textContent = '❌ ' + e.message; msg.style.color = '#C0392B'; }
+    showToast('❌ Push failed: ' + e.message, 'error');
+  }
+}
+
+function buildUpdatedHtml() {
+  // Get current page HTML
+  let src = document.documentElement.outerHTML;
+
+  // Replace SALESMEN array
+  const smJson = JSON.stringify(devSalesmen, null, 0);
+  src = src.replace(/const SALESMEN = \[[\s\S]*?\];/, 'const SALESMEN = ' + smJson + ';');
+
+  // Replace ROUTES array
+  const rtJson = JSON.stringify(devRoutes, null, 0);
+  src = src.replace(/const ROUTES = \[[\s\S]*?\];/, 'const ROUTES = ' + rtJson + ';');
+
+  // Replace PRODUCTS array
+  const prodJson = JSON.stringify(devProducts, null, 0);
+  src = src.replace(/const PRODUCTS = \[[\s\S]*?\];/, 'const PRODUCTS = ' + prodJson + ';');
+
+  // Replace CUSTOMERS array
+  const custJson = JSON.stringify(devCustomers, null, 0);
+  src = src.replace(/const CUSTOMERS = \[[\s\S]*?\];/, 'const CUSTOMERS = ' + custJson + ';');
+
+  // Replace PRICES object
+  const newPrices = {};
+  devProducts.forEach(p => {
+    if (p.p) newPrices[p.c] = { trade: p.p, unit: 'per carton' };
+  });
+  const pricesJson = JSON.stringify(newPrices, null, 0);
+  src = src.replace(/const PRICES = \{[\s\S]*?\};/, 'const PRICES = ' + pricesJson + ';');
+
+  return src;
+}
+
+// GitHub config loaded inside openDevPanel directly
 
 </script>
 </body>
