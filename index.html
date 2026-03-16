@@ -699,7 +699,6 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       <div id="dtOverview">
       <div class="g2">
       <div class="panel"><div class="panel-header"><h2>Daily Volume (kg)</h2></div><div class="panel-body"><div class="chart-box"><canvas id="cDailyKg"></canvas></div></div></div>
-      <div class="panel"><div class="panel-header"><h2>Orders Per Day</h2></div><div class="panel-body"><div class="chart-box"><canvas id="cDailyLines"></canvas></div></div></div>
     </div>
     <div class="g2">
       <div class="panel"><div class="panel-header"><h2>Top Salespeople — kg</h2></div><div class="panel-body" id="rankSmKg"></div></div>
@@ -999,8 +998,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       <div class="panel" style="margin-bottom:18px;">
         <div class="panel-header"><h2 id="custPanelTitle">Top Customers — Revenue</h2></div>
         <div class="g2" style="padding:16px 16px 0;">
-          <div><div class="chart-box tall"><canvas id="cCustRev"></canvas></div></div>
-          <div><div class="chart-box tall"><canvas id="cCustLines"></canvas></div></div>
+          <div style="grid-column:1/-1"><div class="chart-box tall"><canvas id="cCustRev"></canvas></div></div>
         </div>
         <div style="overflow-x:auto;" id="custTable"></div>
       </div>
@@ -1035,8 +1033,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       <div class="panel" style="margin-bottom:18px;">
         <div class="panel-header"><h2 id="channelPanelTitle">All Channels — Revenue & Lines</h2></div>
         <div class="g2" style="padding:16px 16px 0;">
-          <div><div class="chart-box tall"><canvas id="cChannelRev"></canvas></div></div>
-          <div><div class="chart-box tall"><canvas id="cChannelLines"></canvas></div></div>
+          <div style="grid-column:1/-1"><div class="chart-box tall"><canvas id="cChannelRev"></canvas></div></div>
         </div>
         <div style="overflow-x:auto;" id="channelTable"></div>
       </div>
@@ -7378,6 +7375,90 @@ function selectDashSm(payroll, name) {
   document.getElementById('dashSmSelect').value = payroll;
   document.getElementById('dashSmDd').style.display = 'none';
   renderSalesmanDash();
+  // Re-render bottom charts filtered to this salesman only
+  renderSalesmanChartsForSm(payroll);
+}
+
+function renderSalesmanChartsForSm(payroll) {
+  if (!payroll) {
+    // No filter — show all
+    const data = filteredData.length ? filteredData : allData;
+    if (data.length) renderSalesmanTab(data);
+    return;
+  }
+
+  // Filter data to this salesman only
+  const base = filteredData.length ? filteredData : allData;
+  const smData = base.filter(r => r.salesman_payroll === payroll);
+  if (!smData.length) return;
+
+  const smName = smData[0].salesman_name || payroll;
+
+  // ── kg bar chart — single bar for this salesman ──
+  const kg = smData.reduce((s,r) => s + (parseFloat(r.total_wt)||0), 0);
+  dc('cAllSmKg');
+  const ctx1 = document.getElementById('cAllSmKg');
+  if (ctx1) {
+    charts['cAllSmKg'] = new Chart(ctx1.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: [smName],
+        datasets: [{
+          label: 'kg',
+          data: [+kg.toFixed(2)],
+          backgroundColor: [COLORS[0]],
+          borderRadius: 8
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+        plugins: {
+          legend: { display: false },
+          title: { display: true, text: smName + ' — Total: ' + kg.toFixed(1) + ' kg' }
+        },
+        scales: { x: { beginAtZero: true }, y: { grid: { display: false } } }
+      }
+    });
+  }
+
+  // ── Daily trend line chart — this salesman's kg per day ──
+  const allDates = [...new Set(smData.map(r => dkey(r.timestamp)))].sort();
+  const dayKg = {};
+  smData.forEach(r => {
+    const d = dkey(r.timestamp);
+    dayKg[d] = (dayKg[d] || 0) + (parseFloat(r.total_wt) || 0);
+  });
+
+  dc('cSmTrend');
+  const ctx2 = document.getElementById('cSmTrend');
+  if (ctx2) {
+    charts['cSmTrend'] = new Chart(ctx2.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: allDates,
+        datasets: [{
+          label: smName,
+          data: allDates.map(d => +(dayKg[d] || 0).toFixed(1)),
+          borderColor: COLORS[0],
+          backgroundColor: COLORS[0] + '22',
+          borderWidth: 2.5, pointRadius: 4, pointHoverRadius: 6,
+          tension: 0.4, fill: true
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          title: { display: true, text: smName + ' — Daily kg Trend' },
+          tooltip: { callbacks: { label: i => i.raw + ' kg' } }
+        },
+        scales: {
+          x: { ticks: { font: { size: 9 }, maxTicksLimit: 10 }, grid: { display: false } },
+          y: { beginAtZero: true, ticks: { callback: v => v + ' kg', font: { size: 9 } } }
+        }
+      }
+    });
+  }
 }
 
 // Close dashboard SM dropdown on outside click
@@ -8014,8 +8095,8 @@ function renderDashboard() {
 function renderOverview(data) {
   const daily = getDaily(data);
   const dlabels = daily.map(d=>new Date(d.date).toLocaleDateString('en-KE',{day:'2-digit',month:'short'}));
-  makeBar('cDailyKg', dlabels, daily.map(d=>+d.kg.toFixed(2)), '#1A7A4A');
-  makeLine('cDailyLines', dlabels, [{ label:'Lines', data:daily.map(d=>d.lines), borderColor:'#C9941A', backgroundColor:'rgba(201,148,26,0.1)', fill:true, tension:0.4, pointRadius:4 }]);
+  makeLine('cDailyKg', dlabels, [{ label:'kg', data:daily.map(d=>+d.kg.toFixed(2)), borderColor:'#1A7A4A', backgroundColor:'rgba(26,122,74,0.1)', fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:'#1A7A4A' }]);
+  dc('cDailyLines');
 
   const sms = getSmData(data).slice(0,10);
   document.getElementById('rankSmKg').innerHTML = rankHtml(sms, s=>s.name, s=>s.kg, i=>COLORS[i%COLORS.length]);
@@ -9440,21 +9521,7 @@ function renderCustomerTab() {
   }
 
   // Lines chart
-  const cl = document.getElementById('cCustLines');
-  if (cl) {
-    if (charts['cCustLines']) { charts['cCustLines'].destroy(); delete charts['cCustLines']; }
-    charts['cCustLines'] = new Chart(cl.getContext('2d'), {
-      type: 'bar',
-      data: {
-        labels: top15.map(r => r.name.slice(0,18)),
-        datasets: [{ label:'Order Lines', data: top15.map(r=>r.lines),
-          backgroundColor:'#1A4A7A88', borderRadius:4 }]
-      },
-      options: { responsive:true, maintainAspectRatio:false, indexAxis:'y',
-        plugins:{ legend:{display:false}, title:{display:true,text:'Top 15 Customers — Lines'} }
-      }
-    });
-  }
+
 
   // Table
   const wrap = document.getElementById('custTable');
@@ -9628,31 +9695,18 @@ function renderChannelTab() {
   }
 
   // Lines bar
-  const cl = document.getElementById('cChannelLines');
-  if (cl) {
-    if (charts['cChannelLines']) { charts['cChannelLines'].destroy(); delete charts['cChannelLines']; }
-    charts['cChannelLines'] = new Chart(cl.getContext('2d'), {
-      type: 'bar',
-      data: { labels: rows.map(r=>r.ch),
-        datasets:[{ label:'Order Lines', data: rows.map(r=>r.lines),
-          backgroundColor: rows.map((_,i)=>COLORS[i%COLORS.length]+'99'), borderRadius:4 }] },
-      options: { responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{display:false}, title:{display:true,text:'Order Lines by Channel'} },
-        scales:{ x:{grid:{display:false}}, y:{beginAtZero:true} } }
-    });
-  }
+
 
   // Table
   const wrap = document.getElementById('channelTable');
   if (!wrap) return;
   if (!rows.length) { wrap.innerHTML='<div class="empty" style="padding:24px"><p>No data.</p></div>'; return; }
   wrap.innerHTML = `<table class="tbl"><thead><tr>
-    <th>#</th><th>Channel</th><th>Customers</th><th>Order Lines</th><th>Total kg</th><th>Revenue</th>
+    <th>#</th><th>Channel</th><th>Customers</th><th>Total kg</th><th>Revenue</th>
   </tr></thead><tbody>${rows.map((r,i)=>`<tr>
     <td style="font-family:'DM Mono',monospace;color:var(--muted);font-size:.72rem">${i+1}</td>
     <td style="font-weight:700;font-size:.85rem"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${COLORS[i%COLORS.length]};margin-right:6px;"></span>${r.ch}</td>
     <td style="font-family:'DM Mono',monospace">${r.custs.size.toLocaleString()}</td>
-    <td style="font-family:'DM Mono',monospace">${r.lines.toLocaleString()}</td>
     <td style="font-family:'DM Mono',monospace">${r.kg.toFixed(1)}</td>
     <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:600">${fmtK(r.rev)}</td>
   </tr>`).join('')}</tbody></table>
