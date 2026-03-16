@@ -657,6 +657,10 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
           <button class="btn btn-primary btn-sm" onclick="applyDashFilter()">🔍 Apply Filter</button>
           <button class="btn btn-outline btn-sm" onclick="clearDashFilter()">✕ Clear</button>
           <button class="btn btn-outline btn-sm" onclick="loadData()">🔄 Refresh</button>
+          <span id="autoRefreshBadge" style="font-size:.7rem;color:var(--muted);display:flex;align-items:center;gap:4px;">
+            <span id="arDot" style="width:7px;height:7px;border-radius:50%;background:var(--muted);display:inline-block;"></span>
+            <span id="arLabel">Auto-refresh off</span>
+          </span>
           <span id="dashFilterCount" style="font-size:.8rem;color:var(--muted);margin-left:4px;"></span>
         </div>
       </div>
@@ -814,6 +818,16 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
     <div class="panel">
       <div class="panel-header"><h2>All Routes Summary</h2></div>
       <div style="padding:0;overflow-x:auto;-webkit-overflow-scrolling:touch;" id="allRoutesTable"></div>
+    </div>
+
+    <div class="panel" style="margin-top:18px;">
+      <div class="panel-header">
+        <h2>📍 Route Coverage — Customer Gaps</h2>
+        <span style="font-size:.72rem;color:var(--muted);margin-left:8px;">Customers with no order in selected period</span>
+      </div>
+      <div style="padding:0;overflow-x:auto;" id="routeCoverageWrap">
+        <div class="empty" style="padding:24px"><p>Select a route above to see coverage.</p></div>
+      </div>
     </div>
 
     <div class="panel" style="margin-top:18px;">
@@ -1369,6 +1383,37 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
 
 <div class="toast" id="toast"></div>
+<!-- ═══ ORDER CONFIRMATION MODAL ═══ -->
+<div id="orderConfirmOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99000;backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border-radius:20px;padding:32px 28px;width:min(92vw,480px);box-shadow:0 24px 60px rgba(0,0,0,.35);animation:slideUp .25s ease;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:3rem;margin-bottom:8px;">✅</div>
+      <div style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--dark);">Order Submitted!</div>
+      <div style="font-size:.82rem;color:var(--muted);margin-top:4px;" id="confSubtitle"></div>
+    </div>
+    <div id="confSummary" style="background:var(--cream);border-radius:12px;padding:16px;margin-bottom:18px;font-size:.82rem;max-height:260px;overflow-y:auto;"></div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeOrderConfirm()" style="flex:1;padding:12px;background:var(--dark);color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer;">✓ Done</button>
+      <button onclick="shareOrderConfirm()" id="confShareBtn" style="flex:1;padding:12px;background:var(--surface);color:var(--text);border:1.5px solid var(--bd);border-radius:10px;font-size:.9rem;cursor:pointer;">📤 Share</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DUPLICATE WARNING MODAL ═══ -->
+<div id="dupOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99001;backdrop-filter:blur(3px);align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border-radius:20px;padding:32px 28px;width:min(92vw,440px);box-shadow:0 24px 60px rgba(0,0,0,.35);">
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-size:2.5rem;">⚠️</div>
+      <div style="font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--dark);margin-top:8px;">Possible Duplicate Order</div>
+    </div>
+    <div id="dupDetails" style="background:#fef9ee;border:1px solid #f0d060;border-radius:10px;padding:14px;font-size:.82rem;margin-bottom:18px;color:var(--text);"></div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeDupWarning(false)" style="flex:1;padding:11px;background:var(--surface);color:var(--text);border:1.5px solid var(--bd);border-radius:10px;font-size:.85rem;cursor:pointer;">✕ Cancel</button>
+      <button onclick="closeDupWarning(true)" style="flex:1;padding:11px;background:#C0392B;color:#fff;border:none;border-radius:10px;font-size:.85rem;font-weight:600;cursor:pointer;">Submit Anyway</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════ DEVELOPER PANEL ═══════════ -->
 <div id="devOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100000;backdrop-filter:blur(4px);" onclick="closeDevPanel(event)">
   <div id="devPanel" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(92vw,820px);max-height:90vh;display:flex;flex-direction:column;background:var(--surface);border-radius:20px;box-shadow:0 24px 80px rgba(0,0,0,.4);overflow:hidden;">
@@ -7642,19 +7687,24 @@ async function submitOrder() {
     }))
   };
 
+  // ── Duplicate check ──
+  const proceed = await checkDuplicateOrder(payload);
+  if (!proceed) {
+    btn.innerHTML = '🚀 Submit Order to Google Sheets'; btn.disabled = false;
+    return;
+  }
+
   try {
-    // Use fetch with no-cors — GAS accepts POST, we won't get a response body
-    // but the data is written. We verify success by checking the response is not blocked.
     await fetch(GAS_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain' },
       body: JSON.stringify(payload)
     });
-    // no-cors gives opaque response — if we reach here without throwing, treat as success
     const lineCount = orderLines.length;
+    const savedPayload = JSON.parse(JSON.stringify(payload)); // snapshot before clear
     orderLines = []; renderOrderTable(); checkReady();
-    showToast(`✅ Order submitted! ${lineCount} lines saved.`, 'success');
+    showOrderConfirm(savedPayload, lineCount);
   } catch(e) {
     // Fallback: iframe POST (works even when fetch is blocked)
     submitViaIframe(payload, btn);
@@ -7689,10 +7739,11 @@ function submitViaIframe(payload, btn) {
   const lineCount = orderLines.length;
 
   // Listen for iframe load = GAS responded
+  const savedPayload2 = JSON.parse(JSON.stringify(payload));
   iframe.onload = () => {
     iframe.remove(); form.remove();
     orderLines = []; renderOrderTable(); checkReady();
-    showToast(`✅ Order submitted! ${lineCount} lines saved.`, 'success');
+    showOrderConfirm(savedPayload2, lineCount);
     if (btn) { btn.innerHTML = '🚀 Submit Order to Google Sheets'; btn.disabled = false; }
   };
 
@@ -8320,6 +8371,7 @@ function renderRoutesTab() {
   // Store for trend re-render
   window._routeTrendAllData = data;
   renderRouteTrend();
+  renderRouteCoverage(data, selectedRoute);
 }
 
 function renderRouteTrend() {
@@ -10246,6 +10298,286 @@ const ROUTES = ${rtCode};
     showToast('📋 Code copied!', 'success');
   });
 }
+
+// ═══════════════════════════════════════════════════
+// FEATURE 1: ORDER CONFIRMATION
+// ═══════════════════════════════════════════════════
+let _pendingSubmitPayload = null;
+
+function showOrderConfirm(payload, lineCount) {
+  const fmtK = v => v>=1000000?'KES '+(v/1000000).toFixed(1)+'M':v>=1000?'KES '+(v/1000).toFixed(0)+'K':'KES '+Math.round(v).toLocaleString();
+  const totalKg  = payload.lines.reduce((s,l)=>s+(parseFloat(l.totalWt)||0),0);
+  const totalRev = payload.lines.reduce((s,l)=>s+(l.totalRevenue||0),0);
+  const customers = [...new Set(payload.lines.map(l=>l.customerName))];
+
+  document.getElementById('confSubtitle').textContent =
+    `${payload.salesman_name} · ${payload.route} · ${new Date(payload.timestamp).toLocaleDateString('en-KE',{day:'2-digit',month:'short',year:'numeric'})}`;
+
+  document.getElementById('confSummary').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+      <div style="background:var(--surface);border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:700;color:var(--green)">${totalKg.toFixed(1)}</div>
+        <div style="font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Total kg</div>
+      </div>
+      <div style="background:var(--surface);border-radius:8px;padding:10px;text-align:center;">
+        <div style="font-family:'DM Mono',monospace;font-size:1.1rem;font-weight:700;color:var(--gold)">${fmtK(totalRev)}</div>
+        <div style="font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Revenue</div>
+      </div>
+    </div>
+    <div style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">${customers.length} Customer${customers.length>1?'s':''}</div>
+    ${customers.map(cn => {
+      const lines = payload.lines.filter(l=>l.customerName===cn);
+      const kg = lines.reduce((s,l)=>s+(parseFloat(l.totalWt)||0),0);
+      return `<div style="padding:7px 0;border-bottom:1px solid var(--bd);">
+        <div style="font-weight:600;font-size:.82rem">${cn}</div>
+        ${lines.map(l=>`<div style="font-size:.75rem;color:var(--muted);display:flex;justify-content:space-between;padding:2px 0;">
+          <span>${l.productDesc.slice(0,28)}</span>
+          <span style="font-family:'DM Mono',monospace">${l.qty} × ${l.unitWt}kg = <b>${parseFloat(l.totalWt).toFixed(1)}kg</b></span>
+        </div>`).join('')}
+        <div style="font-size:.72rem;font-weight:700;color:var(--green);text-align:right;margin-top:2px">${kg.toFixed(1)} kg</div>
+      </div>`;
+    }).join('')}`;
+
+  const overlay = document.getElementById('orderConfirmOverlay');
+  overlay.style.display = 'flex';
+
+  // Store payload for share
+  window._lastOrderPayload = payload;
+}
+
+function closeOrderConfirm() {
+  document.getElementById('orderConfirmOverlay').style.display = 'none';
+}
+
+function shareOrderConfirm() {
+  const p = window._lastOrderPayload;
+  if (!p) return;
+  const fmtK = v => v>=1000?'KES '+(v/1000).toFixed(0)+'K':'KES '+v;
+  const totalKg  = p.lines.reduce((s,l)=>s+(parseFloat(l.totalWt)||0),0);
+  const totalRev = p.lines.reduce((s,l)=>s+(l.totalRevenue||0),0);
+  const date = new Date(p.timestamp).toLocaleDateString('en-KE',{day:'2-digit',month:'short',year:'numeric'});
+  const customers = [...new Set(p.lines.map(l=>l.customerName))];
+  let text = `📦 *Order Submitted*
+`;
+  text += `👤 ${p.salesman_name} | 🗺️ ${p.route}
+`;
+  text += `📅 ${date}
+
+`;
+  customers.forEach(cn => {
+    const lines = p.lines.filter(l=>l.customerName===cn);
+    text += `🏪 *${cn}*
+`;
+    lines.forEach(l => { text += `  • ${l.productDesc.slice(0,25)} — ${l.qty} units (${l.totalWt}kg)
+`; });
+  });
+  text += `
+📊 Total: *${totalKg.toFixed(1)} kg* | *${fmtK(totalRev)}*`;
+
+  if (navigator.share) {
+    navigator.share({ title: 'Order Confirmation', text });
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(text);
+    showToast('📋 Order summary copied — paste to WhatsApp', 'success');
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('📋 Order summary copied — paste to WhatsApp', 'success');
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// FEATURE 2: DUPLICATE DETECTION
+// ═══════════════════════════════════════════════════
+let _dupResolve = null;
+
+function checkDuplicateOrder(payload) {
+  return new Promise(resolve => {
+    if (!allData || !allData.length) { resolve(true); return; }
+
+    const today = new Date(payload.timestamp).toISOString().split('T')[0];
+    const smPayroll = payload.salesman_payroll;
+
+    // Find any orders from same salesman today
+    const todayOrders = allData.filter(r => {
+      const d = r.timestamp ? r.timestamp.split('T')[0] : '';
+      return d === today && r.salesman_payroll === smPayroll;
+    });
+
+    if (!todayOrders.length) { resolve(true); return; }
+
+    // Check for same customer + product combos
+    const dupLines = [];
+    payload.lines.forEach(line => {
+      const existing = todayOrders.find(r =>
+        String(r.customer_acc) === String(line.customerAcc) &&
+        String(r.product_code) === String(line.productCode)
+      );
+      if (existing) dupLines.push({ line, existing });
+    });
+
+    if (!dupLines.length) { resolve(true); return; }
+
+    // Show warning
+    const dup = dupLines[0];
+    document.getElementById('dupDetails').innerHTML = `
+      <div style="font-weight:700;margin-bottom:8px;">⚠️ This looks like a duplicate:</div>
+      <div style="margin-bottom:6px;">
+        <span style="font-weight:600">${dup.line.customerName}</span> already has an order for
+        <span style="font-weight:600">${dup.line.productDesc.slice(0,25)}</span> today
+        (${dup.existing.qty} units submitted earlier).
+      </div>
+      <div style="color:var(--muted);font-size:.78rem;">${dupLines.length} duplicate line${dupLines.length>1?'s':''} detected. Submit anyway?</div>`;
+
+    const overlay = document.getElementById('dupOverlay');
+    overlay.style.display = 'flex';
+    _dupResolve = resolve;
+  });
+}
+
+function closeDupWarning(proceed) {
+  document.getElementById('dupOverlay').style.display = 'none';
+  if (_dupResolve) { _dupResolve(proceed); _dupResolve = null; }
+}
+
+// ═══════════════════════════════════════════════════
+// FEATURE 3: ROUTE COVERAGE
+// ═══════════════════════════════════════════════════
+function renderRouteCoverage(data, selectedRoute) {
+  const wrap = document.getElementById('routeCoverageWrap');
+  if (!wrap) return;
+  if (!selectedRoute) {
+    wrap.innerHTML = '<div class="empty" style="padding:24px"><p>Select a route above to see coverage.</p></div>';
+    return;
+  }
+
+  // All customers on this route from master data
+  const routeCustomers = CUSTOMERS.filter(c =>
+    (c.loc || '').toUpperCase().includes(selectedRoute.toUpperCase()) ||
+    // fallback: customers who have ever ordered on this route
+    allData.some(r => r.route === selectedRoute && String(r.customer_acc) === String(c.a))
+  );
+
+  // Customers who DID order in the current data set
+  const orderedAccs = new Set(data.filter(r => r.route === selectedRoute).map(r => String(r.customer_acc)));
+
+  // Build coverage rows
+  const ordered  = routeCustomers.filter(c => orderedAccs.has(String(c.a)));
+  const notOrdered = routeCustomers.filter(c => !orderedAccs.has(String(c.a)));
+
+  // Also include customers in data but not in master
+  const dataCustomers = [...new Set(
+    data.filter(r => r.route === selectedRoute).map(r => JSON.stringify({a:r.customer_acc,n:r.customer_name}))
+  )].map(s => JSON.parse(s));
+
+  const coveragePct = routeCustomers.length > 0
+    ? Math.round(ordered.length / routeCustomers.length * 100) : 0;
+
+  wrap.innerHTML = `
+    <div style="padding:14px 18px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;border-bottom:1px solid var(--bd);">
+      <div>
+        <span style="font-family:'DM Mono',monospace;font-size:1.6rem;font-weight:700;color:${coveragePct>=70?'var(--green)':coveragePct>=40?'var(--gold)':'var(--red)'}">${coveragePct}%</span>
+        <span style="font-size:.75rem;color:var(--muted);margin-left:4px;">coverage</span>
+      </div>
+      <div style="flex:1;min-width:120px;">
+        <div style="height:8px;background:var(--bd);border-radius:4px;overflow:hidden;">
+          <div style="height:100%;width:${coveragePct}%;background:${coveragePct>=70?'var(--green)':coveragePct>=40?'var(--gold)':'#C0392B'};border-radius:4px;transition:width .4s;"></div>
+        </div>
+      </div>
+      <div style="font-size:.8rem;color:var(--muted);">
+        <span style="color:var(--green);font-weight:700">${ordered.length} ordered</span> · 
+        <span style="color:#C0392B;font-weight:700">${notOrdered.length} not ordered</span>
+        ${routeCustomers.length>0?` · ${routeCustomers.length} total`:''}
+      </div>
+    </div>
+    ${notOrdered.length ? `
+    <div style="padding:10px 18px 4px;font-size:.7rem;font-weight:700;color:#C0392B;text-transform:uppercase;letter-spacing:.06em;">
+      ❌ Not Ordered (${notOrdered.length})
+    </div>
+    <table class="tbl"><tbody>
+      ${notOrdered.map(c => `<tr>
+        <td><span class="badge">${c.a}</span></td>
+        <td style="font-size:.82rem;font-weight:500;color:#C0392B">${c.n}</td>
+        <td><span style="font-size:.7rem;background:#fdf0ef;color:#C0392B;padding:2px 8px;border-radius:10px;">${c.ch||'—'}</span></td>
+      </tr>`).join('')}
+    </tbody></table>` : ''}
+    ${ordered.length ? `
+    <div style="padding:10px 18px 4px;font-size:.7rem;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.06em;">
+      ✅ Ordered (${ordered.length})
+    </div>
+    <table class="tbl"><tbody>
+      ${ordered.map(c => {
+        const lines = data.filter(r => r.route===selectedRoute && String(r.customer_acc)===String(c.a));
+        const kg = lines.reduce((s,r)=>s+(parseFloat(r.total_wt)||0),0);
+        return `<tr>
+          <td><span class="badge">${c.a}</span></td>
+          <td style="font-size:.82rem;font-weight:500">${c.n}</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:600">${kg.toFixed(1)} kg</td>
+          <td style="font-size:.72rem;color:var(--muted)">${lines.length} line${lines.length>1?'s':''}</td>
+        </tr>`;
+      }).join('')}
+    </tbody></table>` : ''}`;
+}
+
+// ═══════════════════════════════════════════════════
+// FEATURE 4: AUTO-REFRESH
+// ═══════════════════════════════════════════════════
+let _autoRefreshTimer = null;
+let _autoRefreshInterval = 5 * 60 * 1000; // 5 minutes
+let _autoRefreshCountdown = 0;
+let _autoRefreshCountdownTimer = null;
+
+function startAutoRefresh() {
+  stopAutoRefresh();
+  _autoRefreshCountdown = _autoRefreshInterval / 1000;
+  updateArBadge();
+  _autoRefreshTimer = setInterval(() => {
+    loadData();
+    _autoRefreshCountdown = _autoRefreshInterval / 1000;
+  }, _autoRefreshInterval);
+  _autoRefreshCountdownTimer = setInterval(() => {
+    _autoRefreshCountdown--;
+    updateArBadge();
+  }, 1000);
+  showToast('🔄 Auto-refresh enabled (every 5 min)', 'success');
+}
+
+function stopAutoRefresh() {
+  if (_autoRefreshTimer) { clearInterval(_autoRefreshTimer); _autoRefreshTimer = null; }
+  if (_autoRefreshCountdownTimer) { clearInterval(_autoRefreshCountdownTimer); _autoRefreshCountdownTimer = null; }
+  updateArBadge();
+}
+
+function updateArBadge() {
+  const dot   = document.getElementById('arDot');
+  const label = document.getElementById('arLabel');
+  if (!dot || !label) return;
+  if (_autoRefreshTimer) {
+    const mins = Math.floor(_autoRefreshCountdown / 60);
+    const secs = _autoRefreshCountdown % 60;
+    dot.style.background = '#1A7A4A';
+    dot.style.boxShadow  = '0 0 0 2px #1A7A4A44';
+    label.textContent = `Refreshing in ${mins}:${String(secs).padStart(2,'0')}`;
+    label.style.color = 'var(--green)';
+  } else {
+    dot.style.background = 'var(--muted)';
+    dot.style.boxShadow  = 'none';
+    label.textContent    = 'Auto-refresh off';
+    label.style.color    = 'var(--muted)';
+  }
+}
+
+// Auto-start refresh when Dashboard tab is opened
+const _origSwitchMode = switchMode;
+switchMode = function(m) {
+  _origSwitchMode(m);
+  if (m === 'comparison') {
+    if (!_autoRefreshTimer) startAutoRefresh();
+  } else {
+    stopAutoRefresh();
+  }
+};
 
 </script>
 </body>
