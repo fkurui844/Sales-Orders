@@ -1489,10 +1489,10 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
 <!-- ═══════════ DEVELOPER PANEL ═══════════ -->
 <div id="devOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100000;backdrop-filter:blur(4px);" onclick="closeDevPanel(event)">
-  <div id="devPanel" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(92vw,820px);max-height:90vh;display:flex;flex-direction:column;background:var(--surface);border-radius:20px;box-shadow:0 24px 80px rgba(0,0,0,.4);overflow:hidden;">
+  <div id="devPanel" style="position:relative;width:min(92vw,820px);max-height:95vh;display:flex;flex-direction:column;background:var(--surface);border-radius:20px;box-shadow:0 24px 80px rgba(0,0,0,.4);overflow:hidden;">
 
     <!-- Lock screen -->
-    <div id="devLock" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 32px;gap:16px;">
+    <div id="devLock" style="display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:32px 24px;gap:14px;overflow-y:auto;max-height:90vh;">
       <div style="font-size:2.4rem;">🔐</div>
       <div style="font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--dark);">Developer Settings</div>
       <div style="font-size:.82rem;color:var(--muted);">Enter password to access master data management</div>
@@ -10383,7 +10383,7 @@ function closeDevPanel(e) {
 
 function checkDevPw() {
   const pw = document.getElementById('devPwInput').value;
-  if (pw === DEV_PASSWORD) {
+  if (pw.trim() === DEV_PASSWORD || pw.trim().toLowerCase() === DEV_PASSWORD.toLowerCase()) {
     devUnlocked = true;
     document.getElementById('devLock').style.display = 'none';
     document.getElementById('devMain').style.display = 'flex';
