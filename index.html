@@ -539,8 +539,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       <div class="form-group" style="margin-bottom:14px;">
         <label>Customer</label>
         <div class="dd-wrap" id="custDdWrap">
-          <input type="text" id="custSearch" placeholder="🔍  Search by name or account…" oninput="filterCust()" onfocus="filterCust();document.getElementById('custDd').style.display='block'" autocomplete="off">
-          <div class="dd-list" id="custDd"></div>
+          <input type="text" id="custSearch" placeholder="🔍  Search by name or account…" oninput="filterCust()" onfocus="filterCust();positionDd('custDd','custSearch');" autocomplete="off">
+          <div id="custDdAnchor" style="height:0;position:relative;"></div>
           <input type="hidden" id="custAcc"><input type="hidden" id="custName">
           <div class="selected-box" id="custSelectedBox">
             <div>
@@ -556,8 +556,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       <div class="form-group" style="margin-bottom:14px;">
         <label>Product</label>
         <div class="dd-wrap" id="prodDdWrap">
-          <input type="text" id="prodSearch" placeholder="🔍  Search by name or code…" oninput="filterProd()" onfocus="filterProd();document.getElementById('prodDd').style.display='block'" autocomplete="off">
-          <div class="dd-list" id="prodDd"></div>
+          <input type="text" id="prodSearch" placeholder="🔍  Search by name or code…" oninput="filterProd()" onfocus="filterProd();positionDd('prodDd','prodSearch');" autocomplete="off">
+          <div id="prodDdAnchor" style="height:0;position:relative;"></div>
           <input type="hidden" id="pCode"><input type="hidden" id="pDesc"><input type="hidden" id="pPkg"><input type="hidden" id="pWt">
           <div class="selected-box" id="prodSelectedBox">
             <div>
@@ -1392,6 +1392,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
 
 <div class="toast" id="toast"></div>
+<div id="custDd" style="display:none;position:fixed;background:var(--surface);border:1.5px solid var(--bd);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.18);max-height:260px;overflow-y:auto;z-index:99999;min-width:260px;"></div>
+<div id="prodDd" style="display:none;position:fixed;background:var(--surface);border:1.5px solid var(--bd);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.18);max-height:260px;overflow-y:auto;z-index:99999;min-width:260px;"></div>
 <!-- ═══ ORDER CONFIRMATION MODAL ═══ -->
 <!-- ═══ ORDER RECEIPT ═══ -->
 <div id="orderConfirmOverlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:99000;overflow-y:auto;flex-direction:column;">
@@ -6978,7 +6980,29 @@ document.addEventListener('DOMContentLoaded', () => {
   if (el('expDateFrom')) el('expDateFrom').value = '2020-01-01';
   if (el('expDateTo'))   el('expDateTo').value   = td;
 
-  // Close dropdowns on outside click
+  // Position a fixed dropdown below its input
+function positionDd(ddId, inputId) {
+  var inp = document.getElementById(inputId);
+  var dd  = document.getElementById(ddId);
+  if (!inp || !dd) return;
+  var r = inp.getBoundingClientRect();
+  dd.style.top   = (r.bottom + window.scrollY + 4) + 'px';
+  dd.style.left  = r.left + 'px';
+  dd.style.width = r.width + 'px';
+  dd.style.display = 'block';
+}
+
+// Reposition on scroll/resize
+window.addEventListener('scroll', function() {
+  if (document.getElementById('custDd').style.display !== 'none') positionDd('custDd','custSearch');
+  if (document.getElementById('prodDd').style.display !== 'none') positionDd('prodDd','prodSearch');
+}, true);
+window.addEventListener('resize', function() {
+  if (document.getElementById('custDd').style.display !== 'none') positionDd('custDd','custSearch');
+  if (document.getElementById('prodDd').style.display !== 'none') positionDd('prodDd','prodSearch');
+});
+
+// Close dropdowns on outside click
   document.addEventListener('click', e => {
     if (!e.target.closest('.dd-wrap')) {
       document.getElementById('custDd').style.display = 'none';
@@ -7656,6 +7680,7 @@ function clearProd() {
 
 function filterCust() {
   const q = document.getElementById('custSearch').value.toLowerCase();
+  positionDd('custDd','custSearch');
   const dd = document.getElementById('custDd');
   const list = (q.length < 1 ? CUSTOMERS.slice(0,30) : CUSTOMERS.filter(c => c.a.includes(q)||c.n.toLowerCase().includes(q)||c.ch.toLowerCase().includes(q))).slice(0,40);
   dd.innerHTML = list.length ? list.map(c => `<div class="dd-opt" onclick="selCust('${c.a}','${c.n.replace(/'/g,"\\'")}',' ${c.ch}')"><span>${c.n}</span><span class="sub">${c.a} · ${c.ch}</span></div>`).join('') : '<div class="dd-opt" style="color:var(--muted)">No matches</div>';
@@ -7686,6 +7711,7 @@ function clearCust() {
 
 function filterProd() {
   const q = document.getElementById('prodSearch').value.toLowerCase();
+  positionDd('prodDd','prodSearch');
   const dd = document.getElementById('prodDd');
   const list = (q.length < 1 ? PRODUCTS.slice(0,20) : PRODUCTS.filter(p => p.c.toLowerCase().includes(q)||p.d.toLowerCase().includes(q)||p.k.toLowerCase().includes(q))).slice(0,30);
   dd.innerHTML = list.length ? list.map(p => `<div class="dd-opt" onclick="selProd('${p.c}','${p.d.replace(/'/g,"\\'")}','${p.k}',${p.w})"><span>[${p.c}] ${p.d}</span><span class="sub">${p.w}kg·${p.k}</span></div>`).join('') : '<div class="dd-opt" style="color:var(--muted)">No matches</div>';
