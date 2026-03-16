@@ -856,27 +856,53 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
           </div>
           <div class="form-group">
             <label>Salesperson</label>
-            <select id="dashFilterSm" onchange="applyDashFilter()">
-              <option value="">All Salespeople</option>
-            </select>
+            <div class="exp-dd-wrap" id="dashFSmWrap">
+              <input type="text" id="dashFSmSearch" placeholder="🔍 Search salesperson…"
+                oninput="dashFFilterList('sm')" onfocus="dashFShowDd('sm')"
+                autocomplete="off" style="width:100%;">
+              <input type="hidden" id="dashFilterSm">
+              <div class="exp-dd-list" id="dashFSmDd"></div>
+            </div>
           </div>
           <div class="form-group">
             <label>Route</label>
-            <select id="dashFilterRoute" onchange="applyDashFilter()">
-              <option value="">All Routes</option>
-            </select>
+            <div class="exp-dd-wrap" id="dashFRouteWrap">
+              <input type="text" id="dashFRouteSearch" placeholder="🔍 Search route…"
+                oninput="dashFFilterList('route')" onfocus="dashFShowDd('route')"
+                autocomplete="off" style="width:100%;">
+              <input type="hidden" id="dashFilterRoute">
+              <div class="exp-dd-list" id="dashFRouteDd"></div>
+            </div>
           </div>
           <div class="form-group">
             <label>Product Category</label>
-            <select id="dashFilterCat" onchange="applyDashFilter()">
-              <option value="">All Categories</option>
-            </select>
+            <div class="exp-dd-wrap" id="dashFCatWrap">
+              <input type="text" id="dashFCatSearch" placeholder="🔍 Search category…"
+                oninput="dashFFilterList('cat')" onfocus="dashFShowDd('cat')"
+                autocomplete="off" style="width:100%;">
+              <input type="hidden" id="dashFilterCat">
+              <div class="exp-dd-list" id="dashFCatDd"></div>
+            </div>
           </div>
           <div class="form-group">
             <label>Channel</label>
-            <select id="dashFilterChannel" onchange="applyDashFilter()">
-              <option value="">All Channels</option>
-            </select>
+            <div class="exp-dd-wrap" id="dashFChWrap">
+              <input type="text" id="dashFChSearch" placeholder="🔍 Search channel…"
+                oninput="dashFFilterList('ch')" onfocus="dashFShowDd('ch')"
+                autocomplete="off" style="width:100%;">
+              <input type="hidden" id="dashFilterChannel">
+              <div class="exp-dd-list" id="dashFChDd"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Location</label>
+            <div class="exp-dd-wrap" id="dashFLocWrap">
+              <input type="text" id="dashFLocSearch" placeholder="🔍 Search location…"
+                oninput="dashFFilterList('loc')" onfocus="dashFShowDd('loc')"
+                autocomplete="off" style="width:100%;">
+              <input type="hidden" id="dashFilterLocation">
+              <div class="exp-dd-list" id="dashFLocDd"></div>
+            </div>
           </div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
@@ -1411,6 +1437,17 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
                 autocomplete="off" style="width:100%;">
               <input type="hidden" id="expChannel">
               <div class="exp-dd-list" id="expChDd"></div>
+            </div>
+          </div>
+          <!-- Location searchable -->
+          <div class="form-group">
+            <label>Location</label>
+            <div class="exp-dd-wrap" id="expLocWrap">
+              <input type="text" id="expLocSearch" placeholder="🔍 Search location…"
+                oninput="expFilterList('loc')" onfocus="expShowDd('loc')"
+                autocomplete="off" style="width:100%;">
+              <input type="hidden" id="expLocation">
+              <div class="exp-dd-list" id="expLocDd"></div>
             </div>
           </div>
         </div>
@@ -7527,35 +7564,91 @@ function switchDashTab(tab, btn) {
   if (tab === 'projection') renderProjectionReport();
 }
 
-// ═══════════ DATE FILTER ═══════════
+// ═══════════ DASHBOARD FILTER SEARCHABLE DROPDOWNS ═══════════
+let dashFLists = {};
+
 function initDashFilterDropdowns() {
   const el = id => document.getElementById(id);
-  const sm  = el('dashFilterSm');
-  const rt  = el('dashFilterRoute');
-  const cat = el('dashFilterCat');
-  const ch  = el('dashFilterChannel');
-  if (!sm || sm.options.length > 1) return; // already populated
-
-  const smSorted = [...SALESMEN].sort((a,b)=>a.n.localeCompare(b.n));
-  smSorted.forEach(s => {
-    const o=document.createElement('option'); o.value=s.p; o.textContent=`${s.n} (${s.p})`; sm.appendChild(o);
-  });
-  ROUTES.forEach(r => {
-    const o=document.createElement('option'); o.value=r; o.textContent=r; rt.appendChild(o);
-  });
-  const cats = [...new Set(PRODUCTS.map(p=>p.k))].sort();
-  cats.forEach(c => { const o=document.createElement('option'); o.value=c; o.textContent=c; cat.appendChild(o); });
-
-  // Channels from CUSTOMERS
-  if (typeof CUSTOMERS !== 'undefined') {
-    const channels = [...new Set(CUSTOMERS.map(c=>c.ch).filter(Boolean))].sort();
-    channels.forEach(c => { const o=document.createElement('option'); o.value=c; o.textContent=c; ch.appendChild(o); });
-  }
-
   // Default dates
-  const now=new Date(), td=now.toISOString().split('T')[0];
-  if(el('dfrom')&&!el('dfrom').value) el('dfrom').value='2020-01-01';
-  if(el('dto')&&!el('dto').value)     el('dto').value=td;
+  const now = new Date(), td = now.toISOString().split('T')[0];
+  if (el('dfrom') && !el('dfrom').value) el('dfrom').value = '2020-01-01';
+  if (el('dto')   && !el('dto').value)   el('dto').value   = td;
+
+  if (Object.keys(dashFLists).length) return; // already built
+
+  dashFLists.sm    = [...SALESMEN].sort((a,b)=>a.n.localeCompare(b.n)).map(s=>({val:s.p, label:`${s.n} (${s.p})`}));
+  dashFLists.route = ROUTES.map(r=>({val:r, label:r}));
+  dashFLists.cat   = [...new Set(PRODUCTS.map(p=>p.k))].sort().map(c=>({val:c, label:c}));
+  dashFLists.ch    = [...new Set(
+    typeof CUSTOMERS!=='undefined' ? CUSTOMERS.map(c=>c.ch).filter(Boolean) : []
+  )].sort().map(c=>({val:c, label:c}));
+  dashFLists.loc   = (typeof LOCATIONS!=='undefined' ? [...LOCATIONS].sort() :
+    [...new Set(typeof CUSTOMERS!=='undefined' ? CUSTOMERS.map(c=>c.loc).filter(Boolean) : [])].sort()
+  ).map(l=>({val:l, label:l}));
+
+  // Close on outside click
+  document.addEventListener('click', e => {
+    ['dashFSmWrap','dashFRouteWrap','dashFCatWrap','dashFChWrap','dashFLocWrap'].forEach(id => {
+      const wrap = document.getElementById(id);
+      if (wrap && !wrap.contains(e.target)) {
+        const dd = wrap.querySelector('.exp-dd-list');
+        if (dd) dd.classList.remove('open');
+      }
+    });
+  });
+}
+
+function dashFShowDd(type) {
+  initDashFilterDropdowns();
+  const wrapId = {sm:'dashFSmWrap',route:'dashFRouteWrap',cat:'dashFCatWrap',ch:'dashFChWrap',loc:'dashFLocWrap'}[type];
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  dashFRenderDd(type, wrap.querySelector('input[type=text]').value.toLowerCase());
+  wrap.querySelector('.exp-dd-list').classList.add('open');
+}
+
+function dashFFilterList(type) {
+  initDashFilterDropdowns();
+  const wrapId   = {sm:'dashFSmWrap',route:'dashFRouteWrap',cat:'dashFCatWrap',ch:'dashFChWrap',loc:'dashFLocWrap'}[type];
+  const hiddenId = {sm:'dashFilterSm',route:'dashFilterRoute',cat:'dashFilterCat',ch:'dashFilterChannel',loc:'dashFilterLocation'}[type];
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  const q = wrap.querySelector('input[type=text]').value.toLowerCase();
+  dashFRenderDd(type, q);
+  wrap.querySelector('.exp-dd-list').classList.add('open');
+  const hid = document.getElementById(hiddenId);
+  if (hid) hid.value = '';
+}
+
+function dashFRenderDd(type, q) {
+  const wrapId   = {sm:'dashFSmWrap',route:'dashFRouteWrap',cat:'dashFCatWrap',ch:'dashFChWrap',loc:'dashFLocWrap'}[type];
+  const hiddenId = {sm:'dashFilterSm',route:'dashFilterRoute',cat:'dashFilterCat',ch:'dashFilterChannel',loc:'dashFilterLocation'}[type];
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  const dd     = wrap.querySelector('.exp-dd-list');
+  const curVal = (document.getElementById(hiddenId)||{}).value || '';
+  const items  = (dashFLists[type]||[]).filter(i => !q || i.label.toLowerCase().includes(q));
+  dd.innerHTML = `<div class="exp-dd-opt" style="color:var(--muted);font-size:.75rem;"
+    onclick="dashFSelectItem('${type}','','')">✕ All / Clear</div>`
+    + items.slice(0, 100).map(i =>
+      `<div class="exp-dd-opt${i.val===curVal?' selected':''}"
+        onclick="dashFSelectItem('${type}','${i.val.replace(/'/g,"\\'")}','${i.label.replace(/'/g,"\\'")}')">
+        ${i.label}
+      </div>`
+    ).join('');
+}
+
+function dashFSelectItem(type, val, label) {
+  const wrapId   = {sm:'dashFSmWrap',route:'dashFRouteWrap',cat:'dashFCatWrap',ch:'dashFChWrap',loc:'dashFLocWrap'}[type];
+  const hiddenId = {sm:'dashFilterSm',route:'dashFilterRoute',cat:'dashFilterCat',ch:'dashFilterChannel',loc:'dashFilterLocation'}[type];
+  const searchId = {sm:'dashFSmSearch',route:'dashFRouteSearch',cat:'dashFCatSearch',ch:'dashFChSearch',loc:'dashFLocSearch'}[type];
+  const wrap   = document.getElementById(wrapId);
+  const hid    = document.getElementById(hiddenId);
+  const inp    = document.getElementById(searchId);
+  if (inp) inp.value = val ? label : '';
+  if (hid) hid.value = val;
+  if (wrap) wrap.querySelector('.exp-dd-list').classList.remove('open');
+  applyDashFilter();
 }
 
 function applyDashFilter() {
@@ -7569,10 +7662,14 @@ function applyDashFilter() {
   const rt   = (el('dashFilterRoute')||{}).value || '';
   const cat  = (el('dashFilterCat')||{}).value   || '';
   const ch   = (el('dashFilterChannel')||{}).value || '';
+  const loc  = (el('dashFilterLocation')||{}).value || '';
 
   const CUST_MAP = {};
   if (typeof CUSTOMERS !== 'undefined') {
-    CUSTOMERS.forEach(c => { CUST_MAP[String(c.a).replace(/^0+/,'')] = (c.ch||'').toUpperCase(); });
+    CUSTOMERS.forEach(c => {
+      const key = String(c.a).replace(/^0+/,'');
+      CUST_MAP[key] = { ch: (c.ch||'').toUpperCase(), loc: (c.loc||'').toUpperCase() };
+    });
   }
 
   filteredData = allData.filter(r => {
@@ -7584,10 +7681,10 @@ function applyDashFilter() {
       const prod = PRODUCTS.find(p=>p.c===String(r.product_code||''));
       if (!prod || prod.k !== cat) return false;
     }
-    if (ch) {
-      const acc = String(r.customer_acc||'').replace(/^0+/,'');
-      if ((CUST_MAP[acc]||'') !== ch.toUpperCase()) return false;
-    }
+    const acc = String(r.customer_acc||'').replace(/^0+/,'');
+    const custInfo = CUST_MAP[acc] || {};
+    if (ch  && custInfo.ch  !== ch.toUpperCase())  return false;
+    if (loc && custInfo.loc !== loc.toUpperCase())  return false;
     return true;
   });
 
@@ -7604,10 +7701,16 @@ function clearDashFilter() {
   const now=new Date(), td=now.toISOString().split('T')[0];
   if(el('dfrom'))         el('dfrom').value='2020-01-01';
   if(el('dto'))           el('dto').value=td;
-  if(el('dashFilterSm'))      el('dashFilterSm').value='';
-  if(el('dashFilterRoute'))   el('dashFilterRoute').value='';
-  if(el('dashFilterCat'))     el('dashFilterCat').value='';
-  if(el('dashFilterChannel')) el('dashFilterChannel').value='';
+  // Clear hidden values
+  if(el('dashFilterSm'))       el('dashFilterSm').value='';
+  if(el('dashFilterRoute'))    el('dashFilterRoute').value='';
+  if(el('dashFilterCat'))      el('dashFilterCat').value='';
+  if(el('dashFilterChannel'))  el('dashFilterChannel').value='';
+  if(el('dashFilterLocation')) el('dashFilterLocation').value='';
+  // Clear visible search inputs
+  ['dashFSmSearch','dashFRouteSearch','dashFCatSearch','dashFChSearch','dashFLocSearch'].forEach(id => {
+    const e = el(id); if (e) e.value = '';
+  });
   const countEl = el('dashFilterCount');
   if (countEl) countEl.textContent='';
   filteredData = [...allData];
@@ -9648,6 +9751,7 @@ function applyExportFilter() {
   const rt   = document.getElementById('expRoute').value;
   const cat  = document.getElementById('expCategory').value;
   const ch   = document.getElementById('expChannel').value;
+  const loc  = (document.getElementById('expLocation')||{}).value || '';
 
   exportData = allData.filter(r => {
     if (!r.timestamp) return false;
@@ -9659,9 +9763,10 @@ function applyExportFilter() {
       const prod = PRODUCTS.find(p => p.c === r.product_code);
       if (!prod || prod.k !== cat) return false;
     }
-    if (ch) {
+    if (ch || loc) {
       const cust = CUSTOMERS.find(c => c.a === r.customer_acc);
-      if (!cust || cust.ch !== ch) return false;
+      if (ch  && (!cust || cust.ch !== ch))   return false;
+      if (loc && (!cust || (cust.loc||'').toUpperCase() !== loc.toUpperCase())) return false;
     }
     return true;
   });
@@ -9729,6 +9834,12 @@ function clearExportFilter() {
   document.getElementById('expRoute').value = '';
   document.getElementById('expCategory').value = '';
   document.getElementById('expChannel').value = '';
+  const expLoc = document.getElementById('expLocation');
+  if (expLoc) expLoc.value = '';
+  // Clear visible search inputs too
+  ['expSmSearch','expRouteSearch','expCatSearch','expChSearch','expLocSearch'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
   applyExportFilter();
 }
 
@@ -10743,9 +10854,12 @@ function initExpDropdowns() {
   expLists.ch    = [...new Set(
     typeof CUSTOMERS!=='undefined' ? CUSTOMERS.map(c=>c.ch).filter(Boolean) : []
   )].sort().map(c=>({val:c,label:c}));
+  expLists.loc   = (typeof LOCATIONS!=='undefined' ? [...LOCATIONS].sort() :
+    [...new Set(typeof CUSTOMERS!=='undefined' ? CUSTOMERS.map(c=>c.loc).filter(Boolean) : [])].sort()
+  ).map(l=>({val:l, label:l}));
   // Close on outside click
   document.addEventListener('click', e => {
-    ['expSmWrap','expRouteWrap','expCatWrap','expChWrap'].forEach(id => {
+    ['expSmWrap','expRouteWrap','expCatWrap','expChWrap','expLocWrap'].forEach(id => {
       const wrap = document.getElementById(id);
       if (wrap && !wrap.contains(e.target)) {
         const dd = wrap.querySelector('.exp-dd-list');
@@ -10757,7 +10871,7 @@ function initExpDropdowns() {
 
 function expShowDd(type) {
   initExpDropdowns();
-  const wrapId = {sm:'expSmWrap',route:'expRouteWrap',cat:'expCatWrap',ch:'expChWrap'}[type];
+  const wrapId = {sm:'expSmWrap',route:'expRouteWrap',cat:'expCatWrap',ch:'expChWrap',loc:'expLocWrap'}[type];
   const wrap = document.getElementById(wrapId);
   if (!wrap) return;
   expRenderDd(type, wrap.querySelector('input[type=text]').value.toLowerCase());
@@ -10766,8 +10880,8 @@ function expShowDd(type) {
 
 function expFilterList(type) {
   initExpDropdowns();
-  const wrapId   = {sm:'expSmWrap',route:'expRouteWrap',cat:'expCatWrap',ch:'expChWrap'}[type];
-  const hiddenId = {sm:'expSalesman',route:'expRoute',cat:'expCategory',ch:'expChannel'}[type];
+  const wrapId   = {sm:'expSmWrap',route:'expRouteWrap',cat:'expCatWrap',ch:'expChWrap',loc:'expLocWrap'}[type];
+  const hiddenId = {sm:'expSalesman',route:'expRoute',cat:'expCategory',ch:'expChannel',loc:'expLocation'}[type];
   const wrap = document.getElementById(wrapId);
   if (!wrap) return;
   const q = wrap.querySelector('input[type=text]').value.toLowerCase();
@@ -10778,8 +10892,8 @@ function expFilterList(type) {
 }
 
 function expRenderDd(type, q) {
-  const wrapId   = {sm:'expSmWrap',route:'expRouteWrap',cat:'expCatWrap',ch:'expChWrap'}[type];
-  const hiddenId = {sm:'expSalesman',route:'expRoute',cat:'expCategory',ch:'expChannel'}[type];
+  const wrapId   = {sm:'expSmWrap',route:'expRouteWrap',cat:'expCatWrap',ch:'expChWrap',loc:'expLocWrap'}[type];
+  const hiddenId = {sm:'expSalesman',route:'expRoute',cat:'expCategory',ch:'expChannel',loc:'expLocation'}[type];
   const wrap = document.getElementById(wrapId);
   if (!wrap) return;
   const dd     = wrap.querySelector('.exp-dd-list');
@@ -10796,9 +10910,9 @@ function expRenderDd(type, q) {
 }
 
 function expSelectItem(type, val, label) {
-  const wrapId   = {sm:'expSmWrap',route:'expRouteWrap',cat:'expCatWrap',ch:'expChWrap'}[type];
-  const hiddenId = {sm:'expSalesman',route:'expRoute',cat:'expCategory',ch:'expChannel'}[type];
-  const searchId = {sm:'expSmSearch',route:'expRouteSearch',cat:'expCatSearch',ch:'expChSearch'}[type];
+  const wrapId   = {sm:'expSmWrap',route:'expRouteWrap',cat:'expCatWrap',ch:'expChWrap',loc:'expLocWrap'}[type];
+  const hiddenId = {sm:'expSalesman',route:'expRoute',cat:'expCategory',ch:'expChannel',loc:'expLocation'}[type];
+  const searchId = {sm:'expSmSearch',route:'expRouteSearch',cat:'expCatSearch',ch:'expChSearch',loc:'expLocSearch'}[type];
   const wrap = document.getElementById(wrapId);
   const hid  = document.getElementById(hiddenId);
   const inp  = document.getElementById(searchId);
