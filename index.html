@@ -7290,6 +7290,11 @@ const PRICES = {
 // ═══════════ STATE ═══════════
 let orderLines = [], currentSalesman = null, currentRoute = null;
 let allData = [], filteredData = [];
+// Auto-refresh state — declared here so switchMode never hits ReferenceError
+let _autoRefreshTimer         = null;
+let _autoRefreshCountdownTimer = null;
+let _autoRefreshCountdown     = 0;
+let _autoRefreshInterval      = 5 * 60 * 1000; // 5 minutes
 let activeSvSm = null, activeDashTab = 'overview';
 let routeDateFilter = 'today';
 let revenueDateFilter = 'today';
