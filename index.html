@@ -12,6 +12,23 @@
 body { font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js">
+
+// ── Dropdown position helper (must be first — used in HTML event attrs) ──
+function positionDd(ddId, inputId) {
+  var inp = document.getElementById(inputId);
+  var dd  = document.getElementById(ddId);
+  if (!inp || !dd) return;
+  var r = inp.getBoundingClientRect();
+  dd.style.position = 'fixed';
+  dd.style.top      = (r.bottom + 1) + 'px';
+  dd.style.left     = r.left + 'px';
+  dd.style.width    = r.width + 'px';
+  dd.style.display  = 'block';
+  // Close the other dd
+  var other = document.getElementById(ddId === 'custDd' ? 'prodDd' : 'custDd');
+  if (other) other.style.display = 'none';
+}
+
 // Global error reporter — remove after debugging
 window.addEventListener('error', function(e) {
   console.error('JS Error:', e.message, '| line:', e.lineno, '| stack:', e.error && e.error.stack);
@@ -537,16 +554,17 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       <div class="form-group" style="margin-bottom:14px;">
         <label>Customer</label>
         <div class="dd-wrap" id="custDdWrap" style="overflow:visible;">
-          <input type="text" id="custSearch" placeholder="🔍  Search by name or account…" oninput="filterCust()" onfocus="filterCust();document.getElementById('custDd').style.display='block';document.getElementById('prodDd').style.display='none';" autocomplete="off">
-          <div class="dd-list" id="custDd"></div>
+          <input type="text" id="custSearch" placeholder="🔍  Search by name or account…" oninput="positionDd('custDd','custSearch');filterCust();" onfocus="positionDd('custDd','custSearch');filterCust();" autocomplete="off">
+
           <input type="hidden" id="custAcc"><input type="hidden" id="custName">
         </div>
-        <div class="selected-box" id="custSelectedBox">
-          <div>
+        <div class="selected-box" id="custSelectedBox" onclick="reopenCustSearch(event)" style="cursor:pointer;">
+          <div style="flex:1;">
             <div class="selected-box-text" id="custSelectedName"></div>
             <div class="selected-box-sub" id="custSelectedSub"></div>
           </div>
-          <button class="selected-box-clear" onclick="clearCust()">✕</button>
+          <span style="font-size:.7rem;color:var(--muted);margin-right:4px;">tap to change</span>
+          <button class="selected-box-clear" onclick="clearCust();event.stopPropagation();">✕</button>
         </div>
       </div>
 
@@ -554,16 +572,17 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       <div class="form-group" style="margin-bottom:14px;">
         <label>Product</label>
         <div class="dd-wrap" id="prodDdWrap" style="overflow:visible;">
-          <input type="text" id="prodSearch" placeholder="🔍  Search by name or code…" oninput="filterProd()" onfocus="filterProd();document.getElementById('prodDd').style.display='block';document.getElementById('custDd').style.display='none';" autocomplete="off">
-          <div class="dd-list" id="prodDd"></div>
+          <input type="text" id="prodSearch" placeholder="🔍  Search by name or code…" oninput="positionDd('prodDd','prodSearch');filterProd();" onfocus="positionDd('prodDd','prodSearch');filterProd();" autocomplete="off">
+
           <input type="hidden" id="pCode"><input type="hidden" id="pDesc"><input type="hidden" id="pPkg"><input type="hidden" id="pWt">
         </div>
-        <div class="selected-box" id="prodSelectedBox">
-          <div>
+        <div class="selected-box" id="prodSelectedBox" onclick="reopenProdSearch(event)" style="cursor:pointer;">
+          <div style="flex:1;">
             <div class="selected-box-text" id="prodSelectedName"></div>
             <div class="selected-box-sub" id="prodSelectedSub"></div>
           </div>
-          <button class="selected-box-clear" onclick="clearProd()">✕</button>
+          <span style="font-size:.7rem;color:var(--muted);margin-right:4px;">tap to change</span>
+          <button class="selected-box-clear" onclick="clearProd();event.stopPropagation();">✕</button>
         </div>
       </div>
 
@@ -1390,6 +1409,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
 
 <div class="toast" id="toast"></div>
+<div id="custDd" style="display:none;position:fixed;background:var(--surface);border:1.5px solid var(--bd);border-radius:0 0 12px 12px;max-height:260px;overflow-y:auto;z-index:999999;box-shadow:0 8px 24px rgba(0,0,0,.18);"></div>
+<div id="prodDd" style="display:none;position:fixed;background:var(--surface);border:1.5px solid var(--bd);border-radius:0 0 12px 12px;max-height:260px;overflow-y:auto;z-index:999999;box-shadow:0 8px 24px rgba(0,0,0,.18);"></div>
 <!-- ═══ ORDER CONFIRMATION MODAL ═══ -->
 <!-- ═══ ORDER RECEIPT ═══ -->
 <div id="orderConfirmOverlay" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:99000;overflow-y:auto;flex-direction:column;">
@@ -6976,26 +6997,34 @@ document.addEventListener('DOMContentLoaded', () => {
   if (el('expDateFrom')) el('expDateFrom').value = '2020-01-01';
   if (el('expDateTo'))   el('expDateTo').value   = td;
 
-  // Position a fixed dropdown below its input
-function positionDd(ddId, inputId) {
-  var inp = document.getElementById(inputId);
-  var dd  = document.getElementById(ddId);
-  if (!inp || !dd) return;
-  var r = inp.getBoundingClientRect();
-  dd.style.top   = (r.bottom + window.scrollY + 4) + 'px';
-  dd.style.left  = r.left + 'px';
-  dd.style.width = r.width + 'px';
-  dd.style.display = 'block';
-}
+  // positionDd moved to top of script
 
 // Reposition on scroll/resize
 window.addEventListener('scroll', function() {
-  if (document.getElementById('custDd').style.display !== 'none') positionDd('custDd','custSearch');
-  if (document.getElementById('prodDd').style.display !== 'none') positionDd('prodDd','prodSearch');
+  var cdd = document.getElementById('custDd');
+  var pdd = document.getElementById('prodDd');
+  if (cdd && cdd.style.display !== 'none') positionDd('custDd','custSearch');
+  if (pdd && pdd.style.display !== 'none') positionDd('prodDd','prodSearch');
 }, true);
 window.addEventListener('resize', function() {
-  if (document.getElementById('custDd').style.display !== 'none') positionDd('custDd','custSearch');
-  if (document.getElementById('prodDd').style.display !== 'none') positionDd('prodDd','prodSearch');
+  var cdd = document.getElementById('custDd');
+  var pdd = document.getElementById('prodDd');
+  if (cdd && cdd.style.display !== 'none') positionDd('custDd','custSearch');
+  if (pdd && pdd.style.display !== 'none') positionDd('prodDd','prodSearch');
+});
+
+// Close both dropdowns on outside click
+document.addEventListener('click', function(e) {
+  var custInp  = document.getElementById('custSearch');
+  var prodInp  = document.getElementById('prodSearch');
+  var custBox  = document.getElementById('custSelectedBox');
+  var prodBox  = document.getElementById('prodSelectedBox');
+  var custDd   = document.getElementById('custDd');
+  var prodDd   = document.getElementById('prodDd');
+  if (custDd && !custDd.contains(e.target) && e.target !== custInp && !(custBox && custBox.contains(e.target)))
+    custDd.style.display = 'none';
+  if (prodDd && !prodDd.contains(e.target) && e.target !== prodInp && !(prodBox && prodBox.contains(e.target)))
+    prodDd.style.display = 'none';
 });
 
 // Close dropdowns on outside click
@@ -7692,6 +7721,48 @@ function selCust(a, n, ch) {
   document.getElementById('custSelectedBox').classList.add('show');
   document.getElementById('custSearch').style.display = 'none';
   setTimeout(() => document.getElementById('prodSearch').focus(), 100);
+}
+
+function reopenCustSearch(e) {
+  if (e && e.target && e.target.classList.contains('selected-box-clear')) return;
+  // Show search input and open dropdown
+  const box = document.getElementById('custSelectedBox');
+  const inp = document.getElementById('custSearch');
+  const dd  = document.getElementById('custDd');
+  if (box) box.classList.remove('show');
+  if (inp) {
+    inp.style.display = '';
+    inp.value = '';
+    inp.focus();
+  }
+  if (dd) {
+    positionDd('custDd','custSearch');
+    filterCust();
+  }
+}
+
+function reopenProdSearch(e) {
+  if (e && e.target && e.target.classList.contains('selected-box-clear')) return;
+  const box = document.getElementById('prodSelectedBox');
+  const inp = document.getElementById('prodSearch');
+  const dd  = document.getElementById('prodDd');
+  if (box) box.classList.remove('show');
+  if (inp) {
+    inp.style.display = '';
+    inp.value = '';
+    inp.focus();
+  }
+  if (dd) {
+    positionDd('prodDd','prodSearch');
+    filterProd();
+  }
+  // Clear product selection
+  ['pCode','pDesc','pPkg','pWt'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const row = document.getElementById('pcsConverterRow');
+  if (row) row.style.display = 'none';
 }
 
 function clearCust() {
