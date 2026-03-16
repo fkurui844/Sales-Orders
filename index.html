@@ -481,6 +481,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <button class="sys-menu-item" onclick="openDashSection('revenue')">💰 Revenue</button>
         <button class="sys-menu-item" onclick="openDashSection('timing')">⏱️ Timing</button>
         <button class="sys-menu-item" onclick="openDashSection('customer')">🏪 By Customer</button>
+        <button class="sys-menu-item" onclick="openDashSection('projection')">🌅 FM Projection vs Actual</button>
         <button class="sys-menu-item" onclick="openDashSection('channel')">📡 By Channel</button>
         <button class="sys-menu-item" onclick="openDashSection('export')">⬇️ Export Excel</button>
       </div>
@@ -1067,6 +1068,57 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <div style="overflow-x:auto;" id="custTable"></div>
       </div>
 
+      </div>
+
+      <div id="dtProjection" class="hidden">
+        <!-- Date filter row -->
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:0 0 14px 0;">
+          <div style="display:flex;gap:6px;align-items:center;">
+            <label style="font-size:.72rem;font-weight:600;color:var(--muted);">FROM</label>
+            <input type="date" id="projFrom" style="padding:7px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.78rem;" onchange="renderProjectionReport()">
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <label style="font-size:.72rem;font-weight:600;color:var(--muted);">TO</label>
+            <input type="date" id="projTo" style="padding:7px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.78rem;" onchange="renderProjectionReport()">
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <label style="font-size:.72rem;font-weight:600;color:var(--muted);">LOCATION</label>
+            <select id="projLocFilter" onchange="renderProjectionReport()" style="padding:7px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.78rem;">
+              <option value="">All Locations</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <label style="font-size:.72rem;font-weight:600;color:var(--muted);">ROUTE</label>
+            <select id="projRouteFilter" onchange="renderProjectionReport()" style="padding:7px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.78rem;">
+              <option value="">All Routes</option>
+            </select>
+          </div>
+          <button onclick="exportProjectionCsv()" style="padding:7px 14px;background:var(--dark);color:#fff;border:none;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;margin-left:auto;">📥 Export CSV</button>
+        </div>
+
+        <!-- KPI summary row -->
+        <div id="projKpiRow" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;"></div>
+
+        <!-- Chart: Projection vs Actual per day -->
+        <div class="panel" style="margin-bottom:14px;">
+          <div class="panel-header"><h2>Daily Projection vs Actual kg</h2></div>
+          <div class="panel-body"><div class="chart-box"><canvas id="cProjVsActual"></canvas></div></div>
+        </div>
+
+        <!-- Main comparison table -->
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Salesperson Breakdown</h2>
+            <span style="font-size:.72rem;color:var(--muted);margin-left:8px;">🟡 Over-projected · 🔴 Under-ordered · 🟢 On target</span>
+          </div>
+          <div id="projTableWrap" style="overflow-x:auto;"></div>
+        </div>
+
+        <!-- Product breakdown -->
+        <div class="panel" style="margin-top:14px;">
+          <div class="panel-header"><h2>Fresh Milk Product Breakdown</h2></div>
+          <div id="projProdWrap" style="overflow-x:auto;"></div>
+        </div>
       </div>
 
       <div id="dtChannel" class="hidden">
@@ -7169,14 +7221,14 @@ function openDashSection(tab) {
     products:'📦 By Product', daily:'📅 Daily Trend',
     routes:'🗺️ By Route', revenue:'💰 Revenue',
     timing:'⏱️ Timing', customer:'🏪 By Customer',
-    channel:'📡 By Channel', export:'⬇️ Export Excel'
+    channel:'📡 By Channel', export:'⬇️ Export Excel', projection:'🌅 Fresh Milk — Projection vs Actual'
   };
   const titleEl = document.getElementById('systemPanelTitle');
   if (titleEl) titleEl.textContent = titles[tab] || tab;
   // Hide the header section for export tab
   // For export: hide entire header; for channel/customer/salesman: hide KPIs + supervisor grid
   const noHeader = ['export'];
-  const noKpis   = ['salesman','customer','channel','products','daily','routes','revenue','timing','export'];
+  const noKpis   = ['salesman','customer','channel','products','daily','routes','revenue','timing','export','projection'];
   const sysHeader = document.getElementById('systemPanelHeader');
   if (sysHeader) sysHeader.style.display = noHeader.includes(tab) ? 'none' : '';
 
@@ -7261,7 +7313,7 @@ function switchDashTab(tab, btn) {
   activeDashTab = tab;
 
   // Show/hide dt panels
-  ['Overview','Salesman','Products','Routes','Revenue','Timing','Customer','Channel','Export'].forEach(t => {
+  ['Overview','Salesman','Products','Routes','Revenue','Timing','Customer','Channel','Export','Projection'].forEach(t => {
     const dtEl = document.getElementById('dt'+t);
     if (dtEl) dtEl.classList.toggle('hidden', t.toLowerCase() !== tab);
   });
@@ -7271,6 +7323,7 @@ function switchDashTab(tab, btn) {
     if (smp) smp.classList.add('hidden');
   }
   renderDashboard();
+  if (tab === 'projection') renderProjectionReport();
 }
 
 // ═══════════ DATE FILTER ═══════════
@@ -8455,6 +8508,208 @@ function rankHtml(items, labelFn, valFn, colorFn) {
 }
 
 // ═══════════ RENDER DASHBOARD ═══════════
+function renderProjectionReport() {
+  const projFrom = document.getElementById('projFrom');
+  const projTo   = document.getElementById('projTo');
+  const projLoc  = document.getElementById('projLocFilter');
+  const projRt   = document.getElementById('projRouteFilter');
+
+  // Init date defaults
+  const today = new Date().toISOString().split('T')[0];
+  if (projFrom && !projFrom.value) projFrom.value = '2020-01-01';
+  if (projTo   && !projTo.value)   projTo.value   = today;
+
+  const from   = projFrom ? projFrom.value : '2020-01-01';
+  const to     = projTo   ? projTo.value   : today;
+  const locF   = projLoc  ? projLoc.value  : '';
+  const rtF    = projRt   ? projRt.value   : '';
+
+  // Populate filter dropdowns on first call
+  if (projLoc && projLoc.options.length <= 1) {
+    [...new Set(allData.map(r=>r.location).filter(Boolean))].sort().forEach(l => {
+      const o = document.createElement('option'); o.value=l; o.textContent=l; projLoc.appendChild(o);
+    });
+  }
+  if (projRt && projRt.options.length <= 1) {
+    [...new Set(allData.map(r=>r.route).filter(Boolean))].sort().forEach(r => {
+      const o = document.createElement('option'); o.value=r; o.textContent=r; projRt.appendChild(o);
+    });
+  }
+
+  // Filter data
+  const base = allData.filter(r => {
+    const d = dkey(r.timestamp);
+    if (d < from || d > to) return false;
+    if (locF && r.location !== locF) return false;
+    if (rtF  && r.route    !== rtF)  return false;
+    return true;
+  });
+
+  // Projections — order_type = 'projection'
+  const projData  = base.filter(r => r.order_type === 'projection');
+  // Actuals — full orders where product is FRESH MILK
+  const freshProds = new Set(PRODUCTS.filter(p=>p.k==='FRESH MILK').map(p=>p.c));
+  const actData   = base.filter(r => r.order_type !== 'projection' && freshProds.has(String(r.product_code)));
+
+  // ── KPI row ──
+  const totalProjKg = projData.reduce((s,r)=>s+(parseFloat(r.total_wt)||0),0);
+  const totalActKg  = actData.reduce((s,r) =>s+(parseFloat(r.total_wt)||0),0);
+  const variance    = totalActKg - totalProjKg;
+  const pct         = totalProjKg > 0 ? (totalActKg/totalProjKg*100).toFixed(0) : '—';
+  const kpiRow = document.getElementById('projKpiRow');
+  if (kpiRow) kpiRow.innerHTML = [
+    ['🌅 Projected kg', totalProjKg.toFixed(1)+' kg', 'var(--gold)'],
+    ['📦 Actual kg',    totalActKg.toFixed(1)+' kg',  'var(--green)'],
+    ['Variance',        (variance>=0?'+':'')+variance.toFixed(1)+' kg', variance>=0?'var(--green)':'#C0392B'],
+    ['Achievement',     pct+(pct!=='—'?'%':''),        parseFloat(pct)>=100?'var(--green)':parseFloat(pct)>=80?'var(--gold)':'#C0392B'],
+  ].map(([l,v,c])=>`<div style="background:var(--surface);border:1px solid var(--bd);border-radius:12px;padding:14px;text-align:center;">
+    <div style="font-family:'DM Mono',monospace;font-size:1.2rem;font-weight:700;color:${c};">${v}</div>
+    <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-top:2px;">${l}</div>
+  </div>`).join('');
+
+  // ── Daily chart ──
+  const allDays = [...new Set([...projData,...actData].map(r=>dkey(r.timestamp)))].sort();
+  const dayProj = {}, dayAct = {};
+  projData.forEach(r => { const d=dkey(r.timestamp); dayProj[d]=(dayProj[d]||0)+(parseFloat(r.total_wt)||0); });
+  actData.forEach(r  => { const d=dkey(r.timestamp); dayAct[d] =(dayAct[d]||0) +(parseFloat(r.total_wt)||0); });
+
+  const cEl = document.getElementById('cProjVsActual');
+  if (cEl) {
+    if (window._chartProjVsActual) { window._chartProjVsActual.destroy(); }
+    window._chartProjVsActual = new Chart(cEl.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: allDays,
+        datasets: [
+          { label:'🌅 Projected kg', data: allDays.map(d=>+(dayProj[d]||0).toFixed(1)), backgroundColor:'rgba(201,148,26,0.7)', borderRadius:4 },
+          { label:'📦 Actual kg',    data: allDays.map(d=>+(dayAct[d] ||0).toFixed(1)), backgroundColor:'rgba(26,122,74,0.7)',  borderRadius:4 },
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ position:'top' } },
+        scales: {
+          x:{ grid:{display:false}, ticks:{font:{size:9}} },
+          y:{ beginAtZero:true, ticks:{ callback:v=>v+' kg', font:{size:9} } }
+        }
+      }
+    });
+  }
+
+  // ── Salesperson breakdown table ──
+  const smMap = {};
+  projData.forEach(r => {
+    const k = r.salesman_payroll;
+    if (!smMap[k]) smMap[k] = { name:r.salesman_name||k, route:r.route||'', loc:r.location||'', proj:0, act:0 };
+    smMap[k].proj += parseFloat(r.total_wt)||0;
+  });
+  actData.forEach(r => {
+    const k = r.salesman_payroll;
+    if (!smMap[k]) smMap[k] = { name:r.salesman_name||k, route:r.route||'', loc:r.location||'', proj:0, act:0 };
+    smMap[k].act += parseFloat(r.total_wt)||0;
+  });
+  const smRows = Object.values(smMap).sort((a,b)=>b.proj-a.proj);
+
+  const tWrap = document.getElementById('projTableWrap');
+  if (tWrap) {
+    if (!smRows.length) { tWrap.innerHTML='<div class="empty" style="padding:20px"><p>No projection data in selected period.</p></div>'; }
+    else tWrap.innerHTML = `<table class="tbl">
+      <thead><tr>
+        <th>Salesperson</th><th>Location</th><th>Route</th>
+        <th style="color:var(--gold)">🌅 Proj kg</th>
+        <th style="color:var(--green)">📦 Actual kg</th>
+        <th>Variance</th><th>Achievement</th>
+      </tr></thead>
+      <tbody>${smRows.map(r => {
+        const v   = r.act - r.proj;
+        const pct = r.proj > 0 ? (r.act/r.proj*100).toFixed(0) : null;
+        const bg  = !r.act && r.proj ? '#fdf0ef'
+                  : pct < 80        ? '#fef9ee'
+                  : pct >= 100      ? '#e8f8f0' : '';
+        const statusColor = !pct ? '#C0392B' : pct >= 100 ? 'var(--green)' : pct >= 80 ? 'var(--gold)' : '#C0392B';
+        return `<tr style="background:${bg}">
+          <td style="font-weight:600">${r.name}</td>
+          <td style="font-size:.78rem;color:var(--muted)">${r.loc}</td>
+          <td style="font-size:.78rem;">${r.route}</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold);font-weight:600">${r.proj>0?r.proj.toFixed(1)+' kg':'—'}</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:600">${r.act>0?r.act.toFixed(1)+' kg':'—'}</td>
+          <td style="font-family:'DM Mono',monospace;font-weight:700;color:${v>=0?'var(--green)':'#C0392B'}">${r.proj>0&&r.act>0?(v>=0?'+':'')+v.toFixed(1)+' kg':'—'}</td>
+          <td><span style="font-weight:700;color:${statusColor}">${pct?pct+'%':'⚠️ No order'}</span></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  }
+
+  // ── Product breakdown ──
+  const prodMap = {};
+  projData.forEach(r => {
+    const k = r.product_code;
+    if (!prodMap[k]) prodMap[k] = { code:k, desc:r.product_desc||k, proj:0, act:0 };
+    prodMap[k].proj += parseFloat(r.total_wt)||0;
+  });
+  actData.forEach(r => {
+    const k = r.product_code;
+    if (!prodMap[k]) prodMap[k] = { code:k, desc:r.product_desc||k, proj:0, act:0 };
+    prodMap[k].act += parseFloat(r.total_wt)||0;
+  });
+  const prodRows = Object.values(prodMap).sort((a,b)=>b.proj-a.proj);
+  const pWrap = document.getElementById('projProdWrap');
+  if (pWrap && prodRows.length) {
+    pWrap.innerHTML = `<table class="tbl">
+      <thead><tr>
+        <th>Product</th>
+        <th style="color:var(--gold)">🌅 Proj kg</th>
+        <th style="color:var(--green)">📦 Actual kg</th>
+        <th>Variance</th><th>Achievement</th>
+      </tr></thead>
+      <tbody>${prodRows.map(r => {
+        const v   = r.act - r.proj;
+        const pct = r.proj > 0 ? (r.act/r.proj*100).toFixed(0) : null;
+        return `<tr>
+          <td style="font-weight:600">[${r.code}] ${r.desc}</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--gold)">${r.proj>0?r.proj.toFixed(1)+' kg':'—'}</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--green)">${r.act>0?r.act.toFixed(1)+' kg':'—'}</td>
+          <td style="font-family:'DM Mono',monospace;font-weight:700;color:${v>=0?'var(--green)':'#C0392B'}">${r.proj>0&&r.act>0?(v>=0?'+':'')+v.toFixed(1)+' kg':'—'}</td>
+          <td><span style="font-weight:700;color:${!pct?'var(--muted)':pct>=100?'var(--green)':pct>=80?'var(--gold)':'#C0392B'}">${pct?pct+'%':'—'}</span></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  }
+}
+
+function exportProjectionCsv() {
+  const rows = [['Date','Salesperson','Payroll','Location','Route','Projected kg','Actual kg','Variance','Achievement %']];
+  const tWrap = document.getElementById('projTableWrap');
+  const tableRows = tWrap ? tWrap.querySelectorAll('tbody tr') : [];
+  // Re-fetch data for export
+  const today = new Date().toISOString().split('T')[0];
+  const from  = document.getElementById('projFrom')?.value || '2020-01-01';
+  const to    = document.getElementById('projTo')?.value   || today;
+  const base  = allData.filter(r => { const d=dkey(r.timestamp); return d>=from && d<=to; });
+  const freshProds = new Set(PRODUCTS.filter(p=>p.k==='FRESH MILK').map(p=>p.c));
+  const smMap = {};
+  base.filter(r=>r.order_type==='projection').forEach(r => {
+    const k=r.salesman_payroll;
+    if(!smMap[k]) smMap[k]={name:r.salesman_name||k,loc:r.location||'',route:r.route||'',proj:0,act:0};
+    smMap[k].proj+=parseFloat(r.total_wt)||0;
+  });
+  base.filter(r=>r.order_type!=='projection'&&freshProds.has(String(r.product_code))).forEach(r => {
+    const k=r.salesman_payroll;
+    if(!smMap[k]) smMap[k]={name:r.salesman_name||k,loc:r.location||'',route:r.route||'',proj:0,act:0};
+    smMap[k].act+=parseFloat(r.total_wt)||0;
+  });
+  Object.values(smMap).forEach(r => {
+    const v=r.act-r.proj, pct=r.proj>0?(r.act/r.proj*100).toFixed(1):'';
+    rows.push([today, r.name, '', r.loc, r.route, r.proj.toFixed(1), r.act.toFixed(1), v.toFixed(1), pct]);
+  });
+  const csv = rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = 'projection_vs_actual_'+today+'.csv';
+  a.click();
+  showToast('📥 CSV exported!','success');
+}
+
 function renderDashboard() {
   if (typeof filteredData==='undefined' || !Array.isArray(filteredData)) return;
   const data = filteredData;
