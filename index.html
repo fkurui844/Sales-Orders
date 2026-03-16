@@ -1231,29 +1231,70 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       </div>
 
       <div id="dtProjection" class="hidden">
-        <!-- Date filter row -->
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:0 0 14px 0;width:100%;">
-          <div style="display:flex;gap:6px;align-items:center;">
-            <label style="font-size:.72rem;font-weight:600;color:var(--muted);">FROM</label>
-            <input type="date" id="projFrom" style="padding:7px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.78rem;" onchange="renderProjectionReport()">
+        <!-- Date + searchable filters -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;padding:0 0 14px 0;align-items:end;">
+
+          <!-- Date From -->
+          <div>
+            <label style="font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px;">Date From</label>
+            <input type="date" id="projFrom" onchange="renderProjectionReport()"
+              style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.82rem;">
           </div>
-          <div style="display:flex;gap:6px;align-items:center;">
-            <label style="font-size:.72rem;font-weight:600;color:var(--muted);">TO</label>
-            <input type="date" id="projTo" style="padding:7px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.78rem;" onchange="renderProjectionReport()">
+
+          <!-- Date To -->
+          <div>
+            <label style="font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px;">Date To</label>
+            <input type="date" id="projTo" onchange="renderProjectionReport()"
+              style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.82rem;">
           </div>
-          <div style="display:flex;gap:6px;align-items:center;">
-            <label style="font-size:.72rem;font-weight:600;color:var(--muted);">LOCATION</label>
-            <select id="projLocFilter" onchange="renderProjectionReport()" style="padding:7px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.78rem;">
-              <option value="">All Locations</option>
-            </select>
+
+          <!-- Location searchable -->
+          <div style="position:relative;z-index:50;">
+            <label style="font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px;">Location</label>
+            <div style="position:relative;">
+              <input type="text" id="projLocSearch" placeholder="All Locations"
+                oninput="projFilterDd('loc')" onfocus="projFilterDd('loc')"
+                autocomplete="off"
+                style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.82rem;box-sizing:border-box;">
+              <input type="hidden" id="projLocFilter">
+              <div id="projLocDd" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1.5px solid var(--bd);border-radius:0 0 8px 8px;max-height:200px;overflow-y:auto;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.15);"></div>
+            </div>
           </div>
-          <div style="display:flex;gap:6px;align-items:center;">
-            <label style="font-size:.72rem;font-weight:600;color:var(--muted);">ROUTE</label>
-            <select id="projRouteFilter" onchange="renderProjectionReport()" style="padding:7px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.78rem;">
-              <option value="">All Routes</option>
-            </select>
+
+          <!-- Route searchable -->
+          <div style="position:relative;z-index:40;">
+            <label style="font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px;">Route</label>
+            <div style="position:relative;">
+              <input type="text" id="projRouteSearch" placeholder="All Routes"
+                oninput="projFilterDd('route')" onfocus="projFilterDd('route')"
+                autocomplete="off"
+                style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.82rem;box-sizing:border-box;">
+              <input type="hidden" id="projRouteFilter">
+              <div id="projRouteDd" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1.5px solid var(--bd);border-radius:0 0 8px 8px;max-height:200px;overflow-y:auto;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.15);"></div>
+            </div>
           </div>
-          <button onclick="exportProjectionCsv()" style="padding:7px 14px;background:var(--dark);color:#fff;border:none;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;margin-left:auto;">📥 Export CSV</button>
+
+          <!-- Salesperson searchable -->
+          <div style="position:relative;z-index:30;">
+            <label style="font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px;">Salesperson</label>
+            <div style="position:relative;">
+              <input type="text" id="projSmSearch" placeholder="All Salespeople"
+                oninput="projFilterDd('sm')" onfocus="projFilterDd('sm')"
+                autocomplete="off"
+                style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.82rem;box-sizing:border-box;">
+              <input type="hidden" id="projSmFilter">
+              <div id="projSmDd" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1.5px solid var(--bd);border-radius:0 0 8px 8px;max-height:200px;overflow-y:auto;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.15);"></div>
+            </div>
+          </div>
+
+          <!-- Export button -->
+          <div style="display:flex;align-items:flex-end;">
+            <button onclick="exportProjectionCsv()"
+              style="width:100%;padding:9px 12px;background:var(--dark);color:#fff;border:none;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;">
+              📥 Export CSV
+            </button>
+          </div>
+
         </div>
 
         <!-- KPI summary row -->
@@ -8670,11 +8711,82 @@ function rankHtml(items, labelFn, valFn, colorFn) {
 }
 
 // ═══════════ RENDER DASHBOARD ═══════════
+// ── Projection filter searchable dropdowns ──
+var _projFilterData = { loc: [], route: [], sm: [] };
+
+function projInitFilters() {
+  _projFilterData.loc   = ['', ...[...new Set(allData.map(r=>r.location).filter(Boolean))].sort()];
+  _projFilterData.route = ['', ...[...new Set(allData.map(r=>r.route).filter(Boolean))].sort()];
+  _projFilterData.sm    = ['', ...[...new Set(allData.map(r=>r.salesman_payroll).filter(Boolean))]
+    .map(p => { const s=SALESMEN.find(x=>x.p===p); return s?{p,n:s.n}:{p,n:p}; })
+    .sort((a,b)=>a.n.localeCompare(b.n))];
+}
+
+function projFilterDd(type) {
+  const configs = {
+    loc:   { search:'projLocSearch',   hid:'projLocFilter',   dd:'projLocDd',   list:_projFilterData.loc,   label: v => v||'All Locations' },
+    route: { search:'projRouteSearch', hid:'projRouteFilter', dd:'projRouteDd', list:_projFilterData.route, label: v => v||'All Routes' },
+    sm:    { search:'projSmSearch',    hid:'projSmFilter',    dd:'projSmDd',    list:_projFilterData.sm,    label: v => v||'All Salespeople' },
+  };
+  const cfg  = configs[type];
+  const inp  = document.getElementById(cfg.search);
+  const hid  = document.getElementById(cfg.hid);
+  const dd   = document.getElementById(cfg.dd);
+  if (!inp || !dd) return;
+
+  // Close all other proj dropdowns
+  ['projLocDd','projRouteDd','projSmDd'].forEach(id => {
+    if (id !== cfg.dd) { const el=document.getElementById(id); if(el) el.style.display='none'; }
+  });
+
+  const q = inp.value.toLowerCase().trim();
+  const items = type === 'sm'
+    ? _projFilterData.sm.filter(s => !q || (typeof s==='object' ? s.n.toLowerCase().includes(q)||s.p.includes(q) : true))
+    : _projFilterData[type].filter(v => !q || v.toLowerCase().includes(q));
+
+  dd.innerHTML = items.map(item => {
+    if (type === 'sm') {
+      const val   = typeof item === 'object' ? item.p : '';
+      const label = typeof item === 'object' ? item.n + (val ? ' ('+val+')' : '') : 'All Salespeople';
+      return `<div class="dd-opt" onclick="projSelectFilter('${type}','${val}','${label.replace(/'/g,"\'")}')">${label}</div>`;
+    } else {
+      return `<div class="dd-opt" onclick="projSelectFilter('${type}','${item}','${(item||'All').replace(/'/g,"\'")}')">${item||'All'}</div>`;
+    }
+  }).join('') || '<div class="dd-opt" style="color:var(--muted)">No matches</div>';
+
+  dd.style.display = 'block';
+}
+
+function projSelectFilter(type, val, label) {
+  const configs = {
+    loc:   { search:'projLocSearch',   hid:'projLocFilter',   dd:'projLocDd'   },
+    route: { search:'projRouteSearch', hid:'projRouteFilter', dd:'projRouteDd' },
+    sm:    { search:'projSmSearch',    hid:'projSmFilter',    dd:'projSmDd'    },
+  };
+  const cfg = configs[type];
+  const inp = document.getElementById(cfg.search);
+  const hid = document.getElementById(cfg.hid);
+  const dd  = document.getElementById(cfg.dd);
+  if (inp) inp.value = val ? label : '';
+  if (hid) hid.value = val;
+  if (dd)  dd.style.display = 'none';
+  renderProjectionReport();
+}
+
+// Close proj dropdowns on outside click
+document.addEventListener('click', function(e) {
+  ['projLocDd','projRouteDd','projSmDd'].forEach(id => {
+    const dd = document.getElementById(id);
+    if (!dd) return;
+    const wrap = dd.parentElement;
+    if (wrap && !wrap.contains(e.target)) dd.style.display = 'none';
+  });
+});
+
 function renderProjectionReport() {
   const projFrom = document.getElementById('projFrom');
   const projTo   = document.getElementById('projTo');
-  const projLoc  = document.getElementById('projLocFilter');
-  const projRt   = document.getElementById('projRouteFilter');
+
 
   // Init date defaults
   const today = new Date().toISOString().split('T')[0];
@@ -8683,20 +8795,12 @@ function renderProjectionReport() {
 
   const from   = projFrom ? projFrom.value : '2020-01-01';
   const to     = projTo   ? projTo.value   : today;
-  const locF   = projLoc  ? projLoc.value  : '';
-  const rtF    = projRt   ? projRt.value   : '';
+  const locF   = (document.getElementById('projLocFilter')   || {}).value || '';
+  const rtF    = (document.getElementById('projRouteFilter')  || {}).value || '';
+  const smF    = (document.getElementById('projSmFilter')     || {}).value || '';
 
-  // Populate filter dropdowns on first call
-  if (projLoc && projLoc.options.length <= 1) {
-    [...new Set(allData.map(r=>r.location).filter(Boolean))].sort().forEach(l => {
-      const o = document.createElement('option'); o.value=l; o.textContent=l; projLoc.appendChild(o);
-    });
-  }
-  if (projRt && projRt.options.length <= 1) {
-    [...new Set(allData.map(r=>r.route).filter(Boolean))].sort().forEach(r => {
-      const o = document.createElement('option'); o.value=r; o.textContent=r; projRt.appendChild(o);
-    });
-  }
+  // Init searchable filter data
+  projInitFilters();
 
   // Filter data
   const base = allData.filter(r => {
@@ -8704,6 +8808,7 @@ function renderProjectionReport() {
     if (d < from || d > to) return false;
     if (locF && r.location !== locF) return false;
     if (rtF  && r.route    !== rtF)  return false;
+    if (smF  && r.salesman_payroll !== smF) return false;
     return true;
   });
 
