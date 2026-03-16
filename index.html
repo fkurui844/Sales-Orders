@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>Sales Order System</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -92,7 +92,7 @@ header{background:var(--dark);color:var(--white);padding:0 16px;height:var(--hea
 .bnav-item.active{color:var(--white);}
 .bnav-item.active::after{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--gold);border-radius:0 0 3px 3px;}
 .bnav-icon{font-size:1.3rem;line-height:1;}
-.bnav-label{font-size:.6rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;}
+.bnav-label{font-size:.62rem;font-weight:600;letter-spacing:.03em;text-transform:uppercase;}
 
 /* ── DESKTOP TOP NAV (hidden on mobile) ── */
 .mode-tabs{display:none;}
@@ -418,6 +418,166 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 .exp-grid{display:grid;grid-template-columns:1fr;gap:12px;}
 @media(min-width:640px){.exp-grid{grid-template-columns:1fr 1fr;}}
 @media(min-width:900px){.exp-grid{grid-template-columns:1fr 1fr 1fr;}}
+
+
+/* ── Ensure all tables scroll on mobile ── */
+.panel-body { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.panel-body.overflow-visible { overflow: visible !important; }
+/* ── Fix: step 2 panel-body needs overflow visible for dropdowns ── */
+#stepPanel2 .panel-body { overflow: visible !important; }
+/* ═══════════════════════════════════════════════
+   MOBILE OPTIMISATION — phones < 480px
+═══════════════════════════════════════════════ */
+@media(max-width:480px){
+
+  /* ── Base typography — nothing below .72rem on mobile ── */
+  body { font-size: 14px; }
+  .selected-box-text  { font-size: .86rem !important; }
+  .selected-box-sub   { font-size: .74rem !important; }
+  .sub                { font-size: .72rem !important; }
+  label               { font-size: .72rem !important; }
+  .panel-header h2    { font-size: .95rem !important; }
+  .kpi-val            { font-size: 1.4rem !important; }
+  .kpi-label          { font-size: .65rem !important; }
+
+  /* ── Layout ── */
+  .container          { padding: 10px 10px 80px !important; }
+  .panel-body         { padding: 14px 12px !important; }
+  .panel-header       { padding: 12px 14px !important; }
+  .panel              { border-radius: 12px !important; margin-bottom: 10px !important; }
+
+  /* ── Top nav ── */
+  .top-nav            { padding: 8px 12px !important; }
+  .logo               { font-size: 1.1rem !important; }
+  #orderSystemWrap    { margin-left: auto; }
+
+  /* ── Mode tabs ── */
+  .mode-tabs          { gap: 2px !important; }
+  .mode-tab           { font-size: .72rem !important; padding: 5px 8px !important; }
+
+  /* ── Form inputs ── */
+  input[type="text"],
+  input[type="date"],
+  input[type="password"],
+  input[type="number"],
+  select              { font-size: .88rem !important; padding: 11px 12px !important; min-height: 46px !important; }
+  .dd-opt             { font-size: .82rem !important; padding: 11px 12px !important; min-height: 44px !important; }
+
+  /* ── Buttons ── */
+  .btn-add            { font-size: .9rem !important; padding: 14px !important; border-radius: 10px !important; }
+  .btn                { font-size: .82rem !important; padding: 10px 14px !important; }
+
+  /* ── WHO step — order type cards ── */
+  #btnTypeProjection,
+  #btnTypeOrder       { padding: 12px 6px !important; }
+  #btnTypeProjection .text,
+  #btnTypeOrder .text { font-size: .78rem !important; }
+
+  /* ── Step 2 add items ── */
+  .qty-stepper button { width: 40px !important; height: 40px !important; font-size: 1.2rem !important; }
+  #qtyInput           { font-size: 1rem !important; }
+  #addLineBtn         { font-size: .88rem !important; padding: 13px !important; }
+  #nextCustBtn        { font-size: .82rem !important; padding: 11px !important; }
+
+  /* ── Order lines table on mobile ── */
+  .order-line-card    { font-size: .78rem !important; }
+  .order-line-card .prod-name { font-size: .82rem !important; }
+
+  /* ── KPI row — 2 columns on mobile ── */
+  .kpi-row            { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+  .kpi                { padding: 10px 10px !important; border-radius: 10px !important; }
+  .kpi-val            { font-size: 1.25rem !important; }
+
+  /* ── Dashboard tables ── */
+  .tbl                { font-size: .74rem !important; }
+  .tbl th, .tbl td    { padding: 8px 8px !important; }
+  .tbl th             { font-size: .65rem !important; letter-spacing: .03em; }
+
+  /* ── Charts ── */
+  .chart-box          { height: 180px !important; }
+  .chart-box.tall     { height: 220px !important; }
+
+  /* ── Status bar ── */
+  .status-bar         { gap: 6px !important; flex-wrap: wrap !important; }
+  .pill               { font-size: .7rem !important; padding: 4px 8px !important; }
+
+  /* ── WHO step summary in step 2 ── */
+  #summaryName        { font-size: .86rem !important; }
+  #summaryRoute,
+  #summaryLoc,
+  #summaryOrderType   { font-size: .72rem !important; }
+
+  /* ── Dev panel ── */
+  #devPanel           { width: 96vw !important; border-radius: 14px !important; }
+  .dev-inp            { font-size: .8rem !important; padding: 7px 8px !important; }
+  .dev-tab            { font-size: .72rem !important; padding: 7px 8px !important; }
+  .dev-section-title  { font-size: .72rem !important; }
+
+  /* ── SYSTEM dropdown ── */
+  .sys-dropdown       { width: 200px !important; right: 0 !important; left: auto !important; }
+  .sys-menu-item      { font-size: .82rem !important; padding: 10px 14px !important; }
+
+  /* ── Projection banner ── */
+  #projectionBanner   { font-size: .74rem !important; padding: 8px 12px !important; }
+
+  /* ── Order confirm receipt ── */
+  .conf-cust-head     { padding: 10px 12px !important; }
+  .conf-prod-row      { padding: 8px 12px !important; }
+  .conf-kpi .val      { font-size: 1.1rem !important; }
+  .conf-kpi .lbl      { font-size: .62rem !important; }
+  #confMetaGrid       { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+  #confKpiRow         { grid-template-columns: 1fr 1fr 1fr !important; }
+
+  /* ── Supervisor grid ── */
+  .supervisor-grid    { grid-template-columns: 1fr !important; }
+  .sm-list            { max-height: 200px !important; }
+
+  /* ── Export filters ── */
+  .exp-grid           { grid-template-columns: 1fr !important; }
+
+  /* ── Toast ── */
+  .toast              { left: 10px !important; right: 10px !important; bottom: 68px !important; font-size: .8rem !important; }
+
+  /* ── Bottom nav ── */
+  .bottom-nav         { padding: 6px 0 !important; }
+  .bnav-btn           { font-size: .62rem !important; gap: 2px !important; }
+  .bnav-btn .icon     { font-size: 1.1rem !important; }
+}
+
+/* ── Medium phones 481-640px ── */
+@media(min-width:481px) and (max-width:640px){
+  .container    { padding: 12px 14px 80px !important; }
+  .kpi-row      { grid-template-columns: repeat(2,1fr) !important; }
+  .tbl          { font-size: .78rem !important; }
+  .tbl th, .tbl td { padding: 9px 10px !important; }
+  .chart-box    { height: 190px !important; }
+}
+
+/* ── Ensure all text inputs never zoom on iOS (min 16px) ── */
+@media(max-width:768px){
+  input[type="text"],
+  input[type="password"],
+  input[type="number"],
+  input[type="date"],
+  input[type="email"],
+  select {
+    font-size: max(16px, 0.88rem) !important;
+  }
+  /* Tables scroll horizontally */
+  .tbl-wrap, [style*="overflow-x:auto"] {
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Dashboard grid — single column on tablet */
+  .g2, .g3 { grid-template-columns: 1fr !important; gap: 12px !important; }
+
+  /* Projection vs Actual report filters wrap nicely */
+  #dtProjection > div:first-child {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  #projKpiRow { grid-template-columns: repeat(2,1fr) !important; }
+}
 </style>
 </head>
 <body>
@@ -544,13 +704,13 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
             style="padding:14px 10px;border-radius:12px;border:2px solid var(--bd);background:var(--surface);cursor:pointer;text-align:center;transition:all .2s;">
             <div style="font-size:1.3rem;">🌅</div>
             <div style="font-size:.82rem;font-weight:700;margin-top:4px;color:var(--text);">Morning Projection</div>
-            <div style="font-size:.68rem;color:var(--muted);margin-top:2px;">Fresh Milk only · 8AM–2PM</div>
+            <div style="font-size:.7rem;color:var(--muted);margin-top:2px;">Fresh Milk only · 8AM–2PM</div>
           </button>
           <button id="btnTypeOrder" onclick="setOrderType('order')"
             style="padding:14px 10px;border-radius:12px;border:2px solid var(--bd);background:var(--surface);cursor:pointer;text-align:center;transition:all .2s;">
             <div style="font-size:1.3rem;">📦</div>
             <div style="font-size:.82rem;font-weight:700;margin-top:4px;color:var(--text);">Full Order</div>
-            <div style="font-size:.68rem;color:var(--muted);margin-top:2px;">All products · Actual orders</div>
+            <div style="font-size:.7rem;color:var(--muted);margin-top:2px;">All products · Actual orders</div>
           </button>
         </div>
         <div id="orderTypeWarning" style="display:none;margin-top:8px;padding:8px 12px;background:#fef9ee;border:1px solid #f0d060;border-radius:8px;font-size:.78rem;color:#C9941A;"></div>
@@ -1072,7 +1232,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
       <div id="dtProjection" class="hidden">
         <!-- Date filter row -->
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:0 0 14px 0;">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:0 0 14px 0;width:100%;">
           <div style="display:flex;gap:6px;align-items:center;">
             <label style="font-size:.72rem;font-weight:600;color:var(--muted);">FROM</label>
             <input type="date" id="projFrom" style="padding:7px 10px;border-radius:8px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);font-size:.78rem;" onchange="renderProjectionReport()">
@@ -1668,7 +1828,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
 <script>
 // ═══════════ CONFIG ═══════════
-const GAS_URL = "https://script.google.com/macros/s/AKfycbx7ScjMZZg4ILr7Uz4QzN7_09Py6ZCriiFcBw35N-skFq1-9vCp7s5tDPEqkOi-olxJNQ/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzjnUtvvb4lmp8ksvAU5HDrwsXGov8qAArJ8_OdiLIDA9jQbWqnOyjYYAjEiW2M1pyH5w/exec";
 
 // ═══════════ MASTER DATA ═══════════
 const SALESMEN = [
