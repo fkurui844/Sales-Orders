@@ -634,16 +634,16 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       </button>
       <div id="systemDropdown" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:var(--surface);border:1.5px solid var(--bd);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.22);min-width:190px;z-index:10000;overflow:hidden;padding:6px 0;">
         <div style="padding:7px 16px 5px;font-size:.62rem;font-weight:700;letter-spacing:.07em;color:var(--text-muted);text-transform:uppercase;">Dashboard</div>
-        <button class="sys-menu-item" onclick="openDashSection('overview')">📈 Overview</button>
-        <button class="sys-menu-item" onclick="openDashSection('salesman')">👤 By Salesperson</button>
-        <button class="sys-menu-item" onclick="openDashSection('products')">📦 By Product</button>
-        <button class="sys-menu-item" onclick="openDashSection('routes')">🗺️ By Route</button>
-        <button class="sys-menu-item" onclick="openDashSection('revenue')">💰 Revenue</button>
-        <button class="sys-menu-item" onclick="openDashSection('timing')">⏱️ Timing</button>
-        <button class="sys-menu-item" onclick="openDashSection('customer')">🏪 By Customer</button>
+        <button class="sys-menu-item" onclick="openDashSection('overview')">📈 Orders Overview</button>
+        <button class="sys-menu-item" onclick="openDashSection('salesman')">👤 Orders By Salesperson</button>
+        <button class="sys-menu-item" onclick="openDashSection('products')">📦 Orders By Product</button>
+        <button class="sys-menu-item" onclick="openDashSection('routes')">🗺️ Orders By Route</button>
+        <button class="sys-menu-item" onclick="openDashSection('revenue')">💰 Orders Revenue</button>
+        <button class="sys-menu-item" onclick="openDashSection('timing')">⏱️ Orders Timing</button>
+        <button class="sys-menu-item" onclick="openDashSection('customer')">🏪 Orders By Customer</button>
         <button class="sys-menu-item" onclick="openDashSection('projection')">🌅 FM Projection vs Actual</button>
-        <button class="sys-menu-item" onclick="openDashSection('channel')">📡 By Channel</button>
-        <button class="sys-menu-item" onclick="openDashSection('export')">⬇️ Export Excel</button>
+        <button class="sys-menu-item" onclick="openDashSection('channel')">📡 Orders By Channel</button>
+        <button class="sys-menu-item" onclick="openDashSection('export')">⬇️ Orders Export Excel</button>
       </div>
     </div>
   </div>
@@ -1206,7 +1206,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
       <!-- Customer search — appears right after PERIOD -->
       <div class="panel" style="margin-bottom:14px;">
-        <div class="panel-header"><h2>🏪 By Customer</h2></div>
+        <div class="panel-header"><h2>🏪 Orders By Customer</h2></div>
         <div class="panel-body" style="padding:14px 16px;">
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
             <input type="text" id="custSearchInput" oninput="renderCustomerTab()"
@@ -1325,7 +1325,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
       <!-- Channel selector -->
       <div class="panel" style="margin-bottom:14px;overflow:visible;">
-        <div class="panel-header"><h2>📡 By Channel</h2></div>
+        <div class="panel-header"><h2>📡 Orders By Channel</h2></div>
         <div class="panel-body" style="padding:14px 16px;overflow:visible;">
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;overflow:visible;">
             <div style="position:relative;flex:1;min-width:200px;max-width:360px;overflow:visible;">
@@ -1646,7 +1646,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
     <div class="itabs-wrap" style="margin-bottom:14px;">
       <div class="itabs">
         <button class="itab active" onclick="switchCompTab('customer',this)">👤 By Customer</button>
-        <button class="itab" onclick="switchCompTab('product',this)">📦 By Product</button>
+        <button class="itab" onclick="switchCompTab('product',this)">📦 Orders By Product</button>
         <button class="itab" onclick="switchCompTab('charts',this)">📈 Charts</button>
         <button class="itab" onclick="switchCompTab('salesman',this)">🧑‍💼 By Salesperson</button>
         <button class="itab" onclick="switchCompTab('unmatched',this)">⚠️ Gaps</button>
@@ -7417,11 +7417,11 @@ function openDashSection(tab) {
 
   // Update title
   const titles = {
-    overview:'📈 Overview', salesman:'👤 By Salesperson',
-    products:'📦 By Product', daily:'📅 Daily Trend',
-    routes:'🗺️ By Route', revenue:'💰 Revenue',
-    timing:'⏱️ Timing', customer:'🏪 By Customer',
-    channel:'📡 By Channel', export:'⬇️ Export Excel', projection:'🌅 Fresh Milk — Projection vs Actual'
+    overview:'📈 Orders Overview', salesman:'👤 Orders By Salesperson',
+    products:'📦 Orders By Product', daily:'📅 Daily Trend',
+    routes:'🗺️ Orders By Route', revenue:'💰 Orders Revenue',
+    timing:'⏱️ Orders Timing', customer:'🏪 Orders By Customer',
+    channel:'📡 Orders By Channel', export:'⬇️ Orders Export Excel', projection:'🌅 Fresh Milk — Projection vs Actual'
   };
   const titleEl = document.getElementById('systemPanelTitle');
   if (titleEl) titleEl.textContent = titles[tab] || tab;
