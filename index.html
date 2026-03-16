@@ -492,23 +492,23 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
     <div class="panel-header"><span>👤</span><h2>Who are you?</h2></div>
     <div class="panel-body">
       <div class="form-grid">
-        <div class="form-group full">
+        <div class="form-group full" style="position:relative;z-index:40;">
           <label>Your Name / Payroll Number</label>
           <div class="dd-wrap" id="smDdWrap">
             <input type="text" id="smSearch" placeholder="🔍  Type name or payroll number…"
-              oninput="filterSm()" onfocus="filterSm();document.getElementById('smDd').style.display='block'"
+              oninput="filterSm()" onfocus="filterSm();document.getElementById('smDd').style.display='block';document.getElementById('locDd').style.display='none';document.getElementById('routeDd').style.display='none';"
               autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
             <div class="dd-list" id="smDd"></div>
           </div>
           <input type="hidden" id="salesmanSelect">
         </div>
-        <div class="form-group full">
+        <div class="form-group full" style="position:relative;z-index:30;">
           <label>Your Location</label>
           <div class="dd-wrap" id="locDdWrap" style="position:relative;">
             <input type="text" id="locSearch"
               placeholder="🔍 Type location… (e.g. Nairobi, Mombasa)"
               oninput="filterLocations();"
-              onfocus="filterLocations();document.getElementById('locDd').style.display='block';"
+              onfocus="filterLocations();document.getElementById('locDd').style.display='block';document.getElementById('smDd').style.display='none';document.getElementById('routeDd').style.display='none';"
               autocomplete="off" autocorrect="off" autocapitalize="off"
               style="width:100%;">
             <div class="dd-list" id="locDd" style="display:none;max-height:220px;overflow-y:auto;"></div>
@@ -516,20 +516,20 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
           <input type="hidden" id="locationSelect">
         </div>
 
-        <div class="form-group full">
+        <div class="form-group full" style="position:relative;z-index:20;">
           <label>Your Route</label>
           <div class="dd-wrap" id="routeDdWrap" style="position:relative;">
             <input type="text" id="routeSearch"
               placeholder="🔍 Type route name…"
               oninput="filterRoutes()"
-              onfocus="filterRoutes(); document.getElementById('routeDd').style.display='block'"
+              onfocus="filterRoutes();document.getElementById('routeDd').style.display='block';document.getElementById('smDd').style.display='none';document.getElementById('locDd').style.display='none';"
               autocomplete="off" autocorrect="off" autocapitalize="off"
               style="width:100%;">
             <div class="dd-list" id="routeDd" style="display:none;max-height:260px;overflow-y:auto;"></div>
           </div>
           <input type="hidden" id="routeSelect">
         </div>
-        <div class="form-group full">
+        <div class="form-group full" style="position:relative;z-index:10;">
           <label>Order Date</label>
           <input type="date" id="orderDate" onchange="checkReady()"
             style="font-size:1rem;padding:12px 14px;border-radius:10px;border:1.5px solid var(--bd);background:var(--surface);color:var(--text);width:100%;min-height:48px;">
