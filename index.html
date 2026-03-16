@@ -18,12 +18,17 @@ function positionDd(ddId, inputId) {
   var inp = document.getElementById(inputId);
   var dd  = document.getElementById(ddId);
   if (!inp || !dd) return;
-  var r = inp.getBoundingClientRect();
-  dd.style.position = 'fixed';
-  dd.style.top      = (r.bottom + 1) + 'px';
-  dd.style.left     = r.left + 'px';
-  dd.style.width    = r.width + 'px';
-  dd.style.display  = 'block';
+  // Use rAF to ensure layout is complete before measuring
+  requestAnimationFrame(function() {
+    var r = inp.getBoundingClientRect();
+    if (r.width === 0) return; // not visible yet
+    dd.style.position = 'fixed';
+    dd.style.top      = (r.bottom + 1) + 'px';
+    dd.style.left     = r.left + 'px';
+    dd.style.width    = r.width + 'px';
+    dd.style.display  = 'block';
+    dd.style.zIndex   = '999999';
+  });
   // Close the other dd
   var other = document.getElementById(ddId === 'custDd' ? 'prodDd' : 'custDd');
   if (other) other.style.display = 'none';
@@ -552,9 +557,13 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
       <!-- Customer search -->
       <div class="form-group" style="margin-bottom:14px;">
-        <label>Customer</label>
+        <label onclick="document.getElementById('custSearch').focus();" style="cursor:pointer;">Customer</label>
         <div class="dd-wrap" id="custDdWrap" style="overflow:visible;">
-          <input type="text" id="custSearch" placeholder="🔍  Search by name or account…" oninput="positionDd('custDd','custSearch');filterCust();" onfocus="positionDd('custDd','custSearch');filterCust();" autocomplete="off">
+          <input type="text" id="custSearch" placeholder="🔍  Search by name or account…"
+  oninput="filterCust();positionDd('custDd','custSearch');"
+  onfocus="filterCust();positionDd('custDd','custSearch');"
+  onclick="filterCust();positionDd('custDd','custSearch');"
+  autocomplete="off" autocorrect="off" autocapitalize="off">
 
           <input type="hidden" id="custAcc"><input type="hidden" id="custName">
         </div>
@@ -570,9 +579,13 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
       <!-- Product search -->
       <div class="form-group" style="margin-bottom:14px;">
-        <label>Product</label>
+        <label onclick="document.getElementById('prodSearch').focus();" style="cursor:pointer;">Product</label>
         <div class="dd-wrap" id="prodDdWrap" style="overflow:visible;">
-          <input type="text" id="prodSearch" placeholder="🔍  Search by name or code…" oninput="positionDd('prodDd','prodSearch');filterProd();" onfocus="positionDd('prodDd','prodSearch');filterProd();" autocomplete="off">
+          <input type="text" id="prodSearch" placeholder="🔍  Search by name or code…"
+  oninput="filterProd();positionDd('prodDd','prodSearch');"
+  onfocus="filterProd();positionDd('prodDd','prodSearch');"
+  onclick="filterProd();positionDd('prodDd','prodSearch');"
+  autocomplete="off" autocorrect="off" autocapitalize="off">
 
           <input type="hidden" id="pCode"><input type="hidden" id="pDesc"><input type="hidden" id="pPkg"><input type="hidden" id="pWt">
         </div>
