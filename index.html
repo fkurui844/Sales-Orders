@@ -361,7 +361,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
 /* ── SEARCH DROPDOWNS ── */
 .dd-wrap{position:relative;z-index:9999;}
-.dd-list{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1.5px solid var(--bd);border-top:none;border-radius:0 0 12px 12px;max-height:260px;overflow-y:auto;z-index:99999;display:none;-webkit-overflow-scrolling:touch;box-shadow:0 12px 32px rgba(0,0,0,.18);}
+.dd-list{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1.5px solid var(--bd);border-top:none;border-radius:0 0 12px 12px;max-height:260px;overflow-y:auto;z-index:999999;display:none;-webkit-overflow-scrolling:touch;box-shadow:0 12px 32px rgba(0,0,0,.25);}
 .dd-opt{padding:13px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:.84rem;gap:8px;min-height:48px;border-bottom:1px solid var(--bd);touch-action:manipulation;color:var(--text);}
 .dd-opt:last-child{border-bottom:none;}
 .dd-opt:active{background:var(--surface2);}
@@ -543,7 +543,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       </div>
 
       <!-- Customer search -->
-      <div class="form-group" style="margin-bottom:14px;">
+      <div class="form-group" style="margin-bottom:14px;position:relative;z-index:10;">
         <label onclick="document.getElementById('custSearch').focus();" style="cursor:pointer;">Customer</label>
         <div class="dd-wrap" id="custDdWrap" style="overflow:visible;">
           <input type="text" id="custSearch" placeholder="🔍  Search by name or account…"
@@ -565,7 +565,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       </div>
 
       <!-- Product search -->
-      <div class="form-group" style="margin-bottom:14px;">
+      <div class="form-group" style="margin-bottom:14px;position:relative;z-index:1;">
         <label onclick="document.getElementById('prodSearch').focus();" style="cursor:pointer;">Product</label>
         <div class="dd-wrap" id="prodDdWrap" style="overflow:visible;">
           <input type="text" id="prodSearch" placeholder="🔍  Search by name or code…"
