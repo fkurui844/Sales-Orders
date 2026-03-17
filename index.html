@@ -8360,7 +8360,7 @@ function selProd(c, d, k, w) {
   document.getElementById('prodSearch').style.display = 'none';
   setTimeout(() => document.getElementById('qtyInput').focus(), 100);
   // Show pcs converter if product has known pack size
-  showPcsConverter(code, pkg, desc);
+  showPcsConverter(c, k, d);
 }
 
 function showPcsConverter(code, pkg, desc) {
