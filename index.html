@@ -376,6 +376,19 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
+/* ── CUSTOMER SEARCH BOX ── */
+.cust-search-wrap{position:relative;width:100%;}
+.cust-search-input{width:100%;padding:13px 16px;border:1.5px solid var(--bd);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:1rem;background:var(--surface);color:var(--text);transition:border-color .2s,box-shadow .2s;outline:none;min-height:48px;}
+.cust-search-input:focus{border-color:var(--text);box-shadow:0 0 0 3px rgba(26,26,26,0.08);}
+.cust-search-input::placeholder{color:var(--text-muted);}
+.cust-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1.5px solid var(--bd);border-top:none;border-radius:0 0 10px 10px;max-height:280px;overflow-y:auto;z-index:9999;display:none;-webkit-overflow-scrolling:touch;box-shadow:0 8px 24px rgba(0,0,0,.15);}
+.cust-dropdown.show{display:block;}
+.cust-option{padding:12px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:.9rem;border-bottom:1px solid var(--bd);transition:background .15s;min-height:48px;touch-action:manipulation;}
+.cust-option:hover,.cust-option:active{background:var(--surface2);}
+.cust-option:last-child{border-bottom:none;}
+.cust-option-name{font-weight:600;color:var(--text);flex:1;}
+.cust-option-meta{font-size:.75rem;color:var(--muted);text-align:right;min-width:80px;margin-left:8px;}
+
 /* ── SALESMAN DASH ── */
 .sm-dash-header{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--cream);flex-wrap:wrap;}
 .sm-dash-name{font-family:'DM Serif Display',serif;font-size:1.1rem;}
@@ -882,6 +895,14 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
                 autocomplete="off" style="width:100%;">
               <input type="hidden" id="dashFilterCat">
               <div class="exp-dd-list" id="dashFCatDd"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Customer</label>
+            <div class="cust-search-wrap">
+              <input type="text" id="dashCustSearch" class="cust-search-input" 
+                placeholder="🔍 Search customer by name or code…" autocomplete="off">
+              <div id="custDropdown" class="cust-dropdown"></div>
             </div>
           </div>
           <div class="form-group">
@@ -12274,6 +12295,102 @@ function buildUpdatedHtml() {
 
 // GitHub config loaded inside openDevPanel directly
 
-</script>
+// ═══════════════════════════════════════════════════
+// CUSTOMER SEARCH FUNCTIONALITY
+// ═══════════════════════════════════════════════════
+
+function initCustomerSearch() {
+  const searchInput = document.getElementById('dashCustSearch');
+  const dropdown = document.getElementById('custDropdown');
+  
+  if (!searchInput || !dropdown) return;
+
+  searchInput.addEventListener('focus', function() {
+    showCustomerDropdown();
+  });
+
+  searchInput.addEventListener('input', function() {
+    filterCustomerDropdown(this.value);
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.cust-search-wrap')) {
+      dropdown.classList.remove('show');
+    }
+  });
+}
+
+function showCustomerDropdown() {
+  const searchInput = document.getElementById('dashCustSearch');
+  const dropdown = document.getElementById('custDropdown');
+  const query = (searchInput.value || '').toLowerCase().trim();
+  
+  if (!dropdown) return;
+
+  let filtered = CUSTOMERS;
+  if (query) {
+    filtered = CUSTOMERS.filter(c => 
+      c.n.toLowerCase().includes(query) || 
+      c.c.toLowerCase().includes(query)
+    );
+  }
+
+  if (filtered.length === 0) {
+    dropdown.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:.9rem;">No customers found</div>';
+  } else {
+    dropdown.innerHTML = filtered.map(c => 
+      `<div class="cust-option" onclick="selectCustomerFromSearch('${c.c}', '${c.n.replace(/'/g, "\\'")}')">
+        <span class="cust-option-name">${c.n}</span>
+        <span class="cust-option-meta">${c.c}</span>
+      </div>`
+    ).join('');
+  }
+
+  dropdown.classList.add('show');
+}
+
+function filterCustomerDropdown(query) {
+  const dropdown = document.getElementById('custDropdown');
+  if (!dropdown) return;
+
+  query = query.toLowerCase().trim();
+  let filtered = CUSTOMERS;
+  
+  if (query) {
+    filtered = CUSTOMERS.filter(c => 
+      c.n.toLowerCase().includes(query) || 
+      c.c.toLowerCase().includes(query)
+    );
+  }
+
+  if (filtered.length === 0) {
+    dropdown.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:.9rem;">No customers found</div>';
+  } else {
+    dropdown.innerHTML = filtered.map(c => 
+      `<div class="cust-option" onclick="selectCustomerFromSearch('${c.c}', '${c.n.replace(/'/g, "\\'")}')">
+        <span class="cust-option-name">${c.n}</span>
+        <span class="cust-option-meta">${c.c}</span>
+      </div>`
+    ).join('');
+  }
+
+  dropdown.classList.add('show');
+}
+
+function selectCustomerFromSearch(custCode, custName) {
+  const searchInput = document.getElementById('dashCustSearch');
+  const dropdown = document.getElementById('custDropdown');
+  
+  if (searchInput) searchInput.value = custName;
+  if (dropdown) dropdown.classList.remove('show');
+  
+  // Trigger any analytics or filtering if needed
+  console.log('Selected customer:', custCode, custName);
+  showToast(`📦 Viewing: ${custName}`, 'success');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(initCustomerSearch, 100);
+});</script>
 </body>
 </html>
