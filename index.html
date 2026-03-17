@@ -8736,6 +8736,7 @@ function groupSm(data) {
 }
 
 function renderSupervisor() {
+  destroyAllCharts();
   const g = groupSm(allData);
   const sms = Object.values(g);
   const tw = allData.reduce((s,r)=>s+(parseFloat(r.total_wt)||0),0);
@@ -8831,6 +8832,23 @@ function getProdData(data) {
 }
 
 function dc(id) { if(charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+function destroyAllCharts() {
+  // Destroy all charts in charts object
+  Object.keys(charts).forEach(id => {
+    if(charts[id]) {
+      try { charts[id].destroy(); } catch(e) {}
+      delete charts[id];
+    }
+  });
+  // Destroy all charts in actualsCharts object
+  Object.keys(actualsCharts).forEach(id => {
+    if(actualsCharts[id]) {
+      try { actualsCharts[id].destroy(); } catch(e) {}
+      delete actualsCharts[id];
+    }
+  });
+}
 
 function makeBar(id, labels, values, colors, opts={}) {
   dc(id);
@@ -9158,6 +9176,7 @@ function exportProjectionCsv() {
 }
 
 function renderDashboard() {
+  destroyAllCharts();
   if (typeof filteredData==='undefined' || !Array.isArray(filteredData)) return;
   const data = filteredData;
   // KPIs
@@ -10090,7 +10109,7 @@ function renderRevenueTab() {
   // ── Revenue by Salesperson bar ──
   const top10sm = smSorted.slice(0,10);
   dc('cRvSm');
-  new Chart(document.getElementById('cRvSm').getContext('2d'), {
+  charts['cRvSm'] = new Chart(document.getElementById('cRvSm').getContext('2d'), {
     type:'bar',
     data:{ labels: top10sm.map(s=>s[0].split(' ')[0]),
       datasets:[{ label:'Revenue (KES)', data: top10sm.map(s=>Math.round(s[1])),
@@ -10110,7 +10129,7 @@ function renderRevenueTab() {
   });
   const catSorted = Object.entries(catRev).sort((a,b)=>b[1]-a[1]);
   dc('cRvCat');
-  new Chart(document.getElementById('cRvCat').getContext('2d'), {
+  charts['cRvCat'] = new Chart(document.getElementById('cRvCat').getContext('2d'), {
     type:'doughnut',
     data:{ labels: catSorted.map(c=>c[0]),
       datasets:[{ data: catSorted.map(c=>Math.round(c[1])),
@@ -10129,7 +10148,7 @@ function renderRevenueTab() {
   });
   const days = Object.keys(dayRev).sort();
   dc('cRvDaily');
-  new Chart(document.getElementById('cRvDaily').getContext('2d'), {
+  charts['cRvDaily'] = new Chart(document.getElementById('cRvDaily').getContext('2d'), {
     type:'line',
     data:{ labels: days.map(d=>new Date(d+'T12:00:00').toLocaleDateString('en-KE',{day:'2-digit',month:'short'})),
       datasets:[{ label:'Revenue', data: days.map(d=>Math.round(dayRev[d])),
@@ -11300,6 +11319,7 @@ function switchCompTab(tab,btn) {
 }
 
 function buildComparison() {
+  destroyAllCharts();
   if(!allData||!allData.length||!actualsData.length) return;
   const ordersToUse = getDashboard2Data && typeof getDashboard2Data==='function' ? getDashboard2Data() : allData;
   const pb=document.getElementById('compPeriodBadge');
