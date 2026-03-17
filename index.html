@@ -8346,6 +8346,18 @@ function filterProd() {
     : '<div class="dd-opt" style="color:var(--muted)">No matches</div>';
   dd.style.display = 'block';
 }
+// Returns 'kg' for solid/fat categories, 'lts' for liquid products
+const VOL_UNIT_KG_CATS = ['BUTTER','CHEESE','POWDER','GHEE'];
+function getVolUnit(productCode) {
+  const prod = typeof PRODUCTS !== 'undefined' ? PRODUCTS.find(p => p.c === String(productCode||'')) : null;
+  if (!prod) return 'lts';
+  return VOL_UNIT_KG_CATS.includes((prod.k||'').toUpperCase()) ? 'kg' : 'lts';
+}
+// Same but accepts a category string directly (for contexts where category is already known)
+function getVolUnitByCat(cat) {
+  return VOL_UNIT_KG_CATS.includes((cat||'').toUpperCase()) ? 'kg' : 'lts';
+}
+
 function selProd(c, d, k, w) {
   document.getElementById('prodSearch').value = '';
   document.getElementById('pCode').value = c;
@@ -8355,7 +8367,7 @@ function selProd(c, d, k, w) {
   document.getElementById('prodDd').style.display = 'none';
   document.getElementById('prodSelectedName').textContent = d;
   const priceHint = PRICES[c] ? ' · KES ' + PRICES[c].trade.toLocaleString() + ' ' + PRICES[c].unit : '';
-  document.getElementById('prodSelectedSub').textContent = '[' + c + '] · ' + k + ' · ' + w + ' kg/unit' + priceHint;
+  document.getElementById('prodSelectedSub').textContent = '[' + c + '] · ' + k + ' · ' + w + ' ' + getVolUnitByCat(k) + '/unit' + priceHint;
   document.getElementById('prodSelectedBox').classList.add('show');
   document.getElementById('prodSearch').style.display = 'none';
   setTimeout(() => document.getElementById('qtyInput').focus(), 100);
@@ -8501,7 +8513,7 @@ function renderProjectionTable() {
       <thead><tr>
         <th>Product</th>
         <th>Qty</th>
-        <th>Total kg</th>
+        <th>Total (kg / lts)</th>
         <th></th>
       </tr></thead>
       <tbody>
@@ -8511,7 +8523,7 @@ function renderProjectionTable() {
             <div style="font-size:.7rem;color:var(--muted);">${l.productPkg}</div>
           </td>
           <td style="font-family:'DM Mono',monospace;font-weight:700;">${l.qty}</td>
-          <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:600;">${parseFloat(l.totalWt).toFixed(1)} kg</td>
+          <td style="font-family:'DM Mono',monospace;color:var(--green);font-weight:600;">${parseFloat(l.totalWt).toFixed(1)} ${getVolUnit(l.productCode)}</td>
           <td><button onclick="removeLine(${i})" style="background:none;border:none;color:#C0392B;font-size:1.1rem;cursor:pointer;padding:4px;">🗑</button></td>
         </tr>`).join('')}
       </tbody>
@@ -8559,7 +8571,7 @@ function renderOrderTable() {
       <div class="order-card-meta" style="margin-top:8px;">
         <span class="badge">${l.productCode}</span>
         <span class="pill gold"><span class="dot"></span>Qty: ${l.qty}</span>
-        <span class="order-card-kg">→ ${l.totalWt} kg</span>
+        <span class="order-card-kg">→ ${l.totalWt} ${getVolUnit(l.productCode)}</span>
         ${l.totalRevenue ? `<span class="pill green"><span class="dot"></span>KES ${l.totalRevenue.toLocaleString()}</span>` : ''}
       </div>
     </div>`).join('') +
@@ -8736,14 +8748,14 @@ function renderSvDetail(s) {
       <span class="pill purple"><span class="dot"></span>${routes}</span>
       ${s.lines.reduce((x,r)=>x+(parseFloat(r.total_revenue)||0),0)>0?`<span class="pill green"><span class="dot"></span>KES ${Math.round(s.lines.reduce((x,r)=>x+(parseFloat(r.total_revenue)||0),0)).toLocaleString()}</span>`:''}
     </div>
-    <table class="tbl"><thead><tr><th>Date/Time</th><th>Route</th><th>Customer</th><th>Product</th><th>Qty</th><th>Total kg</th><th>Revenue (KES)</th></tr></thead>
+    <table class="tbl"><thead><tr><th>Date/Time</th><th>Route</th><th>Customer</th><th>Product</th><th>Qty</th><th>Total (kg/lts)</th><th>Revenue (KES)</th></tr></thead>
     <tbody>${s.lines.map(r=>`<tr>
       <td style="font-size:.72rem;color:var(--muted);font-family:'DM Mono',monospace;">${r.timestamp?new Date(r.timestamp).toLocaleString('en-KE',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'—'}</td>
       <td style="font-size:.78rem;font-weight:500">${r.route||'—'}</td>
       <td><div style="font-size:.8rem;font-weight:500">${r.customer_name||'—'}</div><span class="badge">${r.customer_acc||''}</span></td>
       <td><div style="font-size:.8rem">${r.product_desc||'—'}</div><span class="badge">${r.product_code||''}</span></td>
       <td style="font-family:'DM Mono',monospace;font-weight:600">${r.qty||''}</td>
-      <td style="font-family:'DM Mono',monospace;font-weight:600;color:var(--green)">${parseFloat(r.total_wt||0).toFixed(2)}</td>
+      <td style="font-family:'DM Mono',monospace;font-weight:600;color:var(--green)">${parseFloat(r.total_wt||0).toFixed(2)} ${getVolUnit(r.product_code)}</td>
       <td style="font-family:'DM Mono',monospace;font-size:.78rem;color:var(--green)">${r.total_revenue?'KES '+Math.round(parseFloat(r.total_revenue)).toLocaleString():'—'}</td>
 
     </tr>`).join('')}</tbody></table>`;
@@ -11738,7 +11750,7 @@ function showOrderConfirm(payload, lineCount) {
             </div>
             <div style="text-align:right;flex-shrink:0;">
               <div style="font-family:'DM Mono',monospace;font-size:.82rem;font-weight:700;">${l.qty} <span style="font-size:.65rem;color:var(--muted);">units</span></div>
-              <div style="font-size:.7rem;color:var(--green);font-weight:600;">${parseFloat(l.totalWt).toFixed(1)} kg</div>
+              <div style="font-size:.7rem;color:var(--green);font-weight:600;">${parseFloat(l.totalWt).toFixed(1)} ${getVolUnit(l.productCode)}</div>
               ${l.totalRevenue?`<div style="font-size:.68rem;color:var(--muted);">${fmtK(l.totalRevenue)}</div>`:''}
             </div>
           </div>`;
@@ -11771,7 +11783,7 @@ function showOrderConfirm(payload, lineCount) {
         </div>
         <div style="text-align:right;flex-shrink:0;">
           <div style="font-family:'DM Mono',monospace;font-size:.85rem;font-weight:700;">${pr.qty} <span style="font-size:.65rem;color:var(--muted);">units</span></div>
-          <div style="font-size:.72rem;color:var(--green);font-weight:600;">${pr.kg.toFixed(1)} kg</div>
+          <div style="font-size:.72rem;color:var(--green);font-weight:600;">${pr.kg.toFixed(1)} ${getVolUnit(pr.code)}</div>
           ${pr.rev ? `<div style="font-size:.68rem;color:var(--muted);">${fmtK(pr.rev)}</div>` : ''}
         </div>
       </div>`;
@@ -11856,11 +11868,12 @@ function buildOrderText(p) {
     txt += `🏪 *${c.name}*\n`;
     c.lines.forEach(l => {
       txt += `  • [${l.productCode}] ${l.productDesc}\n`;
-      txt += `    ${l.qty} units · ${parseFloat(l.totalWt).toFixed(1)}kg`;
+      txt += `    ${l.qty} units · ${parseFloat(l.totalWt).toFixed(1)} ${getVolUnit(l.productCode)}`;
       if (l.totalRevenue) txt += ` · ${fmtK(l.totalRevenue)}`;
       txt += '\n';
     });
-    txt += `  ↳ Subtotal: ${custKg.toFixed(1)}kg · ${fmtK(custRev)}\n\n`;
+    const custUnit = c.lines.every(l => VOL_UNIT_KG_CATS.includes((PRODUCTS.find(p=>p.c===String(l.productCode||''))?.k||'').toUpperCase())) ? 'kg' : 'lts';
+    txt += `  ↳ Subtotal: ${custKg.toFixed(1)}${custUnit} · ${fmtK(custRev)}\n\n`;
   });
 
   // ── Product summary across all customers ──
@@ -11880,7 +11893,7 @@ function buildOrderText(p) {
   txt += '━━━━━━━━━━━━━━━━━━━━\n';
   prodList.forEach(p => {
     txt += `[${p.code}] ${p.desc}\n`;
-    txt += `  ${p.qty} units · ${p.kg.toFixed(1)}kg · ${fmtK(p.rev)}\n`;
+    txt += `  ${p.qty} units · ${p.kg.toFixed(1)} ${getVolUnit(p.code)} · ${fmtK(p.rev)}\n`;
   });
 
   // ── Grand totals ──
@@ -11891,7 +11904,7 @@ function buildOrderText(p) {
   txt += `  Customers: ${Object.keys(groups).length}\n`;
   txt += '  Products:\n';
   prodList.forEach(pr => {
-    txt += `    [${pr.code}] ${pr.qty} units · ${pr.kg.toFixed(1)}kg · ${fmtK(pr.rev)}\n`;
+    txt += `    [${pr.code}] ${pr.qty} units · ${pr.kg.toFixed(1)} ${getVolUnit(pr.code)} · ${fmtK(pr.rev)}\n`;
   });
   return txt;
 }
