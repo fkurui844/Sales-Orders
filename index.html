@@ -388,6 +388,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 .cust-option:last-child{border-bottom:none;}
 .cust-option-name{font-weight:600;color:var(--text);flex:1;}
 .cust-option-meta{font-size:.75rem;color:var(--muted);text-align:right;min-width:80px;margin-left:8px;}
+.cust-search-container{display:flex;gap:10px;align-items:flex-end;}
+.cust-search-container .form-group{flex:1;margin-bottom:0;}
 
 /* ── SALESMAN DASH ── */
 .sm-dash-header{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--cream);flex-wrap:wrap;}
@@ -899,10 +901,14 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
           </div>
           <div class="form-group">
             <label>Customer</label>
-            <div class="cust-search-wrap">
-              <input type="text" id="dashCustSearch" class="cust-search-input" 
-                placeholder="🔍 Search customer by name or code…" autocomplete="off">
-              <div id="custDropdown" class="cust-dropdown"></div>
+            <div style="display:flex;gap:10px;">
+              <div class="cust-search-wrap" style="flex:1;">
+                <input type="text" id="dashCustSearch" class="cust-search-input" 
+                  placeholder="🔍 Search customer by name or code…" autocomplete="off">
+                <input type="hidden" id="dashFilterCust">
+                <div id="custDropdown" class="cust-dropdown"></div>
+              </div>
+              <button class="btn btn-outline btn-sm" onclick="clearCustomerFilter()" style="margin-bottom:0;">✕ Clear</button>
             </div>
           </div>
           <div class="form-group">
@@ -7689,12 +7695,13 @@ function applyDashFilter() {
   const cat  = (el('dashFilterCat')||{}).value   || '';
   const ch   = (el('dashFilterChannel')||{}).value || '';
   const loc  = (el('dashFilterLocation')||{}).value || '';
+  const cust = (el('dashFilterCust')||{}).value || '';
 
   const CUST_MAP = {};
   if (typeof CUSTOMERS !== 'undefined') {
     CUSTOMERS.forEach(c => {
       const key = String(c.a).replace(/^0+/,'');
-      CUST_MAP[key] = { ch: (c.ch||'').toUpperCase(), loc: (c.loc||'').toUpperCase() };
+      CUST_MAP[key] = { ch: (c.ch||'').toUpperCase(), loc: (c.loc||'').toUpperCase(), code: c.c };
     });
   }
 
@@ -7711,6 +7718,7 @@ function applyDashFilter() {
     const custInfo = CUST_MAP[acc] || {};
     if (ch  && custInfo.ch  !== ch.toUpperCase())  return false;
     if (loc && custInfo.loc !== loc.toUpperCase())  return false;
+    if (cust && custInfo.code !== cust) return false;
     return true;
   });
 
@@ -7733,8 +7741,9 @@ function clearDashFilter() {
   if(el('dashFilterCat'))      el('dashFilterCat').value='';
   if(el('dashFilterChannel'))  el('dashFilterChannel').value='';
   if(el('dashFilterLocation')) el('dashFilterLocation').value='';
+  if(el('dashFilterCust'))     el('dashFilterCust').value='';
   // Clear visible search inputs
-  ['dashFSmSearch','dashFRouteSearch','dashFCatSearch','dashFChSearch','dashFLocSearch'].forEach(id => {
+  ['dashFSmSearch','dashFRouteSearch','dashFCatSearch','dashFChSearch','dashFLocSearch','dashCustSearch'].forEach(id => {
     const e = el(id); if (e) e.value = '';
   });
   const countEl = el('dashFilterCount');
@@ -12380,13 +12389,47 @@ function filterCustomerDropdown(query) {
 function selectCustomerFromSearch(custCode, custName) {
   const searchInput = document.getElementById('dashCustSearch');
   const dropdown = document.getElementById('custDropdown');
+  const el = id => document.getElementById(id);
   
   if (searchInput) searchInput.value = custName;
   if (dropdown) dropdown.classList.remove('show');
   
-  // Trigger any analytics or filtering if needed
-  console.log('Selected customer:', custCode, custName);
-  showToast(`📦 Viewing: ${custName}`, 'success');
+  // Store the customer code in hidden filter field
+  if (el('dashFilterCust')) {
+    el('dashFilterCust').value = custCode;
+  } else {
+    // Create hidden input if it doesn't exist
+    const hiddenInput = document.createElement('input');
+    hiddenInput.type = 'hidden';
+    hiddenInput.id = 'dashFilterCust';
+    hiddenInput.value = custCode;
+    document.body.appendChild(hiddenInput);
+  }
+  
+  // Apply the filter globally across all dashboard sections
+  applyDashFilter();
+  
+  // Show success notification
+  showToast(`✅ Filtered for: ${custName}`, 'success');
+}
+
+function clearCustomerFilter() {
+  const el = id => document.getElementById(id);
+  
+  // Clear the search input
+  if (el('dashCustSearch')) el('dashCustSearch').value = '';
+  
+  // Clear the hidden filter value
+  if (el('dashFilterCust')) el('dashFilterCust').value = '';
+  
+  // Close dropdown
+  const dropdown = document.getElementById('custDropdown');
+  if (dropdown) dropdown.classList.remove('show');
+  
+  // Reapply filter (which will now show all customers)
+  applyDashFilter();
+  
+  showToast('✅ Customer filter cleared', 'success');
 }
 
 document.addEventListener('DOMContentLoaded', function() {
