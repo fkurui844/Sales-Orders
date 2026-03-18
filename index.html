@@ -1724,6 +1724,20 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
           <span style="font-size:.72rem;color:var(--muted);margin-left:8px);">Orders placed vs actual sales</span>
           <button class="btn btn-outline btn-sm" style="margin-left:auto;" onclick="exportCompCSV()">⬇ CSV</button>
         </div>
+        <!-- Customer Search Bar -->
+        <div style="padding:14px 16px;border-bottom:1px solid var(--bd);background:var(--surface2);">
+          <div style="display:flex;gap:10px;align-items:flex-end;">
+            <div style="flex:1;">
+              <label style="display:block;font-size:.7rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Search Customer</label>
+              <div class="cust-search-wrap" style="position:relative;">
+                <input type="text" id="compCustSearch" class="cust-search-input" 
+                  placeholder="🔍 Search by name or account number…" autocomplete="off">
+                <div id="compCustDropdown" class="cust-dropdown"></div>
+              </div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="clearCompCustomerFilter()" style="margin-bottom:0;white-space:nowrap;">✕ Clear</button>
+          </div>
+        </div>
         <div style="overflow-x:auto;" id="compCustTable"></div>
       </div>
     </div>
@@ -12477,8 +12491,154 @@ function clearCustomerFilter() {
   showToast('✅ Customer filter cleared', 'success');
 }
 
+// ═══════════════════════════════════════════════════
+// DASHBOARD CUSTOMER SEARCH FUNCTIONALITY
+// ═══════════════════════════════════════════════════
+
+function initCompCustomerSearch() {
+  const searchInput = document.getElementById('compCustSearch');
+  const dropdown = document.getElementById('compCustDropdown');
+  
+  if (!searchInput || !dropdown) return;
+
+  searchInput.addEventListener('focus', function() {
+    showCompCustomerDropdown();
+  });
+
+  searchInput.addEventListener('input', function() {
+    filterCompCustomerDropdown(this.value);
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#compCustSearch') && !e.target.closest('#compCustDropdown')) {
+      dropdown.classList.remove('show');
+    }
+  });
+}
+
+function showCompCustomerDropdown() {
+  const searchInput = document.getElementById('compCustSearch');
+  const dropdown = document.getElementById('compCustDropdown');
+  const query = (searchInput.value || '').toLowerCase().trim();
+  
+  if (!dropdown) return;
+
+  let filtered = CUSTOMERS;
+  if (query) {
+    filtered = CUSTOMERS.filter(c => 
+      c.n.toLowerCase().includes(query) || 
+      c.c.toLowerCase().includes(query)
+    );
+  }
+
+  if (filtered.length === 0) {
+    dropdown.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:.9rem;">No customers found</div>';
+  } else {
+    dropdown.innerHTML = filtered.map(c => 
+      `<div class="cust-option" onclick="selectCompCustomer('${c.c}', '${c.n.replace(/'/g, "\\'")}')">
+        <span class="cust-option-name">${c.n}</span>
+        <span class="cust-option-meta">${c.c}</span>
+      </div>`
+    ).join('');
+  }
+
+  dropdown.classList.add('show');
+}
+
+function filterCompCustomerDropdown(query) {
+  const dropdown = document.getElementById('compCustDropdown');
+  if (!dropdown) return;
+
+  query = query.toLowerCase().trim();
+  let filtered = CUSTOMERS;
+  
+  if (query) {
+    filtered = CUSTOMERS.filter(c => 
+      c.n.toLowerCase().includes(query) || 
+      c.c.toLowerCase().includes(query)
+    );
+  }
+
+  if (filtered.length === 0) {
+    dropdown.innerHTML = '<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:.9rem;">No customers found</div>';
+  } else {
+    dropdown.innerHTML = filtered.map(c => 
+      `<div class="cust-option" onclick="selectCompCustomer('${c.c}', '${c.n.replace(/'/g, "\\'")}')">
+        <span class="cust-option-name">${c.n}</span>
+        <span class="cust-option-meta">${c.c}</span>
+      </div>`
+    ).join('');
+  }
+
+  dropdown.classList.add('show');
+}
+
+function selectCompCustomer(custCode, custName) {
+  const searchInput = document.getElementById('compCustSearch');
+  const dropdown = document.getElementById('compCustDropdown');
+  
+  if (searchInput) searchInput.value = custName;
+  if (dropdown) dropdown.classList.remove('show');
+  
+  // Apply the filter to the customer comparison table
+  filterCompCustomerTable(custCode, custName);
+  
+  // Show success notification
+  showToast(`✅ Filtered for: ${custName}`, 'success');
+}
+
+function filterCompCustomerTable(custCode, custName) {
+  const table = document.getElementById('compCustTable');
+  if (!table) return;
+
+  // Get all rows from the current table
+  const rows = table.querySelectorAll('tbody tr');
+  let visibleCount = 0;
+  
+  rows.forEach(row => {
+    // Find the account cell (usually the first data cell)
+    const cells = row.querySelectorAll('td');
+    if (cells.length > 0) {
+      const accountCell = cells[0].textContent.trim();
+      // Check if this row matches the selected customer
+      if (accountCell.includes(custCode) || accountCell === custCode) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
+    }
+  });
+
+  // Show message if no results
+  if (visibleCount === 0 && rows.length > 0) {
+    showToast(`⚠️ No matching records for: ${custName}`, 'warning');
+  }
+}
+
+function clearCompCustomerFilter() {
+  const el = id => document.getElementById(id);
+  
+  // Clear the search input
+  if (el('compCustSearch')) el('compCustSearch').value = '';
+  
+  // Close dropdown
+  const dropdown = document.getElementById('compCustDropdown');
+  if (dropdown) dropdown.classList.remove('show');
+  
+  // Show all rows in the table
+  const table = document.getElementById('compCustTable');
+  if (table) {
+    const rows = table.querySelectorAll('tbody tr');
+    rows.forEach(row => row.style.display = '');
+  }
+  
+  showToast('✅ Customer filter cleared', 'success');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   setTimeout(initCustomerSearch, 100);
+  setTimeout(initCompCustomerSearch, 150);
 });</script>
 </body>
 </html>
