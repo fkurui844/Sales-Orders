@@ -9086,9 +9086,18 @@ function populateSmSelects() {
     if (cur) sel.value = cur; // restore selection if still valid
   }
 
-  repopulate('timingSmFilter');
-  repopulate('rvSmFilter');
-  repopulate('expSalesman');
+  function repopulate(data) {
+  // ADD THIS LINE: If data is missing or not an array, stop here.
+  if (!data || !Array.isArray(data)) {
+    console.warn("Repopulate called with invalid data:", data);
+    return; 
+  }
+
+  // Your existing loop continues here...
+  for (var i = 0; i < data.length; i++) {
+    // ... rest of your code
+  }
+}
 }
 
 // ═══════════ INIT ═══════════
