@@ -3736,7 +3736,7 @@ function _logout() { _confirmLogout(''); }
 
 <script>
 // ═══════════ CONFIG ═══════════
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxTjihZEIAa2DInE9sv5TXoT7Yjwxukuw_NRUuHOjoa7X63tj1DvWq04k4M0PAGkhxS8Q/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbx0yudIQWho57oAc7XHfE1hxJs7PvPymvcVqXRwXQFtchwNnSdGtuJG8hK2HZujrBQc-Q/exec";
 
 // ═══════════ MASTER DATA ═══════════
 let SALESMEN = [{"p":"83","n":"KARIUKI"},{"p":"77","n":"Kirimi"},{"p":"119","n":"Wambugu"},{"p":"102","n":"Kaloki"},{"p":"107","n":"Rotich"},{"p":"129","n":"Owiti"},{"p":"168","n":"Aluvanze"},{"p":"176","n":"Avanyi"},{"p":"178","n":"Juma Otela"},{"p":"208","n":"Andrew Mneria"},{"p":"210","n":"Njoroge"},{"p":"224","n":"Waithera"},{"p":"235","n":"Mukopi"},{"p":"244","n":"Onyango"},{"p":"247","n":"Bokoo"},{"p":"353","n":"Tanui"},{"p":"429","n":"Omondi"},{"p":"430","n":"Kiplimo"},{"p":"487","n":"Nginya Waringa"},{"p":"502","n":"Samson"},{"p":"510","n":"Ngochi Gitau"},{"p":"523","n":"Muthusi"},{"p":"571","n":"Ochieng Opon"},{"p":"684","n":"Daniel"},{"p":"794","n":"Ochieng Obilo"},{"p":"910","n":"Luke"},{"p":"974","n":"Cheruiyot"},{"p":"1403","n":"Chepkwony"},{"p":"1422","n":"Ndwiga"},{"p":"1431","n":"Kamoing"},{"p":"1493","n":"Otieno"},{"p":"1497","n":"Maina"},{"p":"1549","n":"Nyongesa"},{"p":"1554","n":"Nguli"},{"p":"1558","n":"Mwangangi"},{"p":"1568","n":"Otieno Odoyo"},{"p":"1583","n":"Nyawira Ndege"},{"p":"1587","n":"Nanjira Wanyangu"},{"p":"1594","n":"Roba Mamo"},{"p":"1599","n":"Musanga Katua"},{"p":"1612","n":"Mukami Kiriungi"},{"p":"1614","n":"Wanjiku Nyoro"},{"p":"1619","n":"Cheruiyot C."},{"p":"3112","n":"Adoyo Osumba"},{"p":"3176","n":"Langat Kipkemoi"},{"p":"3246","n":"Oloo Ogutu"},{"p":"3249","n":"Mulwa Musyoki"},{"p":"3308","n":"Holata Liban"},{"p":"3381","n":"Odhiambo Migwambo"},{"p":"3467","n":"Kasyoka Mitu"},{"p":"3479","n":"Mwenda Kiruki"},{"p":"3483","n":"Nyathama Wangu"},{"p":"3540","n":"Kosgei"},{"p":"3609","n":"Kinyanjui"},{"p":"3611","n":"Boit"},{"p":"3614","n":"Kungu"},{"p":"3616","n":"Kibiego"},{"p":"3634","n":"Muthaura"},{"p":"3691","n":"Ngumbau"},{"p":"3738","n":"Nzioka"},{"p":"3763","n":"Rukaria"},{"p":"3797","n":"Ruto"},{"p":"3810","n":"Langat"},{"p":"3815","n":"Kavita"},{"p":"3829","n":"Cyprian"},{"p":"3833","n":"Mwanyasi"},{"p":"3835","n":"Akala"},{"p":"3852","n":"Maigwa"},{"p":"3918","n":"Kibet"},{"p":"4051","n":"Karimi"},{"p":"3669","n":"Chepkoriri"},{"p":"4063","n":"Kiruki"},{"p":"4110","n":"Koech"},{"p":"4130","n":"Omollo"},{"p":"4215","n":"Duncan"},{"p":"4217","n":"Wacuka"},{"p":"4221","n":"Makocha"},{"p":"4262","n":"Cherotich"},{"p":"4275","n":"Kiprotich"},{"p":"4324","n":"Mutuku"},{"p":"4328","n":"Ndirangu"},{"p":"4420","n":"Ndonj"},{"p":"4421","n":"Makau"},{"p":"4422","n":"Waihura"},{"p":"4438","n":"Oruru"},{"p":"4442","n":"Wachera"},{"p":"4443","n":"Muiruri"},{"p":"4446","n":"Kinuthia"},{"p":"4456","n":"Wilfred"},{"p":"4467","n":"Ochieng"},{"p":"4519","n":"Ngerechi"},{"p":"4571","n":"Halake"},{"p":"4575","n":"Barasa"},{"p":"4599","n":"Kinyuru"},{"p":"4602","n":"Theuri"},{"p":"4648","n":"Tanui B"},{"p":"4661","n":"Omboyo"},{"p":"4662","n":"Obondo"},{"p":"4663","n":"Cheruiyot B"},{"p":"4664","n":"Wambui"},{"p":"4665","n":"Muturia"},{"p":"4666","n":"Mutwiri"},{"p":"4667","n":"Lechamakany"},{"p":"4670","n":"Kitumbui"},{"p":"4672","n":"Kibet B"},{"p":"4673","n":"Mugo"},{"p":"4678","n":"Musyoki"},{"p":"4679","n":"Nzioki"},{"p":"4682","n":"Kipkirui"},{"p":"4684","n":"Mburugu"},{"p":"4742","n":"Mwita"},{"p":"4764","n":"Kalunda"},{"p":"4768","n":"Maithya"},{"p":"4770","n":"Kemboi"},{"p":"4838","n":"Too"},{"p":"4843","n":"Kimeu"},{"p":"4844","n":"Ronoh"},{"p":"4848","n":"Koros"},{"p":"4873","n":"Gumbo"},{"p":"701349","n":"Wahome"},{"p":"702078","n":"Mukopi B"},{"p":"702130","n":"Kibandi Gitau"},{"p":"702137","n":"Mideva Andwati"},{"p":"900834","n":"Oyara"},{"p":"900835","n":"Otieno Rading"},{"p":"900836","n":"Mwangi"},{"p":"901002","n":"Njoroge B"},{"p":"901006","n":"Chate"},{"p":"901017","n":"Otieno B"},{"p":"901103","n":"Muchina"},{"p":"901224","n":"Mbogo"},{"p":"901268","n":"Kipchirchir"},{"p":"901306","n":"Murithi"},{"p":"901377","n":"Kamau"},{"p":"907612","n":"Mwanyefa"},{"p":"907634","n":"Ngatia"},{"p":"907638","n":"Kaburu"},{"p":"907646","n":"Kiura"},{"p":"907668","n":"Patrick"},{"p":"908190","n":"Mathu"},{"p":"908647","n":"Ngeno"},{"p":"908930","n":"Wanyama"},{"p":"908941","n":"Maua"},{"p":"908950","n":"Ouko"},{"p":"908952","n":"Masadia"},{"p":"908989","n":"Mita"},{"p":"137","n":"Welemba"},{"p":"255","n":"Momanyi"},{"p":"500","n":"Daudi Anyona"}];
@@ -3763,6 +3763,10 @@ let SALESMEN = [{"p":"83","n":"KARIUKI"},{"p":"77","n":"Kirimi"},{"p":"119","n":
   function applyList(list) {
     if (!list || !list.length) return;
     SALESMEN = list;
+    // Invalidate the cached sm filter list so it rebuilds on next open
+    if (typeof dashFLists !== 'undefined') dashFLists.sm = null;
+    // Repopulate all <select> salesperson dropdowns
+    if (typeof populateSmSelects === 'function') populateSmSelects();
     console.log('[Salesmen] Loaded ' + list.length + ' salespersons from sheet.');
   }
 
@@ -8991,12 +8995,47 @@ let devTab = 'salesmen';
 
 const COLORS = ['#1A7A4A','#C9941A','#1A4A7A','#C0392B','#6C3483','#16A085','#E67E22','#2980B9','#8E44AD','#117A65','#D35400','#1F618D'];
 
+// ═══════════ SALESPERSON SELECT POPULATE HELPER ═══════════
+// Rebuilds every <select> that lists salespersons.
+// Called on DOMContentLoaded AND after loadSalesmenFromSheet() updates SALESMEN.
+function populateSmSelects() {
+  // Build merged list: SALESMEN + any payrolls seen in allData
+  var smMap = {};
+  SALESMEN.forEach(function(s) { smMap[String(s.p)] = s.n; });
+  if (typeof allData !== 'undefined' && allData && allData.length) {
+    allData.forEach(function(r) {
+      var p = String(r.salesman_payroll || '').trim();
+      var n = String(r.salesman_name    || '').trim();
+      if (p && !smMap[p] && n) smMap[p] = n;
+    });
+  }
+  var smSorted = Object.keys(smMap)
+    .map(function(p) { return { p: p, n: smMap[p] }; })
+    .sort(function(a, b) { return a.n.localeCompare(b.n); });
+
+  function repopulate(selId) {
+    var sel = document.getElementById(selId);
+    if (!sel) return;
+    var cur = sel.value; // remember current selection
+    // Remove all non-placeholder options
+    while (sel.options.length > 1) sel.remove(1);
+    smSorted.forEach(function(s) {
+      var o = document.createElement('option');
+      o.value = s.p; o.textContent = s.n + ' (' + s.p + ')';
+      sel.appendChild(o);
+    });
+    if (cur) sel.value = cur; // restore selection if still valid
+  }
+
+  repopulate('timingSmFilter');
+  repopulate('rvSmFilter');
+  repopulate('expSalesman');
+}
+
 // ═══════════ INIT ═══════════
 document.addEventListener('DOMContentLoaded', () => {
   const el = id => document.getElementById(id);
   const now = new Date(), td = now.toISOString().split('T')[0];
-  const smSorted = [...SALESMEN].sort((a,b) => a.n.localeCompare(b.n));
-
   // Always-present elements
   if (el('orderDate')) el('orderDate').value = td;  // default to today
   if (el('dfrom'))     el('dfrom').value = '2020-01-01';
@@ -9012,25 +9051,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const o = document.createElement('option'); o.value = r; o.textContent = r; rfsel.appendChild(o);
   });
 
-  const tSmF = el('timingSmFilter');
-  if (tSmF) smSorted.forEach(s => {
-    const o = document.createElement('option'); o.value = s.p; o.textContent = `${s.n} (${s.p})`; tSmF.appendChild(o);
-  });
-
-  const rvSmF = el('rvSmFilter');
-  if (rvSmF) smSorted.forEach(s => {
-    const o = document.createElement('option'); o.value = s.p; o.textContent = `${s.n} (${s.p})`; rvSmF.appendChild(o);
-  });
+  // Populate salesperson <select> filters — called once now and again after
+  // loadSalesmenFromSheet() finishes so new recruits appear automatically.
+  populateSmSelects();
 
   if (el('rvDateFrom')) el('rvDateFrom').value = td;
   if (el('rvDateTo'))   el('rvDateTo').value   = td;
   if (el('tDateFrom'))  el('tDateFrom').value  = td;
   if (el('tDateTo'))    el('tDateTo').value    = td;
-
-  const expSm = el('expSalesman');
-  if (expSm) smSorted.forEach(s => {
-    const o = document.createElement('option'); o.value = s.p; o.textContent = `${s.n} (${s.p})`; expSm.appendChild(o);
-  });
 
   const expRt = el('expRoute');
   if (expRt) ROUTES.forEach(r => {
@@ -9262,6 +9290,25 @@ function switchDashTab(tab, btn) {
 // ═══════════ DASHBOARD FILTER SEARCHABLE DROPDOWNS ═══════════
 let dashFLists = {};
 
+function _buildSmFilterList() {
+  // Build salesperson dropdown by merging:
+  //   1. The live SALESMEN array (includes sheet-loaded recruits)
+  //   2. Any payrolls seen in allData that aren't in SALESMEN yet
+  //      (so people who ordered before being added to the sheet still appear)
+  var smMap = {};
+  SALESMEN.forEach(function(s) { smMap[String(s.p)] = s.n; });
+  if (typeof allData !== 'undefined' && allData && allData.length) {
+    allData.forEach(function(r) {
+      var p = String(r.salesman_payroll || '').trim();
+      var n = String(r.salesman_name    || '').trim();
+      if (p && !smMap[p] && n) smMap[p] = n; // add from order data if missing
+    });
+  }
+  return Object.keys(smMap)
+    .map(function(p) { return { val: p, label: smMap[p] + ' (' + p + ')' }; })
+    .sort(function(a, b) { return a.label.localeCompare(b.label); });
+}
+
 function initDashFilterDropdowns() {
   const el = id => document.getElementById(id);
   // Default dates
@@ -9269,9 +9316,8 @@ function initDashFilterDropdowns() {
   if (el('dfrom') && !el('dfrom').value) el('dfrom').value = '2020-01-01';
   if (el('dto')   && !el('dto').value)   el('dto').value   = td;
 
-  if (Object.keys(dashFLists).length) return; // already built
-
-  dashFLists.sm    = [...SALESMEN].sort((a,b)=>a.n.localeCompare(b.n)).map(s=>({val:s.p, label:`${s.n} (${s.p})`}));
+  // Always rebuild the salesperson list (new recruits / order data may have changed)
+  dashFLists.sm    = _buildSmFilterList();
   dashFLists.route = ROUTES.map(r=>({val:r, label:r}));
   dashFLists.cat   = [...new Set(PRODUCTS.map(p=>p.k))].sort().map(c=>({val:c, label:c}));
   dashFLists.ch    = [...new Set(
@@ -9509,6 +9555,10 @@ function loadData() {
       if (_dfrom && !_dfrom.value) _dfrom.value = '2020-01-01';
       if (_dto   && !_dto.value)   _dto.value   = _today;
 
+      // Invalidate sm filter so it rebuilds from merged SALESMEN + allData
+      if (typeof dashFLists !== 'undefined') dashFLists.sm = null;
+      // Repopulate <select> dropdowns with any new payrolls seen in order data
+      if (typeof populateSmSelects === 'function') populateSmSelects();
       initDashFilterDropdowns();
       applyDashFilter();
       renderSupervisor();
@@ -10613,7 +10663,7 @@ function projInitFilters() {
   _projFilterData.loc   = ['', ...[...new Set(allData.map(r=>r.location).filter(Boolean))].sort()];
   _projFilterData.route = ['', ...[...new Set(allData.map(r=>r.route).filter(Boolean))].sort()];
   _projFilterData.sm    = ['', ...[...new Set(allData.map(r=>r.salesman_payroll).filter(Boolean))]
-    .map(p => { const s=SALESMEN.find(x=>x.p===p); return s?{p,n:s.n}:{p,n:p}; })
+    .map(p => { const smMap2={}; SALESMEN.forEach(s=>smMap2[s.p]=s.n); const n=smMap2[p]||(allData.find(r=>r.salesman_payroll===p)||{}).salesman_name||p; return {p,n}; })
     .sort((a,b)=>a.n.localeCompare(b.n))];
 }
 
