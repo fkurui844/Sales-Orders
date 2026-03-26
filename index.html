@@ -264,6 +264,93 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
 
 
+
+/* ── LOGIN SCREEN ── */
+#loginOverlay {
+  position: fixed; inset: 0; background: var(--bg);
+  z-index: 99000; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 24px; transition: opacity .3s;
+}
+#loginOverlay.hidden { display: none; }
+.login-card {
+  background: var(--surface); border: 1px solid var(--bd);
+  border-radius: 20px; padding: 32px 28px; width: 100%;
+  max-width: 380px; box-shadow: 0 8px 40px var(--shadow);
+  display: flex; flex-direction: column; gap: 18px;
+}
+.login-logo {
+  font-family: 'DM Serif Display', serif; font-size: 1.5rem;
+  color: var(--dark); text-align: center; margin-bottom: 4px;
+}
+.login-logo span { color: var(--gold); }
+.login-title {
+  font-size: .72rem; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--text-muted); text-align: center;
+}
+.login-step { display: flex; flex-direction: column; gap: 14px; }
+.login-step.hidden { display: none; }
+.pin-dots {
+  display: flex; justify-content: center; gap: 12px; margin: 8px 0;
+}
+.pin-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid var(--bd); background: var(--surface);
+  transition: all .15s;
+}
+.pin-dot.filled { background: var(--dark); border-color: var(--dark); }
+.pin-dot.error { background: var(--red); border-color: var(--red); }
+.pin-dot.success { background: var(--green); border-color: var(--green); }
+.pin-keypad {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  max-width: 280px; margin: 0 auto; width: 100%;
+}
+.pin-key {
+  aspect-ratio: 1; border-radius: 12px; border: 1.5px solid var(--bd);
+  background: var(--surface); font-size: 1.3rem; font-weight: 600;
+  color: var(--text); cursor: pointer; display: flex;
+  align-items: center; justify-content: center;
+  font-family: 'DM Mono', monospace; transition: all .1s;
+  touch-action: manipulation; user-select: none;
+}
+.pin-key:active { background: var(--dark); color: var(--white); transform: scale(.94); }
+.pin-key.del { font-size: 1rem; }
+.login-name-selected {
+  background: var(--surface2); border: 1.5px solid var(--bd);
+  border-radius: 10px; padding: 12px 16px; font-weight: 600;
+  font-size: .95rem; color: var(--text); text-align: center;
+}
+.login-error {
+  color: var(--red); font-size: .78rem; text-align: center;
+  min-height: 18px; font-weight: 600;
+}
+.login-hint {
+  color: var(--text-muted); font-size: .75rem; text-align: center; line-height: 1.5;
+}
+.login-back {
+  background: none; border: none; color: var(--text-muted);
+  font-size: .78rem; cursor: pointer; text-decoration: underline;
+  font-family: 'DM Sans', sans-serif; padding: 4px;
+  align-self: center;
+}
+#loginSmSearch {
+  width: 100%; padding: 13px 16px; border: 1.5px solid var(--bd);
+  border-radius: 10px; font-family: 'DM Sans', sans-serif;
+  font-size: 1rem; background: var(--surface); color: var(--text);
+  min-height: 48px;
+}
+#loginSmDd {
+  max-height: 200px; overflow-y: auto; border: 1.5px solid var(--bd);
+  border-radius: 10px; background: var(--surface);
+  box-shadow: 0 4px 16px var(--shadow); display: none;
+}
+.login-sm-opt {
+  padding: 11px 16px; cursor: pointer; font-size: .9rem;
+  color: var(--text); display: flex; justify-content: space-between;
+  align-items: center; gap: 8px;
+}
+.login-sm-opt:hover { background: var(--surface2); }
+
 /* ── Theme dropdown ── */
 .theme-dropdown-wrap { position: relative; }
 .theme-opt {
@@ -593,6 +680,81 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 </style>
 </head>
 <body>
+
+<!-- ═══════════ LOGIN SCREEN ═══════════ -->
+<div id="loginOverlay">
+  <div class="login-card">
+    <div class="login-logo">Sales<span>Order</span></div>
+    <div class="login-title">Sign in to continue</div>
+
+    <!-- Step A: Find your name -->
+    <div class="login-step" id="loginStepName">
+      <div style="position:relative;">
+        <input type="text" id="loginSmSearch" placeholder="🔍 Search your name or payroll…"
+          oninput="loginFilterSm()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <div id="loginSmDd"></div>
+      </div>
+      <div class="login-hint">Select your name to continue</div>
+    </div>
+
+    <!-- Step B: Enter / set PIN -->
+    <div class="login-step hidden" id="loginStepPin">
+      <div class="login-name-selected" id="loginSelectedName">—</div>
+      <div style="text-align:center;font-size:.82rem;color:var(--text-muted);" id="loginPinLabel">Enter your PIN</div>
+      <div class="pin-dots" id="pinDots">
+        <div class="pin-dot" id="pd0"></div>
+        <div class="pin-dot" id="pd1"></div>
+        <div class="pin-dot" id="pd2"></div>
+        <div class="pin-dot" id="pd3"></div>
+      </div>
+      <div class="pin-keypad">
+        <button class="pin-key" onclick="pinKey('1')">1</button>
+        <button class="pin-key" onclick="pinKey('2')">2</button>
+        <button class="pin-key" onclick="pinKey('3')">3</button>
+        <button class="pin-key" onclick="pinKey('4')">4</button>
+        <button class="pin-key" onclick="pinKey('5')">5</button>
+        <button class="pin-key" onclick="pinKey('6')">6</button>
+        <button class="pin-key" onclick="pinKey('7')">7</button>
+        <button class="pin-key" onclick="pinKey('8')">8</button>
+        <button class="pin-key" onclick="pinKey('9')">9</button>
+        <div></div>
+        <button class="pin-key" onclick="pinKey('0')">0</button>
+        <button class="pin-key del" onclick="pinBackspace()">⌫</button>
+      </div>
+      <div class="login-error" id="loginPinError"></div>
+      <button class="login-back" onclick="loginBack()">← Not you?</button>
+    </div>
+
+    <!-- Step C: Confirm PIN (first login only) -->
+    <div class="login-step hidden" id="loginStepConfirm">
+      <div class="login-name-selected" id="loginConfirmName">—</div>
+      <div style="text-align:center;font-size:.82rem;color:var(--text-muted);">Confirm your new PIN</div>
+      <div class="pin-dots" id="confirmDots">
+        <div class="pin-dot" id="cd0"></div>
+        <div class="pin-dot" id="cd1"></div>
+        <div class="pin-dot" id="cd2"></div>
+        <div class="pin-dot" id="cd3"></div>
+      </div>
+      <div class="pin-keypad">
+        <button class="pin-key" onclick="pinConfirmKey('1')">1</button>
+        <button class="pin-key" onclick="pinConfirmKey('2')">2</button>
+        <button class="pin-key" onclick="pinConfirmKey('3')">3</button>
+        <button class="pin-key" onclick="pinConfirmKey('4')">4</button>
+        <button class="pin-key" onclick="pinConfirmKey('5')">5</button>
+        <button class="pin-key" onclick="pinConfirmKey('6')">6</button>
+        <button class="pin-key" onclick="pinConfirmKey('7')">7</button>
+        <button class="pin-key" onclick="pinConfirmKey('8')">8</button>
+        <button class="pin-key" onclick="pinConfirmKey('9')">9</button>
+        <div></div>
+        <button class="pin-key" onclick="pinConfirmKey('0')">0</button>
+        <button class="pin-key del" onclick="confirmBackspace()">⌫</button>
+      </div>
+      <div class="login-error" id="loginConfirmError"></div>
+      <button class="login-back" onclick="loginBack()">← Start over</button>
+    </div>
+  </div>
+</div>
+
 
 <header>
   <div class="logo" id="logoTap" style="cursor: default; opacity: 1;" onclick="_devTap()">Sales<span>Order</span></div>
@@ -9254,7 +9416,9 @@ document.addEventListener('click', e => {
 });
 
 function filterSm() {
-  const q = document.getElementById('smSearch').value.toLowerCase().trim();
+  const smInp = document.getElementById('smSearch');
+  if (smInp && smInp.readOnly) return; // locked to logged-in user
+  const q = smInp.value.toLowerCase().trim();
   const dd = document.getElementById('smDd');
   dd.style.display = 'block';
   const results = SALESMEN
@@ -9282,6 +9446,7 @@ function filterSm() {
 }
 
 function selectSm(payroll, name) {
+  if (document.getElementById('smSearch').readOnly) return;
   document.getElementById('smSearch').value = `${name} (${payroll})`;
   document.getElementById('salesmanSelect').value = payroll;
   document.getElementById('smDd').style.display = 'none';
@@ -13722,6 +13887,292 @@ function clearCompCustomerFilter() {
   
   showToast('✅ Customer filter cleared', 'success');
 }
+
+
+// ═══════════════════════════════════════════════════
+// LOGIN SYSTEM — all functions are top-level so oninput/onclick attrs work
+// ═══════════════════════════════════════════════════
+
+// ── State (module-level vars, prefixed to avoid collisions) ──────────
+var _loginPayroll    = null;
+var _loginName       = null;
+var _pinBuffer       = '';
+var _confirmBuffer   = '';
+var _isFirstLogin    = false;
+var _loggedInPayroll = null;
+
+// ── Storage helpers ──────────────────────────────────────────────────
+function _pinStoreKey(payroll) { return 'pin_' + payroll; }
+function _getPin(payroll)  { return localStorage.getItem(_pinStoreKey(payroll)); }
+function _setPin(payroll, pin) { localStorage.setItem(_pinStoreKey(payroll), pin); }
+function _saveSession(payroll) { sessionStorage.setItem('so_session', payroll); }
+function _clearSession()       { sessionStorage.removeItem('so_session'); }
+function _getSession()         { return sessionStorage.getItem('so_session'); }
+
+// ── UI helpers ───────────────────────────────────────────────────────
+function _loginShow(id) { var e=document.getElementById(id); if(e) e.classList.remove('hidden'); }
+function _loginHide(id) { var e=document.getElementById(id); if(e) e.classList.add('hidden'); }
+function _loginSetErr(id, msg) { var e=document.getElementById(id); if(e) e.textContent=msg; }
+
+function _clearDots(prefix) {
+  for (var i=0;i<4;i++) {
+    var d=document.getElementById(prefix+i);
+    if(d) d.classList.remove('filled','error','success');
+  }
+}
+function _updateDots(prefix, buffer, state) {
+  for (var i=0;i<4;i++) {
+    var d=document.getElementById(prefix+i);
+    if(!d) continue;
+    d.classList.remove('filled','error','success');
+    if(state==='error')   { if(i<buffer.length) d.classList.add('error'); }
+    else if(state==='success') { d.classList.add('success'); }
+    else { if(i<buffer.length) d.classList.add('filled'); }
+  }
+}
+
+// ── Show / hide the full login overlay ──────────────────────────────
+function showLoginOverlay() {
+  var el = document.getElementById('loginOverlay');
+  if (el) el.classList.remove('hidden');
+  ['header','#viewOrder','#viewActuals','#viewComparison','.bottom-nav'].forEach(function(sel) {
+    var e = document.querySelector(sel);
+    if (e) e.style.visibility = 'hidden';
+  });
+  _resetLoginUI();
+  setTimeout(function() {
+    var inp = document.getElementById('loginSmSearch');
+    if (inp) inp.focus();
+  }, 200);
+}
+
+function _hideLoginOverlay() {
+  var el = document.getElementById('loginOverlay');
+  if (el) el.classList.add('hidden');
+  ['header','#viewOrder','#viewActuals','#viewComparison','.bottom-nav'].forEach(function(sel) {
+    var e = document.querySelector(sel);
+    if (e) e.style.visibility = '';
+  });
+}
+
+function _resetLoginUI() {
+  _loginShow('loginStepName'); _loginHide('loginStepPin'); _loginHide('loginStepConfirm');
+  _pinBuffer = ''; _confirmBuffer = '';
+  _loginPayroll = null; _loginName = null;
+  var inp = document.getElementById('loginSmSearch');
+  if (inp) inp.value = '';
+  var dd = document.getElementById('loginSmDd');
+  if (dd) { dd.innerHTML=''; dd.style.display='none'; }
+  _clearDots('pd'); _clearDots('cd');
+  _loginSetErr('loginPinError',''); _loginSetErr('loginConfirmError','');
+}
+
+// ── Salesman search (called by oninput on #loginSmSearch) ────────────
+function loginFilterSm() {
+  var inp = document.getElementById('loginSmSearch');
+  var q   = inp ? inp.value.toLowerCase().trim() : '';
+  var dd  = document.getElementById('loginSmDd');
+  if (!dd) return;
+  var res = SALESMEN.filter(function(s) {
+    return s.n.toLowerCase().includes(q) || s.p.includes(q);
+  }).sort(function(a,b){ return a.n.localeCompare(b.n); }).slice(0,60);
+
+  if (!res.length) {
+    dd.innerHTML = '<div class="login-sm-opt" style="color:var(--text-muted);cursor:default;">No results</div>';
+  } else {
+    dd.innerHTML = res.map(function(s) {
+      var safeName = s.n.replace(/'/g,"\'");
+      return '<div class="login-sm-opt" onclick="loginSelectSm(''+s.p+'',''+safeName+'')">'
+        + '<span style="font-weight:600">'+s.n+'</span>'
+        + '<span style="font-family:'DM Mono',monospace;font-size:.75rem;color:var(--text-muted);">'+s.p+'</span>'
+        + '</div>';
+    }).join('');
+  }
+  dd.style.display = 'block';
+}
+
+// Close login dropdown on outside click
+document.addEventListener('click', function(e) {
+  var wrap = document.getElementById('loginStepName');
+  var dd   = document.getElementById('loginSmDd');
+  if (dd && wrap && !wrap.contains(e.target)) dd.style.display = 'none';
+});
+
+// ── Select a salesman from the login dropdown ────────────────────────
+function loginSelectSm(payroll, name) {
+  _loginPayroll  = payroll;
+  _loginName     = name;
+  _isFirstLogin  = !_getPin(payroll);
+  _pinBuffer     = '';
+
+  var nameEl = document.getElementById('loginSelectedName');
+  if (nameEl) nameEl.textContent = name + ' (' + payroll + ')';
+  var labelEl = document.getElementById('loginPinLabel');
+  if (labelEl) labelEl.textContent = _isFirstLogin ? 'Create a 4-digit PIN' : 'Enter your PIN';
+
+  _clearDots('pd');
+  _loginSetErr('loginPinError','');
+  _loginHide('loginStepName');
+  _loginShow('loginStepPin');
+}
+
+// ── PIN entry keypad ─────────────────────────────────────────────────
+function pinKey(digit) {
+  if (_pinBuffer.length >= 4) return;
+  _pinBuffer += digit;
+  _updateDots('pd', _pinBuffer, '');
+  if (_pinBuffer.length === 4) setTimeout(_submitPin, 120);
+}
+
+function pinBackspace() {
+  _pinBuffer = _pinBuffer.slice(0,-1);
+  _updateDots('pd', _pinBuffer, '');
+  _loginSetErr('loginPinError','');
+}
+
+function _submitPin() {
+  if (_isFirstLogin) {
+    // Move to confirm step
+    var cnEl = document.getElementById('loginConfirmName');
+    if (cnEl) cnEl.textContent = _loginName + ' (' + _loginPayroll + ')';
+    _confirmBuffer = '';
+    _clearDots('cd');
+    _loginSetErr('loginConfirmError','');
+    _loginHide('loginStepPin');
+    _loginShow('loginStepConfirm');
+  } else {
+    var stored = _getPin(_loginPayroll);
+    if (_pinBuffer === stored) {
+      _updateDots('pd', _pinBuffer, 'success');
+      setTimeout(function(){ _finishLogin(_loginPayroll, _loginName); }, 300);
+    } else {
+      _updateDots('pd', _pinBuffer, 'error');
+      _loginSetErr('loginPinError','Incorrect PIN. Try again.');
+      setTimeout(function(){
+        _pinBuffer=''; _clearDots('pd'); _loginSetErr('loginPinError','');
+      }, 900);
+    }
+  }
+}
+
+// ── Confirm PIN keypad (first login) ─────────────────────────────────
+function pinConfirmKey(digit) {
+  if (_confirmBuffer.length >= 4) return;
+  _confirmBuffer += digit;
+  _updateDots('cd', _confirmBuffer, '');
+  if (_confirmBuffer.length === 4) setTimeout(_submitConfirm, 120);
+}
+
+function confirmBackspace() {
+  _confirmBuffer = _confirmBuffer.slice(0,-1);
+  _updateDots('cd', _confirmBuffer, '');
+  _loginSetErr('loginConfirmError','');
+}
+
+function _submitConfirm() {
+  if (_confirmBuffer === _pinBuffer) {
+    _setPin(_loginPayroll, _pinBuffer);
+    _updateDots('cd', _confirmBuffer, 'success');
+    setTimeout(function(){ _finishLogin(_loginPayroll, _loginName); }, 350);
+  } else {
+    _updateDots('cd', _confirmBuffer, 'error');
+    _loginSetErr('loginConfirmError',"PINs don't match. Try again.");
+    setTimeout(function(){
+      _confirmBuffer=''; _clearDots('cd'); _loginSetErr('loginConfirmError','');
+    }, 900);
+  }
+}
+
+// ── Back button ──────────────────────────────────────────────────────
+function loginBack() {
+  _pinBuffer=''; _confirmBuffer='';
+  _loginPayroll=null; _loginName=null;
+  _loginHide('loginStepPin'); _loginHide('loginStepConfirm');
+  _loginShow('loginStepName');
+  var inp = document.getElementById('loginSmSearch');
+  if (inp) { inp.value=''; inp.focus(); }
+  var dd = document.getElementById('loginSmDd');
+  if (dd) dd.style.display='none';
+}
+
+// ── Complete login: lock WHO step to this user ───────────────────────
+function _finishLogin(payroll, name) {
+  _loggedInPayroll = payroll;
+  _saveSession(payroll);
+  _hideLoginOverlay();
+
+  var smInput  = document.getElementById('smSearch');
+  var smHidden = document.getElementById('salesmanSelect');
+  if (smInput)  { smInput.value = name + ' (' + payroll + ')'; }
+  if (smHidden) { smHidden.value = payroll; }
+
+  // Lock the field so they can't switch to another name
+  if (smInput) {
+    smInput.readOnly = true;
+    smInput.style.background = 'var(--surface2)';
+    smInput.style.cursor     = 'default';
+    smInput.style.color      = 'var(--text-muted)';
+  }
+  var smDd = document.getElementById('smDd');
+  if (smDd) smDd.style.display='none';
+
+  if (typeof onSalesmanChange === 'function') onSalesmanChange();
+  _addLogoutBtn(name);
+
+  if (typeof showToast === 'function') showToast('👋 Welcome, ' + name + '!', 'success');
+}
+
+// ── Logout button in header ──────────────────────────────────────────
+function _addLogoutBtn(name) {
+  var existing = document.getElementById('logoutBtn');
+  if (existing) existing.remove();
+  var btn = document.createElement('button');
+  btn.id = 'logoutBtn';
+  btn.title = 'Logged in as ' + name + ' — tap to log out';
+  btn.style.cssText = 'background:rgba(255,255,255,0.1);border:none;color:white;height:36px;padding:0 12px;border-radius:8px;cursor:pointer;font-size:.72rem;font-weight:700;font-family:"DM Sans",sans-serif;display:flex;align-items:center;gap:5px;white-space:nowrap;touch-action:manipulation;';
+  btn.innerHTML = '👤 ' + name.split(' ')[0];
+  btn.onclick = function(){ _confirmLogout(name); };
+  var hr = document.querySelector('.header-right');
+  if (hr) hr.insertBefore(btn, hr.firstChild);
+}
+
+function _confirmLogout(name) {
+  var inProgress = (typeof orderLines !== 'undefined' && orderLines.length > 0);
+  if (inProgress && !confirm('You have an order in progress. Log out and lose it?')) return;
+  _clearSession();
+  if (typeof orderLines !== 'undefined') orderLines = [];
+  if (typeof currentSalesman !== 'undefined') currentSalesman = null;
+  if (typeof renderOrderTable === 'function') renderOrderTable();
+  if (typeof checkReady === 'function') checkReady();
+  var smInput = document.getElementById('smSearch');
+  if (smInput) {
+    smInput.readOnly = false;
+    smInput.value = '';
+    smInput.style.background = '';
+    smInput.style.cursor     = '';
+    smInput.style.color      = '';
+  }
+  var smHidden = document.getElementById('salesmanSelect');
+  if (smHidden) smHidden.value = '';
+  var lb = document.getElementById('logoutBtn');
+  if (lb) lb.remove();
+  if (typeof goToStep1 === 'function') goToStep1();
+  showLoginOverlay();
+}
+
+// Expose for dev panel / external use
+function _logout() { _confirmLogout(''); }
+
+// ── Auto-login from session on page load ─────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  var saved = _getSession();
+  if (saved) {
+    var sm = (typeof SALESMEN !== 'undefined') && SALESMEN.find(function(s){ return s.p === saved; });
+    if (sm) { _finishLogin(sm.p, sm.n); return; }
+  }
+  showLoginOverlay();
+});
+
 
 document.addEventListener('DOMContentLoaded', function() {
   setTimeout(initCustomerSearch, 100);
