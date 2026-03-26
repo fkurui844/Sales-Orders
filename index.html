@@ -630,8 +630,8 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
   <!-- Step indicator -->
   <div class="step-indicator">
-    <div class="step done" id="step1"><span class="step-num">①</span>Who</div>
-    <div class="step active" id="step2"><span class="step-num">②</span>Add Items</div>
+    <div class="step active" id="step1"><span class="step-num">①</span>Who</div>
+    <div class="step" id="step2"><span class="step-num">②</span>Add Items</div>
     <div class="step" id="step3"><span class="step-num">③</span>Submit</div>
   </div>
 
@@ -658,7 +658,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
   </div>
 
   <!-- STEP 1: Identity -->
-  <div class="panel hidden" id="stepPanel1">
+  <div class="panel" id="stepPanel1">
     <div class="panel-header"><span>👤</span><h2>Who are you?</h2></div>
     <div class="panel-body">
       <div class="form-grid">
@@ -738,7 +738,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
   </div>
 
   <!-- STEP 2: Add items -->
-  <div class="panel" id="stepPanel2" style="overflow:visible;">
+  <div class="panel hidden" id="stepPanel2" style="overflow:visible;">
     <div id="projectionBanner" style="display:none;background:#fef9ee;border-bottom:2px solid #C9941A;padding:10px 18px;font-size:.82rem;font-weight:600;color:#C9941A;">
       🌅 MORNING PROJECTION — Route: <span id="projRouteName">PIPELINE</span> · Fresh Milk products only · No customer required
     </div>
@@ -3190,7 +3190,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
 <script>
 // ═══════════ CONFIG ═══════════
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxKnsDzu3zxeSvpS8bTsro4x7xCkH6Vz9qbXeEIk1bbuK3E7tLom3ge6OJn8qJj-9kE/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxDgijcpSwAI4Wy9vfspAIln9kEAuAiw7tgCchJeN--YzNLGGmV4XF7_dasoE-g_6XpgA/exec";
 
 // ═══════════ MASTER DATA ═══════════
 const SALESMEN = [{"p":"83","n":"KARIUKI"},{"p":"77","n":"Kirimi"},{"p":"119","n":"Wambugu"},{"p":"102","n":"Kaloki"},{"p":"107","n":"Rotich"},{"p":"129","n":"Owiti"},{"p":"168","n":"Aluvanze"},{"p":"176","n":"Avanyi"},{"p":"178","n":"Juma Otela"},{"p":"208","n":"Andrew Mneria"},{"p":"210","n":"Njoroge"},{"p":"224","n":"Waithera"},{"p":"235","n":"Mukopi"},{"p":"244","n":"Onyango"},{"p":"247","n":"Bokoo"},{"p":"353","n":"Tanui"},{"p":"429","n":"Omondi"},{"p":"430","n":"Kiplimo"},{"p":"487","n":"Nginya Waringa"},{"p":"502","n":"Samson"},{"p":"510","n":"Ngochi Gitau"},{"p":"523","n":"Muthusi"},{"p":"571","n":"Ochieng Opon"},{"p":"684","n":"Daniel"},{"p":"794","n":"Ochieng Obilo"},{"p":"910","n":"Luke"},{"p":"974","n":"Cheruiyot"},{"p":"1403","n":"Chepkwony"},{"p":"1422","n":"Ndwiga"},{"p":"1431","n":"Kamoing"},{"p":"1493","n":"Otieno"},{"p":"1497","n":"Maina"},{"p":"1549","n":"Nyongesa"},{"p":"1554","n":"Nguli"},{"p":"1558","n":"Mwangangi"},{"p":"1568","n":"Otieno Odoyo"},{"p":"1583","n":"Nyawira Ndege"},{"p":"1587","n":"Nanjira Wanyangu"},{"p":"1594","n":"Roba Mamo"},{"p":"1599","n":"Musanga Katua"},{"p":"1612","n":"Mukami Kiriungi"},{"p":"1614","n":"Wanjiku Nyoro"},{"p":"1619","n":"Cheruiyot C."},{"p":"3112","n":"Adoyo Osumba"},{"p":"3176","n":"Langat Kipkemoi"},{"p":"3246","n":"Oloo Ogutu"},{"p":"3249","n":"Mulwa Musyoki"},{"p":"3308","n":"Holata Liban"},{"p":"3381","n":"Odhiambo Migwambo"},{"p":"3467","n":"Kasyoka Mitu"},{"p":"3479","n":"Mwenda Kiruki"},{"p":"3483","n":"Nyathama Wangu"},{"p":"3540","n":"Kosgei"},{"p":"3609","n":"Kinyanjui"},{"p":"3611","n":"Boit"},{"p":"3614","n":"Kungu"},{"p":"3616","n":"Kibiego"},{"p":"3634","n":"Muthaura"},{"p":"3691","n":"Ngumbau"},{"p":"3738","n":"Nzioka"},{"p":"3763","n":"Rukaria"},{"p":"3797","n":"Ruto"},{"p":"3810","n":"Langat"},{"p":"3815","n":"Kavita"},{"p":"3829","n":"Cyprian"},{"p":"3833","n":"Mwanyasi"},{"p":"3835","n":"Akala"},{"p":"3852","n":"Maigwa"},{"p":"3918","n":"Kibet"},{"p":"4051","n":"Karimi"},{"p":"3669","n":"Chepkoriri"},{"p":"4063","n":"Kiruki"},{"p":"4110","n":"Koech"},{"p":"4130","n":"Omollo"},{"p":"4215","n":"Duncan"},{"p":"4217","n":"Wacuka"},{"p":"4221","n":"Makocha"},{"p":"4262","n":"Cherotich"},{"p":"4275","n":"Kiprotich"},{"p":"4324","n":"Mutuku"},{"p":"4328","n":"Ndirangu"},{"p":"4420","n":"Ndonj"},{"p":"4421","n":"Makau"},{"p":"4422","n":"Waihura"},{"p":"4438","n":"Oruru"},{"p":"4442","n":"Wachera"},{"p":"4443","n":"Muiruri"},{"p":"4446","n":"Kinuthia"},{"p":"4456","n":"Wilfred"},{"p":"4467","n":"Ochieng"},{"p":"4519","n":"Ngerechi"},{"p":"4571","n":"Halake"},{"p":"4575","n":"Barasa"},{"p":"4599","n":"Kinyuru"},{"p":"4602","n":"Theuri"},{"p":"4648","n":"Tanui B"},{"p":"4661","n":"Omboyo"},{"p":"4662","n":"Obondo"},{"p":"4663","n":"Cheruiyot B"},{"p":"4664","n":"Wambui"},{"p":"4665","n":"Muturia"},{"p":"4666","n":"Mutwiri"},{"p":"4667","n":"Lechamakany"},{"p":"4670","n":"Kitumbui"},{"p":"4672","n":"Kibet B"},{"p":"4673","n":"Mugo"},{"p":"4678","n":"Musyoki"},{"p":"4679","n":"Nzioki"},{"p":"4682","n":"Kipkirui"},{"p":"4684","n":"Mburugu"},{"p":"4742","n":"Mwita"},{"p":"4764","n":"Kalunda"},{"p":"4768","n":"Maithya"},{"p":"4770","n":"Kemboi"},{"p":"4838","n":"Too"},{"p":"4843","n":"Kimeu"},{"p":"4844","n":"Ronoh"},{"p":"4848","n":"Koros"},{"p":"4873","n":"Gumbo"},{"p":"701349","n":"Wahome"},{"p":"702078","n":"Mukopi B"},{"p":"702130","n":"Kibandi Gitau"},{"p":"702137","n":"Mideva Andwati"},{"p":"900834","n":"Oyara"},{"p":"900835","n":"Otieno Rading"},{"p":"900836","n":"Mwangi"},{"p":"901002","n":"Njoroge B"},{"p":"901006","n":"Chate"},{"p":"901017","n":"Otieno B"},{"p":"901103","n":"Muchina"},{"p":"901224","n":"Mbogo"},{"p":"901268","n":"Kipchirchir"},{"p":"901306","n":"Murithi"},{"p":"901377","n":"Kamau"},{"p":"907612","n":"Mwanyefa"},{"p":"907634","n":"Ngatia"},{"p":"907638","n":"Kaburu"},{"p":"907646","n":"Kiura"},{"p":"907668","n":"Patrick"},{"p":"908190","n":"Mathu"},{"p":"908647","n":"Ngeno"},{"p":"908930","n":"Wanyama"},{"p":"908941","n":"Maua"},{"p":"908950","n":"Ouko"},{"p":"908952","n":"Masadia"},{"p":"908989","n":"Mita"},{"p":"137","n":"Welemba"},{"p":"255","n":"Momanyi"},{"p":"500","n":"Daudi Anyona"}];
@@ -8481,6 +8481,18 @@ document.addEventListener('click', function(e) {
   });
 });
 
+// ═══════════ REFRESH / UNLOAD GUARD ═══════════
+// Warn if user tries to refresh/close while an order is in progress
+window.addEventListener('beforeunload', function(e) {
+  const inProgress = (orderLines && orderLines.length > 0) ||
+                     (currentSalesman && document.getElementById('stepPanel2') &&
+                      !document.getElementById('stepPanel2').classList.contains('hidden'));
+  if (inProgress) {
+    e.preventDefault();
+    e.returnValue = ''; // triggers browser native "Leave site?" dialog
+  }
+});
+
 // ═══════════ MODE SWITCHING ═══════════
 // ═══════════ THEME ═══════════
 function toggleTheme() {
@@ -8832,56 +8844,32 @@ function loadData() {
 
   return new Promise((resolve) => {
 
-    // ── Method 1: fetch() with CORS (works if GAS deployment allows it) ──
-    const fetchWithCORS = () => {
-      return fetch(GAS_URL + '?t=' + Date.now(), {
-        method: 'GET',
-        mode: 'cors',
-      })
-      .then(r => {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
-      });
-    };
+    // ── Method 1: fetch() with CORS ───────────────────────────────────
+    const fetchWithCORS = () =>
+      fetch(GAS_URL + '?t=' + Date.now(), { method: 'GET', mode: 'cors' })
+        .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
 
-    // ── Method 2: JSONP (classic GAS approach) ────────────────────────
+    // ── Method 2: JSONP via dynamic <script> tag ──────────────────────
     const fetchJSONP = () => new Promise((res, rej) => {
       const cb = 'gasCallback_' + Date.now();
       const script = document.createElement('script');
       let done = false;
-
       const cleanup = () => {
         try { if (script.parentNode) script.parentNode.removeChild(script); } catch(e) {}
         try { delete window[cb]; } catch(e) {}
       };
-
       const timer = setTimeout(() => {
-        if (done) return;
-        done = true;
-        cleanup();
-        rej(new Error('timeout'));
-      }, 20000);
-
+        if (done) return; done = true; cleanup(); rej(new Error('timeout'));
+      }, 15000);
       window[cb] = (result) => {
-        if (done) return;
-        done = true;
-        clearTimeout(timer);
-        cleanup();
-        if (result && typeof result === 'object' && Array.isArray(result.rows)) {
-          res(result);
-        } else {
-          rej(new Error('bad_response:' + JSON.stringify(result).slice(0, 100)));
-        }
+        if (done) return; done = true; clearTimeout(timer); cleanup();
+        if (result && typeof result === 'object' && Array.isArray(result.rows)) res(result);
+        else rej(new Error('bad_response'));
       };
-
       script.onerror = () => {
-        if (done) return;
-        done = true;
-        clearTimeout(timer);
-        cleanup();
+        if (done) return; done = true; clearTimeout(timer); cleanup();
         rej(new Error('script_error'));
       };
-
       script.async = true;
       script.src = GAS_URL + '?callback=' + cb + '&t=' + Date.now();
       document.head.appendChild(script);
@@ -8936,34 +8924,82 @@ function loadData() {
       }
     };
 
+    // ── Show persistent error banner in the actuals panel ───────────
+    const showGasErrorBanner = (reachable) => {
+      // Remove any existing banner
+      const existing = document.getElementById('gasErrorBanner');
+      if (existing) existing.remove();
+
+      const isLoginBlock = reachable; // URL responds but script tag errors = redirect to login
+      const banner = document.createElement('div');
+      banner.id = 'gasErrorBanner';
+      banner.style.cssText = [
+        'position:fixed;top:60px;left:50%;transform:translateX(-50%);',
+        'width:min(96vw,540px);background:#1a1a2e;color:#fff;border-radius:14px;',
+        'padding:18px 20px;z-index:99999;box-shadow:0 8px 32px rgba(0,0,0,.5);',
+        'border:1.5px solid #ff6b6b;font-family:"DM Sans",sans-serif;'
+      ].join('');
+
+      if (isLoginBlock) {
+        banner.innerHTML = `
+          <div style="font-size:1rem;font-weight:700;color:#ff6b6b;margin-bottom:8px;">🔒 Google Apps Script — Access Denied</div>
+          <div style="font-size:.82rem;line-height:1.6;color:#ccc;margin-bottom:14px;">
+            The deployment is set to require a Google login. Fix it in 3 steps:
+          </div>
+          <ol style="font-size:.8rem;color:#eee;margin:0 0 14px 18px;line-height:2;">
+            <li>Open Apps Script → <b>Deploy → Manage deployments</b></li>
+            <li>Click ✏️ Edit → set <b>"Who has access"</b> to <b>Anyone</b></li>
+            <li>Select <b>New version</b> → click <b>Deploy</b></li>
+          </ol>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <a href="\${GAS_URL}" target="_blank"
+               style="padding:8px 16px;background:#ff6b6b;color:#fff;border-radius:8px;font-size:.8rem;font-weight:700;text-decoration:none;">
+              Open GAS URL →
+            </a>
+            <button onclick="document.getElementById('gasErrorBanner').remove();loadData();"
+               style="padding:8px 16px;background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;">
+              Retry
+            </button>
+            <button onclick="document.getElementById('gasErrorBanner').remove();"
+               style="padding:8px 16px;background:transparent;color:#aaa;border:1px solid #555;border-radius:8px;font-size:.8rem;cursor:pointer;">
+              Dismiss
+            </button>
+          </div>`;
+      } else {
+        banner.innerHTML = `
+          <div style="font-size:1rem;font-weight:700;color:#ff6b6b;margin-bottom:8px;">📡 Cannot Reach Google Sheet</div>
+          <div style="font-size:.82rem;line-height:1.6;color:#ccc;margin-bottom:14px;">
+            Check that you are online, then verify the Apps Script deployment URL is correct and set to <b>Anyone</b> access.
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button onclick="document.getElementById('gasErrorBanner').remove();loadData();"
+               style="padding:8px 16px;background:#ff6b6b;color:#fff;border:none;border-radius:8px;font-size:.8rem;font-weight:700;cursor:pointer;">
+              Retry
+            </button>
+            <button onclick="document.getElementById('gasErrorBanner').remove();"
+               style="padding:8px 16px;background:transparent;color:#aaa;border:1px solid #555;border-radius:8px;font-size:.8rem;cursor:pointer;">
+              Dismiss
+            </button>
+          </div>`;
+      }
+      document.body.appendChild(banner);
+    };
+
     // ── Handle failure ────────────────────────────────────────────────
     const handleError = (err, reachable) => {
-      console.error('loadData failed:', err);
-      console.warn('GAS URL:', GAS_URL, '| Reachable (no-cors probe):', reachable);
-      let msg;
-      if (!err || err.message === 'timeout') {
-        msg = '⏱️ Request timed out. Check your internet connection and try again.';
-      } else if (err.message === 'script_error') {
-        if (reachable) {
-          msg = '🔒 GAS deployment requires login — open Apps Script → Deploy → Manage deployments → Edit → set "Who has access" to Anyone. Then click Deploy (new version).';
-        } else {
-          msg = '📡 Cannot reach Google Apps Script. Check you are online and the deployment URL is correct.';
-        }
-      } else {
-        msg = '⚠️ Could not load data: ' + err.message;
-      }
-      showToast(msg, 'error');
+      console.error('loadData failed:', err, '| reachable:', reachable, '| GAS_URL:', GAS_URL);
+      showGasErrorBanner(reachable);
       if (oc) {
         oc.textContent = '❌ Failed to load orders';
         oc.style.cssText = 'padding:10px 18px;border-radius:10px;font-size:.82rem;font-weight:600;background:#fdf0ef;color:#C0392B;';
       }
     };
 
-    // ── No-cors probe: resolves true if URL is reachable (even if redirected) ──
+    // ── No-cors probe: resolves true if URL is reachable at all ──────
     const probe = () => fetch(GAS_URL + '?probe=1&t=' + Date.now(), { mode: 'no-cors' })
       .then(() => true).catch(() => false);
 
-    // ── Try CORS fetch, then JSONP, using probe only on final failure ──
+    // ── Try CORS fetch, then JSONP, then show diagnostic banner ──────
     fetchWithCORS()
       .then(result => { processResult(result); resolve(); })
       .catch(() => {
