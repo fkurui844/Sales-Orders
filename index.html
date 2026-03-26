@@ -755,6 +755,205 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
   </div>
 </div>
 
+<!-- ═══════════ LOGIN FUNCTIONS — defined early so oninput/onclick attrs work ═══════════ -->
+<script>
+// These functions are duplicated here early so they are available as soon as the
+// login overlay renders, regardless of how large the main script block is.
+// The authoritative versions below (in the main script) will simply overwrite
+// these at parse time — no conflict.
+
+var _loginPayroll    = null;
+var _loginName       = null;
+var _pinBuffer       = '';
+var _confirmBuffer   = '';
+var _isFirstLogin    = false;
+var _loggedInPayroll = null;
+
+function _pinStoreKey(p) { return 'pin_' + p; }
+function _getPin(p)  { return localStorage.getItem(_pinStoreKey(p)); }
+function _setPin(p, pin) {
+  localStorage.setItem(_pinStoreKey(p), pin);
+  try {
+    var smObj = (typeof SALESMEN !== 'undefined') && SALESMEN.find(function(s){ return s.p === String(p); });
+    var smName = smObj ? smObj.n : '';
+    var gasUrl = (typeof GAS_URL !== 'undefined') ? GAS_URL : '';
+    if (gasUrl) {
+      fetch(gasUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action:'savePin', payroll:String(p), name:smName, pin:pin })
+      }).then(function(r){ return r.json(); })
+        .then(function(d){ if(d && d.status==='ok') localStorage.setItem(_pinStoreKey(p)+'_synced','1'); })
+        .catch(function(e){ console.warn('PIN sync failed (non-critical):',e); });
+    }
+  } catch(e) { console.warn('PIN sync error (non-critical):',e); }
+}
+function _saveSession(p) { sessionStorage.setItem('so_session', p); }
+function _clearSession()  { sessionStorage.removeItem('so_session'); }
+function _getSession()    { return sessionStorage.getItem('so_session'); }
+
+function _loginShow(id) { var e=document.getElementById(id); if(e) e.classList.remove('hidden'); }
+function _loginHide(id) { var e=document.getElementById(id); if(e) e.classList.add('hidden'); }
+function _loginSetErr(id, msg) { var e=document.getElementById(id); if(e) e.textContent=msg; }
+function _clearDots(prefix) {
+  for(var i=0;i<4;i++){var d=document.getElementById(prefix+i);if(d)d.classList.remove('filled','error','success');}
+}
+function _updateDots(prefix, buffer, state) {
+  for(var i=0;i<4;i++){
+    var d=document.getElementById(prefix+i); if(!d) continue;
+    d.classList.remove('filled','error','success');
+    if(state==='error'){if(i<buffer.length)d.classList.add('error');}
+    else if(state==='success'){d.classList.add('success');}
+    else{if(i<buffer.length)d.classList.add('filled');}
+  }
+}
+function _resetLoginUI() {
+  _loginHide('loginStepPin'); _loginHide('loginStepConfirm');
+  _loginShow('loginStepName');
+  var inp=document.getElementById('loginSmSearch'); if(inp)inp.value='';
+  var dd=document.getElementById('loginSmDd'); if(dd){dd.innerHTML='';dd.style.display='none';}
+  _clearDots('pd'); _clearDots('cd');
+  _loginSetErr('loginPinError',''); _loginSetErr('loginConfirmError','');
+}
+
+function loginFilterSm() {
+  var inp = document.getElementById('loginSmSearch');
+  var q   = inp ? inp.value.toLowerCase().trim() : '';
+  var dd  = document.getElementById('loginSmDd');
+  if (!dd) return;
+  if (typeof SALESMEN === 'undefined') { dd.innerHTML='<div style="padding:12px;color:var(--text-muted)">Loading…</div>'; dd.style.display='block'; return; }
+  var res = SALESMEN.filter(function(s){
+    return s.n.toLowerCase().includes(q) || s.p.includes(q);
+  }).sort(function(a,b){ return a.n.localeCompare(b.n); }).slice(0,60);
+  if (!res.length) {
+    dd.innerHTML = '<div class="login-sm-opt" style="color:var(--text-muted);cursor:default;">No results</div>';
+  } else {
+    dd.innerHTML = res.map(function(s){
+      var safeName = s.n.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      return '<div class="login-sm-opt" onclick="loginSelectSm(\''+s.p+'\',\''+safeName+'\')"><span style="font-weight:600">'+s.n+'</span><span style="font-family:monospace;font-size:.75rem;color:var(--text-muted);">'+s.p+'</span></div>';
+    }).join('');
+  }
+  dd.style.display = 'block';
+}
+
+function loginSelectSm(payroll, name) {
+  _loginPayroll = payroll; _loginName = name;
+  _isFirstLogin = !_getPin(payroll); _pinBuffer = '';
+  var nameEl = document.getElementById('loginSelectedName');
+  if (nameEl) nameEl.textContent = name + ' (' + payroll + ')';
+  var labelEl = document.getElementById('loginPinLabel');
+  if (labelEl) labelEl.textContent = _isFirstLogin ? 'Create a 4-digit PIN' : 'Enter your PIN';
+  _clearDots('pd'); _loginSetErr('loginPinError','');
+  _loginHide('loginStepName'); _loginShow('loginStepPin');
+}
+
+function pinKey(digit) {
+  if (_pinBuffer.length >= 4) return;
+  _pinBuffer += digit;
+  _updateDots('pd', _pinBuffer, '');
+  if (_pinBuffer.length === 4) setTimeout(_submitPin, 120);
+}
+function pinBackspace() { _pinBuffer=_pinBuffer.slice(0,-1); _updateDots('pd',_pinBuffer,''); _loginSetErr('loginPinError',''); }
+
+function _submitPin() {
+  if (_isFirstLogin) {
+    var cnEl = document.getElementById('loginConfirmName');
+    if (cnEl) cnEl.textContent = _loginName + ' (' + _loginPayroll + ')';
+    _confirmBuffer = ''; _clearDots('cd'); _loginSetErr('loginConfirmError','');
+    _loginHide('loginStepPin'); _loginShow('loginStepConfirm');
+  } else {
+    var stored = _getPin(_loginPayroll);
+    if (_pinBuffer === stored) {
+      _updateDots('pd', _pinBuffer, 'success');
+      setTimeout(function(){ _finishLogin(_loginPayroll, _loginName); }, 300);
+    } else {
+      _updateDots('pd', _pinBuffer, 'error');
+      _loginSetErr('loginPinError','Incorrect PIN. Try again.');
+      setTimeout(function(){ _pinBuffer=''; _clearDots('pd'); _loginSetErr('loginPinError',''); }, 900);
+    }
+  }
+}
+
+function pinConfirmKey(digit) {
+  if (_confirmBuffer.length >= 4) return;
+  _confirmBuffer += digit; _updateDots('cd', _confirmBuffer, '');
+  if (_confirmBuffer.length === 4) setTimeout(_submitConfirm, 120);
+}
+function confirmBackspace() { _confirmBuffer=_confirmBuffer.slice(0,-1); _updateDots('cd',_confirmBuffer,''); _loginSetErr('loginConfirmError',''); }
+
+function _submitConfirm() {
+  if (_confirmBuffer === _pinBuffer) {
+    _setPin(_loginPayroll, _pinBuffer);
+    _updateDots('cd', _confirmBuffer, 'success');
+    setTimeout(function(){ _finishLogin(_loginPayroll, _loginName); }, 350);
+  } else {
+    _updateDots('cd', _confirmBuffer, 'error');
+    _loginSetErr('loginConfirmError',"PINs don't match. Try again.");
+    setTimeout(function(){ _confirmBuffer=''; _clearDots('cd'); _loginSetErr('loginConfirmError',''); }, 900);
+  }
+}
+
+function loginBack() {
+  _pinBuffer=''; _confirmBuffer='';
+  _loginPayroll=null; _loginName=null;
+  _loginHide('loginStepPin'); _loginHide('loginStepConfirm');
+  _loginShow('loginStepName');
+  var inp=document.getElementById('loginSmSearch'); if(inp){inp.value='';inp.focus();}
+  var dd=document.getElementById('loginSmDd'); if(dd) dd.style.display='none';
+}
+
+function showLoginOverlay() {
+  var el=document.getElementById('loginOverlay'); if(el) el.classList.remove('hidden');
+  ['header','#viewOrder','#viewActuals','#viewComparison','.bottom-nav'].forEach(function(sel){
+    var e=document.querySelector(sel); if(e) e.style.visibility='hidden';
+  });
+  _resetLoginUI();
+  setTimeout(function(){ var inp=document.getElementById('loginSmSearch'); if(inp) inp.focus(); },200);
+}
+function _hideLoginOverlay() {
+  var el=document.getElementById('loginOverlay'); if(el) el.classList.add('hidden');
+  ['header','#viewOrder','#viewActuals','#viewComparison','.bottom-nav'].forEach(function(sel){
+    var e=document.querySelector(sel); if(e) e.style.visibility='';
+  });
+}
+function _finishLogin(payroll, name) {
+  _loggedInPayroll=payroll; _saveSession(payroll); _hideLoginOverlay();
+  var smInput=document.getElementById('smSearch');
+  var smHidden=document.getElementById('salesmanSelect');
+  if(smInput) smInput.value=name+' ('+payroll+')';
+  if(smHidden) smHidden.value=payroll;
+  if(smInput){smInput.readOnly=true;smInput.style.background='var(--surface2)';smInput.style.cursor='default';smInput.style.color='var(--text-muted)';}
+  var smDd=document.getElementById('smDd'); if(smDd) smDd.style.display='none';
+  if(typeof onSalesmanChange==='function') onSalesmanChange();
+  _addLogoutBtn(name);
+  if(typeof showToast==='function') showToast('👋 Welcome, '+name+'!','success');
+}
+function _addLogoutBtn(name) {
+  var existing=document.getElementById('logoutBtn'); if(existing) existing.remove();
+  var btn=document.createElement('button');
+  btn.id='logoutBtn'; btn.title='Logged in as '+name+' — tap to log out';
+  btn.style.cssText='background:rgba(255,255,255,0.1);border:none;color:white;height:36px;padding:0 12px;border-radius:8px;cursor:pointer;font-size:.72rem;font-weight:700;font-family:"DM Sans",sans-serif;display:flex;align-items:center;gap:5px;white-space:nowrap;touch-action:manipulation;';
+  btn.innerHTML='👤 '+name.split(' ')[0];
+  btn.onclick=function(){ _confirmLogout(name); };
+  var hr=document.querySelector('.header-right'); if(hr) hr.insertBefore(btn,hr.firstChild);
+}
+function _confirmLogout(name) {
+  var inProgress=(typeof orderLines!=='undefined'&&orderLines.length>0);
+  if(inProgress&&!confirm('You have an order in progress. Log out and lose it?')) return;
+  _clearSession();
+  if(typeof orderLines!=='undefined') orderLines=[];
+  if(typeof currentSalesman!=='undefined') currentSalesman=null;
+  if(typeof renderOrderTable==='function') renderOrderTable();
+  if(typeof checkReady==='function') checkReady();
+  var smInput=document.getElementById('smSearch');
+  if(smInput){smInput.readOnly=false;smInput.value='';smInput.style.background='';smInput.style.cursor='';smInput.style.color='';}
+  var smHidden=document.getElementById('salesmanSelect'); if(smHidden) smHidden.value='';
+  var lb=document.getElementById('logoutBtn'); if(lb) lb.remove();
+  if(typeof goToStep1==='function') goToStep1();
+  showLoginOverlay();
+}
+function _logout() { _confirmLogout(''); }
+</script>
 
 <header>
   <div class="logo" id="logoTap" style="cursor: default; opacity: 1;" onclick="_devTap()">Sales<span>Order</span></div>
@@ -3352,7 +3551,7 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
 
 <script>
 // ═══════════ CONFIG ═══════════
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxDgijcpSwAI4Wy9vfspAIln9kEAuAiw7tgCchJeN--YzNLGGmV4XF7_dasoE-g_6XpgA/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwh2V61uNlh04qUEmYcO4JoMg2GhjNJlRSb3MVh44GYnFmOgdP7akrpOQRd1reErEi2Jw/exec";
 
 // ═══════════ MASTER DATA ═══════════
 const SALESMEN = [{"p":"83","n":"KARIUKI"},{"p":"77","n":"Kirimi"},{"p":"119","n":"Wambugu"},{"p":"102","n":"Kaloki"},{"p":"107","n":"Rotich"},{"p":"129","n":"Owiti"},{"p":"168","n":"Aluvanze"},{"p":"176","n":"Avanyi"},{"p":"178","n":"Juma Otela"},{"p":"208","n":"Andrew Mneria"},{"p":"210","n":"Njoroge"},{"p":"224","n":"Waithera"},{"p":"235","n":"Mukopi"},{"p":"244","n":"Onyango"},{"p":"247","n":"Bokoo"},{"p":"353","n":"Tanui"},{"p":"429","n":"Omondi"},{"p":"430","n":"Kiplimo"},{"p":"487","n":"Nginya Waringa"},{"p":"502","n":"Samson"},{"p":"510","n":"Ngochi Gitau"},{"p":"523","n":"Muthusi"},{"p":"571","n":"Ochieng Opon"},{"p":"684","n":"Daniel"},{"p":"794","n":"Ochieng Obilo"},{"p":"910","n":"Luke"},{"p":"974","n":"Cheruiyot"},{"p":"1403","n":"Chepkwony"},{"p":"1422","n":"Ndwiga"},{"p":"1431","n":"Kamoing"},{"p":"1493","n":"Otieno"},{"p":"1497","n":"Maina"},{"p":"1549","n":"Nyongesa"},{"p":"1554","n":"Nguli"},{"p":"1558","n":"Mwangangi"},{"p":"1568","n":"Otieno Odoyo"},{"p":"1583","n":"Nyawira Ndege"},{"p":"1587","n":"Nanjira Wanyangu"},{"p":"1594","n":"Roba Mamo"},{"p":"1599","n":"Musanga Katua"},{"p":"1612","n":"Mukami Kiriungi"},{"p":"1614","n":"Wanjiku Nyoro"},{"p":"1619","n":"Cheruiyot C."},{"p":"3112","n":"Adoyo Osumba"},{"p":"3176","n":"Langat Kipkemoi"},{"p":"3246","n":"Oloo Ogutu"},{"p":"3249","n":"Mulwa Musyoki"},{"p":"3308","n":"Holata Liban"},{"p":"3381","n":"Odhiambo Migwambo"},{"p":"3467","n":"Kasyoka Mitu"},{"p":"3479","n":"Mwenda Kiruki"},{"p":"3483","n":"Nyathama Wangu"},{"p":"3540","n":"Kosgei"},{"p":"3609","n":"Kinyanjui"},{"p":"3611","n":"Boit"},{"p":"3614","n":"Kungu"},{"p":"3616","n":"Kibiego"},{"p":"3634","n":"Muthaura"},{"p":"3691","n":"Ngumbau"},{"p":"3738","n":"Nzioka"},{"p":"3763","n":"Rukaria"},{"p":"3797","n":"Ruto"},{"p":"3810","n":"Langat"},{"p":"3815","n":"Kavita"},{"p":"3829","n":"Cyprian"},{"p":"3833","n":"Mwanyasi"},{"p":"3835","n":"Akala"},{"p":"3852","n":"Maigwa"},{"p":"3918","n":"Kibet"},{"p":"4051","n":"Karimi"},{"p":"3669","n":"Chepkoriri"},{"p":"4063","n":"Kiruki"},{"p":"4110","n":"Koech"},{"p":"4130","n":"Omollo"},{"p":"4215","n":"Duncan"},{"p":"4217","n":"Wacuka"},{"p":"4221","n":"Makocha"},{"p":"4262","n":"Cherotich"},{"p":"4275","n":"Kiprotich"},{"p":"4324","n":"Mutuku"},{"p":"4328","n":"Ndirangu"},{"p":"4420","n":"Ndonj"},{"p":"4421","n":"Makau"},{"p":"4422","n":"Waihura"},{"p":"4438","n":"Oruru"},{"p":"4442","n":"Wachera"},{"p":"4443","n":"Muiruri"},{"p":"4446","n":"Kinuthia"},{"p":"4456","n":"Wilfred"},{"p":"4467","n":"Ochieng"},{"p":"4519","n":"Ngerechi"},{"p":"4571","n":"Halake"},{"p":"4575","n":"Barasa"},{"p":"4599","n":"Kinyuru"},{"p":"4602","n":"Theuri"},{"p":"4648","n":"Tanui B"},{"p":"4661","n":"Omboyo"},{"p":"4662","n":"Obondo"},{"p":"4663","n":"Cheruiyot B"},{"p":"4664","n":"Wambui"},{"p":"4665","n":"Muturia"},{"p":"4666","n":"Mutwiri"},{"p":"4667","n":"Lechamakany"},{"p":"4670","n":"Kitumbui"},{"p":"4672","n":"Kibet B"},{"p":"4673","n":"Mugo"},{"p":"4678","n":"Musyoki"},{"p":"4679","n":"Nzioki"},{"p":"4682","n":"Kipkirui"},{"p":"4684","n":"Mburugu"},{"p":"4742","n":"Mwita"},{"p":"4764","n":"Kalunda"},{"p":"4768","n":"Maithya"},{"p":"4770","n":"Kemboi"},{"p":"4838","n":"Too"},{"p":"4843","n":"Kimeu"},{"p":"4844","n":"Ronoh"},{"p":"4848","n":"Koros"},{"p":"4873","n":"Gumbo"},{"p":"701349","n":"Wahome"},{"p":"702078","n":"Mukopi B"},{"p":"702130","n":"Kibandi Gitau"},{"p":"702137","n":"Mideva Andwati"},{"p":"900834","n":"Oyara"},{"p":"900835","n":"Otieno Rading"},{"p":"900836","n":"Mwangi"},{"p":"901002","n":"Njoroge B"},{"p":"901006","n":"Chate"},{"p":"901017","n":"Otieno B"},{"p":"901103","n":"Muchina"},{"p":"901224","n":"Mbogo"},{"p":"901268","n":"Kipchirchir"},{"p":"901306","n":"Murithi"},{"p":"901377","n":"Kamau"},{"p":"907612","n":"Mwanyefa"},{"p":"907634","n":"Ngatia"},{"p":"907638","n":"Kaburu"},{"p":"907646","n":"Kiura"},{"p":"907668","n":"Patrick"},{"p":"908190","n":"Mathu"},{"p":"908647","n":"Ngeno"},{"p":"908930","n":"Wanyama"},{"p":"908941","n":"Maua"},{"p":"908950","n":"Ouko"},{"p":"908952","n":"Masadia"},{"p":"908989","n":"Mita"},{"p":"137","n":"Welemba"},{"p":"255","n":"Momanyi"},{"p":"500","n":"Daudi Anyona"}];
@@ -13904,7 +14103,35 @@ var _loggedInPayroll = null;
 // ── Storage helpers ──────────────────────────────────────────────────
 function _pinStoreKey(payroll) { return 'pin_' + payroll; }
 function _getPin(payroll)  { return localStorage.getItem(_pinStoreKey(payroll)); }
-function _setPin(payroll, pin) { localStorage.setItem(_pinStoreKey(payroll), pin); }
+function _setPin(payroll, pin) {
+  localStorage.setItem(_pinStoreKey(payroll), pin);
+  // Sync PIN to Google Sheets → 'Salesperson Details' sheet
+  try {
+    var smObj = (typeof SALESMEN !== 'undefined') && SALESMEN.find(function(s){ return s.p === String(payroll); });
+    var smName = smObj ? smObj.n : '';
+    var isFirstTime = !localStorage.getItem(_pinStoreKey(payroll) + '_synced');
+    fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        action: 'savePin',
+        payroll: String(payroll),
+        name: smName,
+        pin: pin,
+        isNew: isFirstTime
+      })
+    }).then(function(res){ return res.json(); })
+      .then(function(data){
+        if (data && data.status === 'ok') {
+          localStorage.setItem(_pinStoreKey(payroll) + '_synced', '1');
+        }
+      }).catch(function(err){
+        console.warn('PIN sync to Sheets failed (non-critical):', err);
+      });
+  } catch(e) {
+    console.warn('PIN sync error (non-critical):', e);
+  }
+}
 function _saveSession(payroll) { sessionStorage.setItem('so_session', payroll); }
 function _clearSession()       { sessionStorage.removeItem('so_session'); }
 function _getSession()         { return sessionStorage.getItem('so_session'); }
