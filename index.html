@@ -309,6 +309,40 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
   font-family: 'DM Sans', sans-serif; padding: 4px;
   align-self: center;
 }
+.login-forgot {
+  background: none; border: none; color: var(--gold);
+  font-size: .76rem; cursor: pointer; text-decoration: underline;
+  font-family: 'DM Sans', sans-serif; padding: 4px;
+  align-self: center; font-weight: 600;
+}
+/* Forgot PIN modal */
+#forgotPinModal {
+  position: fixed; inset: 0; background: rgba(0,0,0,.55);
+  z-index: 99999; display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+#forgotPinModal.hidden { display: none; }
+.forgot-card {
+  background: var(--surface); border: 1px solid var(--bd);
+  border-radius: 20px; padding: 28px 24px; width: 100%;
+  max-width: 360px; box-shadow: 0 8px 40px var(--shadow);
+  display: flex; flex-direction: column; gap: 16px;
+}
+.forgot-title {
+  font-size: 1rem; font-weight: 700; color: var(--text); text-align: center;
+}
+.forgot-sub {
+  font-size: .78rem; color: var(--text-muted); text-align: center; line-height: 1.55;
+}
+.forgot-new-pin-wrap { display: flex; flex-direction: column; gap: 14px; }
+.forgot-actions { display: flex; gap: 10px; }
+.forgot-actions button {
+  flex: 1; padding: 12px; border-radius: 10px; border: none;
+  font-family: 'DM Sans', sans-serif; font-weight: 700;
+  font-size: .88rem; cursor: pointer; touch-action: manipulation;
+}
+.forgot-btn-cancel { background: var(--surface2); color: var(--text-muted); }
+.forgot-btn-reset  { background: var(--dark); color: var(--white); }
 #loginSmSearch {
   width: 100%; padding: 13px 16px; border: 1.5px solid var(--bd);
   border-radius: 10px; font-family: 'DM Sans', sans-serif;
@@ -698,7 +732,10 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
         <button class="pin-key del" onclick="pinBackspace()">⌫</button>
       </div>
       <div class="login-error" id="loginPinError"></div>
-      <button class="login-back" onclick="loginBack()">← Not you?</button>
+      <div style="display:flex;justify-content:space-between;align-items:center;width:100%;max-width:280px;margin:0 auto;">
+        <button class="login-back" onclick="loginBack()">← Not you?</button>
+        <button class="login-forgot" onclick="showForgotPin()">Forgot PIN?</button>
+      </div>
     </div>
 
     <!-- Step C: Confirm PIN (first login only) -->
@@ -727,6 +764,70 @@ select:focus,input:focus{outline:none;border-color:var(--text);box-shadow:0 0 0 
       </div>
       <div class="login-error" id="loginConfirmError"></div>
       <button class="login-back" onclick="loginBack()">← Start over</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ FORGOT PIN MODAL ═══════════ -->
+<div id="forgotPinModal" class="hidden">
+  <div class="forgot-card">
+    <div class="forgot-title">🔑 Reset PIN</div>
+    <div class="forgot-sub" id="forgotPinSub">
+      Resetting your PIN for:<br>
+      <strong id="forgotPinName">—</strong>
+    </div>
+    <!-- Step 1: set new PIN -->
+    <div class="forgot-new-pin-wrap" id="forgotStep1">
+      <div style="text-align:center;font-size:.82rem;color:var(--text-muted);">Enter a new 4-digit PIN</div>
+      <div class="pin-dots" style="justify-content:center;">
+        <div class="pin-dot" id="fp0"></div>
+        <div class="pin-dot" id="fp1"></div>
+        <div class="pin-dot" id="fp2"></div>
+        <div class="pin-dot" id="fp3"></div>
+      </div>
+      <div class="pin-keypad">
+        <button class="pin-key" onclick="forgotPinKey('1')">1</button>
+        <button class="pin-key" onclick="forgotPinKey('2')">2</button>
+        <button class="pin-key" onclick="forgotPinKey('3')">3</button>
+        <button class="pin-key" onclick="forgotPinKey('4')">4</button>
+        <button class="pin-key" onclick="forgotPinKey('5')">5</button>
+        <button class="pin-key" onclick="forgotPinKey('6')">6</button>
+        <button class="pin-key" onclick="forgotPinKey('7')">7</button>
+        <button class="pin-key" onclick="forgotPinKey('8')">8</button>
+        <button class="pin-key" onclick="forgotPinKey('9')">9</button>
+        <div></div>
+        <button class="pin-key" onclick="forgotPinKey('0')">0</button>
+        <button class="pin-key del" onclick="forgotPinBackspace()">⌫</button>
+      </div>
+      <div class="login-error" id="forgotPinError"></div>
+    </div>
+    <!-- Step 2: confirm new PIN -->
+    <div class="forgot-new-pin-wrap hidden" id="forgotStep2">
+      <div style="text-align:center;font-size:.82rem;color:var(--text-muted);">Confirm your new PIN</div>
+      <div class="pin-dots" style="justify-content:center;">
+        <div class="pin-dot" id="fc0"></div>
+        <div class="pin-dot" id="fc1"></div>
+        <div class="pin-dot" id="fc2"></div>
+        <div class="pin-dot" id="fc3"></div>
+      </div>
+      <div class="pin-keypad">
+        <button class="pin-key" onclick="forgotConfirmKey('1')">1</button>
+        <button class="pin-key" onclick="forgotConfirmKey('2')">2</button>
+        <button class="pin-key" onclick="forgotConfirmKey('3')">3</button>
+        <button class="pin-key" onclick="forgotConfirmKey('4')">4</button>
+        <button class="pin-key" onclick="forgotConfirmKey('5')">5</button>
+        <button class="pin-key" onclick="forgotConfirmKey('6')">6</button>
+        <button class="pin-key" onclick="forgotConfirmKey('7')">7</button>
+        <button class="pin-key" onclick="forgotConfirmKey('8')">8</button>
+        <button class="pin-key" onclick="forgotConfirmKey('9')">9</button>
+        <div></div>
+        <button class="pin-key" onclick="forgotConfirmKey('0')">0</button>
+        <button class="pin-key del" onclick="forgotConfirmBackspace()">⌫</button>
+      </div>
+      <div class="login-error" id="forgotConfirmError"></div>
+    </div>
+    <div class="forgot-actions">
+      <button class="forgot-btn-cancel" onclick="closeForgotPin()">Cancel</button>
     </div>
   </div>
 </div>
@@ -770,6 +871,96 @@ function _setPin(p, pin) {
 function _saveSession(p) { sessionStorage.setItem('so_session', p); }
 function _clearSession()  { sessionStorage.removeItem('so_session'); }
 function _getSession()    { return sessionStorage.getItem('so_session'); }
+
+// ── Forgot PIN ────────────────────────────────────────────────────────
+var _forgotBuffer  = '';
+var _forgotConfirm = '';
+
+function showForgotPin() {
+  _forgotBuffer = ''; _forgotConfirm = '';
+  var nameEl = document.getElementById('forgotPinName');
+  if (nameEl) nameEl.textContent = (_loginName || '') + ' (' + (_loginPayroll || '') + ')';
+  _forgotClearDots('fp'); _forgotClearDots('fc');
+  var s1 = document.getElementById('forgotStep1');
+  var s2 = document.getElementById('forgotStep2');
+  if (s1) s1.classList.remove('hidden');
+  if (s2) s2.classList.add('hidden');
+  var errEl = document.getElementById('forgotPinError');
+  var cfEl  = document.getElementById('forgotConfirmError');
+  if (errEl) errEl.textContent = '';
+  if (cfEl)  cfEl.textContent  = '';
+  var modal = document.getElementById('forgotPinModal');
+  if (modal) modal.classList.remove('hidden');
+}
+function closeForgotPin() {
+  var modal = document.getElementById('forgotPinModal');
+  if (modal) modal.classList.add('hidden');
+  _forgotBuffer = ''; _forgotConfirm = '';
+}
+function _forgotClearDots(prefix) {
+  for (var i=0;i<4;i++){var d=document.getElementById(prefix+i);if(d)d.classList.remove('filled','error','success');}
+}
+function _forgotUpdateDots(prefix, buf, state) {
+  for (var i=0;i<4;i++){
+    var d=document.getElementById(prefix+i); if(!d) continue;
+    d.classList.remove('filled','error','success');
+    if(state==='error'  && i<buf.length) d.classList.add('error');
+    else if(state==='success') d.classList.add('success');
+    else if(i<buf.length) d.classList.add('filled');
+  }
+}
+function forgotPinKey(digit) {
+  if (_forgotBuffer.length >= 4) return;
+  _forgotBuffer += digit;
+  _forgotUpdateDots('fp', _forgotBuffer, '');
+  if (_forgotBuffer.length === 4) setTimeout(_forgotSubmitNew, 120);
+}
+function forgotPinBackspace() {
+  _forgotBuffer = _forgotBuffer.slice(0,-1);
+  _forgotUpdateDots('fp', _forgotBuffer, '');
+  var errEl = document.getElementById('forgotPinError');
+  if (errEl) errEl.textContent = '';
+}
+function _forgotSubmitNew() {
+  // Move to confirm step
+  var s1 = document.getElementById('forgotStep1');
+  var s2 = document.getElementById('forgotStep2');
+  if (s1) s1.classList.add('hidden');
+  if (s2) s2.classList.remove('hidden');
+  _forgotConfirm = ''; _forgotClearDots('fc');
+}
+function forgotConfirmKey(digit) {
+  if (_forgotConfirm.length >= 4) return;
+  _forgotConfirm += digit;
+  _forgotUpdateDots('fc', _forgotConfirm, '');
+  if (_forgotConfirm.length === 4) setTimeout(_forgotSubmitConfirm, 120);
+}
+function forgotConfirmBackspace() {
+  _forgotConfirm = _forgotConfirm.slice(0,-1);
+  _forgotUpdateDots('fc', _forgotConfirm, '');
+  var cfEl = document.getElementById('forgotConfirmError');
+  if (cfEl) cfEl.textContent = '';
+}
+function _forgotSubmitConfirm() {
+  if (_forgotConfirm !== _forgotBuffer) {
+    _forgotUpdateDots('fc', _forgotConfirm, 'error');
+    var cfEl = document.getElementById('forgotConfirmError');
+    if (cfEl) cfEl.textContent = "PINs don't match. Try again.";
+    setTimeout(function(){
+      _forgotConfirm = ''; _forgotClearDots('fc');
+      if (cfEl) cfEl.textContent = '';
+    }, 900);
+    return;
+  }
+  // PINs match — save new PIN and log in
+  _forgotUpdateDots('fc', _forgotConfirm, 'success');
+  _setPin(_loginPayroll, _forgotBuffer);
+  setTimeout(function(){
+    closeForgotPin();
+    if (typeof showToast === 'function') showToast('✅ PIN reset successfully!', 'success');
+    _finishLogin(_loginPayroll, _loginName);
+  }, 400);
+}
 
 function _loginShow(id) { var e=document.getElementById(id); if(e) e.classList.remove('hidden'); }
 function _loginHide(id) { var e=document.getElementById(id); if(e) e.classList.add('hidden'); }
@@ -8837,14 +9028,18 @@ document.addEventListener('click', function(e) {
 });
 
 // ═══════════ REFRESH / UNLOAD GUARD ═══════════
-// Warn if user tries to refresh/close while an order is in progress
+// Warn if user tries to refresh/close while an order is in progress.
+// Note: on refresh the login screen will be shown again (session is cleared).
 window.addEventListener('beforeunload', function(e) {
-  const inProgress = (orderLines && orderLines.length > 0) ||
-                     (currentSalesman && document.getElementById('stepPanel2') &&
-                      !document.getElementById('stepPanel2').classList.contains('hidden'));
+  var linesExist = (typeof orderLines !== 'undefined' && orderLines && orderLines.length > 0);
+  var step2Open  = (document.getElementById('stepPanel2') &&
+                    !document.getElementById('stepPanel2').classList.contains('hidden'));
+  var inProgress = linesExist || step2Open;
   if (inProgress) {
     e.preventDefault();
-    e.returnValue = ''; // triggers browser native "Leave site?" dialog
+    // Modern browsers show their own generic message; this text may not display
+    // but is required for older browsers.
+    e.returnValue = 'You have an order in progress. Leaving will clear it and require you to log in again. Continue?';
   }
 });
 
@@ -14385,7 +14580,21 @@ function _confirmLogout(name) {
 function _logout() { _confirmLogout(''); }
 
 // ── Auto-login from session on page load ─────────────────────────────
+// Refresh (F5 / browser reload) must always show the login screen.
+// sessionStorage survives F5 in most browsers, so we use a
+// performance.navigation flag to detect a reload and clear the session.
 document.addEventListener('DOMContentLoaded', function() {
+  var isReload = (
+    (window.performance && window.performance.navigation && window.performance.navigation.type === 1) ||
+    (window.performance && window.performance.getEntriesByType &&
+     window.performance.getEntriesByType('navigation')[0] &&
+     window.performance.getEntriesByType('navigation')[0].type === 'reload')
+  );
+  if (isReload) {
+    _clearSession();
+    showLoginOverlay();
+    return;
+  }
   var saved = _getSession();
   if (saved) {
     var sm = (typeof SALESMEN !== 'undefined') && SALESMEN.find(function(s){ return s.p === saved; });
