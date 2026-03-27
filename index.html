@@ -1169,6 +1169,10 @@ function _logout() { _confirmLogout(''); }
   <button class="bnav-item" id="bnav-comparison" onclick="switchMode('comparison')">
     <span class="bnav-icon">📊</span>
     <span class="bnav-label">Dashboard</span>
+  </button>
+  <button class="bnav-item" id="bnav-systems" onclick="switchMode('systems')">
+    <span class="bnav-icon">📋</span>
+    <span class="bnav-label">Systems</span>
   </button></nav>
 
 <!-- ═══════════════════════ ORDER VIEW ═══════════════════════ -->
@@ -2452,6 +2456,26 @@ function _logout() { _confirmLogout(''); }
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- SYSTEMS / SALES ORDERS DATA VIEW -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div id="viewSystems" class="container hidden">
+  <div class="panel">
+    <div class="panel-header">
+      <h2>📋 Sales Orders Data</h2>
+      <span style="font-size:.72rem;color:var(--muted);margin-left:8px;">Real-time data from Google Sheets</span>
+    </div>
+    <div class="panel-body">
+      <div id="salesOrdersDataContainer" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+        <!-- Sales Orders data table will be inserted here by JavaScript -->
+        <div style="padding: 40px 20px; text-align: center; color: var(--muted);">
+          <div style="font-size: 2rem; margin-bottom: 12px;">⏳</div>
+          <p>Loading sales orders data from Google Sheets...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="toast show success" id="toast">✅ Master data updated and applied</div>
 <!-- ═══ ORDER CONFIRMATION MODAL ═══ -->
@@ -9089,8 +9113,166 @@ function _repopulateRouteSelects() {
   });
 }
 
-// Call the loader when the page is ready
-window.addEventListener('DOMContentLoaded', loadRoutesFromGoogleSheets);
+// ─────────────────────────────────────────────────────────────────────
+// LOAD SALES ORDERS DATA FROM GOOGLE SHEETS
+// ─────────────────────────────────────────────────────────────────────
+let SALES_ORDERS_DATA = [];
+
+async function loadSalesOrdersFromGoogleSheets() {
+  const spreadsheetId = '1piy4ZiIcswR8VX3WYd1N3Uwzr60qgA7cGmMi9TUcJfE';
+  const sheetName = 'Sales Orders Data';
+  const url = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const text = await response.text();
+    const rows = text.split(/\r?\n/).filter(r => r.trim());
+    
+    if (rows.length < 2) {
+      console.warn("⚠️ Sales Orders sheet appears to be empty or has no headers");
+      SALES_ORDERS_DATA = [];
+      displaySalesOrdersData([]);
+      return;
+    }
+    
+    // Parse header row
+    const headerRow = rows[0];
+    const headers = _parseCSVRow(headerRow);
+    
+    // Parse data rows
+    SALES_ORDERS_DATA = [];
+    for (let i = 1; i < rows.length; i++) {
+      const cells = _parseCSVRow(rows[i]);
+      const item = {};
+      headers.forEach((header, idx) => {
+        item[header.trim()] = cells[idx] ? cells[idx].trim() : '';
+      });
+      SALES_ORDERS_DATA.push(item);
+    }
+    
+    console.log("✅ Successfully loaded Sales Orders data:", SALES_ORDERS_DATA);
+    displaySalesOrdersData(SALES_ORDERS_DATA);
+    
+    if (typeof showToast === 'function') {
+      showToast(`Loaded ${SALES_ORDERS_DATA.length} order(s) from Google Sheets`, 'success');
+    }
+    
+  } catch (err) {
+    console.error("❌ Error fetching Sales Orders from Google Sheets:", err);
+    
+    if (typeof showToast === 'function') {
+      showToast("Failed to load Sales Orders. Check console for details.", 'error');
+    }
+    
+    const container = document.getElementById('salesOrdersDataContainer');
+    if (container) {
+      container.innerHTML = `
+        <div style="padding: 20px; background: #fdf0ef; border: 1px solid #fdbbb5; border-radius: 10px; color: #C0392B;">
+          <strong>⚠️ Error Loading Sales Orders</strong><br>
+          <small style="display: block; margin-top: 8px;">${err.message}</small>
+          <small style="display: block; margin-top: 6px; color: #7A7169;">Try refreshing the page. Check browser console (F12) for more details.</small>
+        </div>
+      `;
+    }
+  }
+}
+
+// Helper function to parse CSV rows (handles quoted values)
+function _parseCSVRow(row) {
+  const cells = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < row.length; i++) {
+    const char = row[i];
+    
+    if (char === '"') {
+      if (inQuotes && row[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      cells.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  
+  cells.push(current);
+  return cells;
+}
+
+function displaySalesOrdersData(data) {
+  const container = document.getElementById('salesOrdersDataContainer');
+  
+  if (!container) {
+    console.warn("⚠️ Sales Orders data container not found in HTML");
+    return;
+  }
+  
+  if (!data || data.length === 0) {
+    container.innerHTML = `
+      <div style="padding: 20px; text-align: center; color: var(--muted);">
+        <p>📭 No sales orders data available</p>
+        <small>Check that your "Sales Orders Data" sheet contains data</small>
+      </div>
+    `;
+    return;
+  }
+  
+  // Create responsive table
+  let html = '<div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">';
+  html += '<table class="tbl" style="width: 100%; font-size: 0.85rem;">';
+  
+  // Create header row
+  const headers = Object.keys(data[0]);
+  html += '<thead><tr style="background: var(--surface2);">';
+  headers.forEach(h => {
+    html += `<th style="padding: 12px; text-align: left; font-weight: 600; border-bottom: 2px solid var(--bd); white-space: nowrap;">${h}</th>`;
+  });
+  html += '</tr></thead>';
+  
+  // Create data rows
+  html += '<tbody>';
+  data.forEach((row, idx) => {
+    const bgColor = idx % 2 === 0 ? 'transparent' : 'var(--surface2)';
+    html += `<tr style="background: ${bgColor};">`;
+    headers.forEach(header => {
+      const value = row[header] || '';
+      html += `<td style="padding: 12px; border-bottom: 1px solid var(--bd); word-break: break-word; max-width: 250px;">${escapeHtml(value)}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  html += '</div>';
+  
+  container.innerHTML = html;
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return String(text).replace(/[&<>"']/g, m => map[m]);
+}
+
+// Call the loaders when the page is ready
+window.addEventListener('DOMContentLoaded', function() {
+  loadRoutesFromGoogleSheets();
+  loadSalesOrdersFromGoogleSheets();
+});
 
 let PRICES = {"9":{"trade":1350,"unit":"per carton"},"10":{"trade":175,"unit":"per carton"},"12":{"trade":525,"unit":"per carton"},"13":{"trade":445.2,"unit":"per carton"},"14":{"trade":564.5999999999999,"unit":"per carton"},"15":{"trade":1072.92,"unit":"per carton"},"17":{"trade":900,"unit":"per carton"},"18":{"trade":1920,"unit":"per carton"},"20":{"trade":636,"unit":"per carton"},"21":{"trade":624,"unit":"per carton"},"23":{"trade":525,"unit":"per carton"},"24":{"trade":612,"unit":"per carton"},"27":{"trade":504,"unit":"per carton"},"28":{"trade":860,"unit":"per carton"},"29":{"trade":678.48,"unit":"per carton"},"30":{"trade":540,"unit":"per carton"},"36":{"trade":200,"unit":"per carton"},"40":{"trade":1612.16,"unit":"per carton"},"41":{"trade":1612.16,"unit":"per carton"},"50":{"trade":2000,"unit":"per carton"},"51":{"trade":4500,"unit":"per carton"},"54":{"trade":360,"unit":"per carton"},"55":{"trade":936,"unit":"per carton"},"59":{"trade":945,"unit":"per carton"},"60":{"trade":561.5999999999999,"unit":"per carton"},"63":{"trade":85,"unit":"per carton"},"65":{"trade":956.28,"unit":"per carton"},"68":{"trade":65,"unit":"per carton"},"69":{"trade":165,"unit":"per carton"},"70":{"trade":956.16,"unit":"per carton"},"71":{"trade":1644,"unit":"per carton"},"75":{"trade":1440,"unit":"per carton"},"77":{"trade":1440,"unit":"per carton"},"79":{"trade":1440,"unit":"per carton"},"81":{"trade":732,"unit":"per carton"},"83":{"trade":612,"unit":"per carton"},"84":{"trade":936,"unit":"per carton"},"85":{"trade":900,"unit":"per carton"},"86":{"trade":900,"unit":"per carton"},"88":{"trade":85,"unit":"per carton"},"97":{"trade":70,"unit":"per carton"},"98":{"trade":70,"unit":"per carton"},"100":{"trade":130,"unit":"per carton"},"101":{"trade":250,"unit":"per carton"},"102":{"trade":390,"unit":"per carton"},"103":{"trade":130,"unit":"per carton"},"104":{"trade":250,"unit":"per carton"},"105":{"trade":390,"unit":"per carton"},"106":{"trade":250,"unit":"per carton"},"107":{"trade":390,"unit":"per carton"},"108":{"trade":580,"unit":"per carton"},"110":{"trade":165,"unit":"per carton"},"120":{"trade":777,"unit":"per carton"},"121":{"trade":777,"unit":"per carton"},"122":{"trade":777,"unit":"per carton"},"134":{"trade":1260,"unit":"per carton"},"135":{"trade":630,"unit":"per carton"},"200":{"trade":540,"unit":"per carton"},"201":{"trade":696,"unit":"per carton"},"202":{"trade":647.28,"unit":"per carton"},"203":{"trade":540,"unit":"per carton"},"204":{"trade":696,"unit":"per carton"},"205":{"trade":647.28,"unit":"per carton"},"210":{"trade":696,"unit":"per carton"},"211":{"trade":647.28,"unit":"per carton"},"216":{"trade":696,"unit":"per carton"},"217":{"trade":647.28,"unit":"per carton"},"218":{"trade":540,"unit":"per carton"},"219":{"trade":756,"unit":"per carton"},"220":{"trade":647.28,"unit":"per carton"},"430":{"trade":450,"unit":"per carton"},"432":{"trade":280,"unit":"per carton"},"433":{"trade":785,"unit":"per carton"},"436":{"trade":1345,"unit":"per carton"},"500":{"trade":456,"unit":"per carton"},"501":{"trade":576,"unit":"per carton"},"502":{"trade":528,"unit":"per carton"},"503":{"trade":768,"unit":"per carton"},"600":{"trade":16516.62,"unit":"per carton"},"601":{"trade":12945.599999999999,"unit":"per carton"},"602":{"trade":16516.62,"unit":"per carton"},"603":{"trade":12945.599999999999,"unit":"per carton"},"604":{"trade":18351.8,"unit":"per carton"},"605":{"trade":21576,"unit":"per carton"},"606":{"trade":7807.68,"unit":"per carton"},"646":{"trade":18351.8,"unit":"per carton"},"709":{"trade":32532,"unit":"per carton"},"757":{"trade":19400,"unit":"per carton"},"758":{"trade":19400,"unit":"per carton"},"851":{"trade":17280,"unit":"per carton"},"876":{"trade":12327,"unit":"per carton"},"877":{"trade":8574,"unit":"per carton"},"882":{"trade":10284,"unit":"per carton"},"885":{"trade":9440,"unit":"per carton"},"1021":{"trade":21000,"unit":"per carton"},"1031":{"trade":22000,"unit":"per carton"},"1036":{"trade":6408,"unit":"per carton"},"1037":{"trade":14652,"unit":"per carton"},"1038":{"trade":17670,"unit":"per carton"},"26a":{"trade":512,"unit":"per carton"},"73C":{"trade":458,"unit":"per carton"},"73B":{"trade":1308,"unit":"per carton"}};
 
@@ -9499,7 +9681,7 @@ function setTheme(theme) {
 })();
 
 function switchMode(m) {
-  ['order','actuals','comparison'].forEach((id,i) => {
+  ['order','actuals','comparison','systems'].forEach((id,i) => {
     const el = document.getElementById('view'+id.charAt(0).toUpperCase()+id.slice(1));
     if (el) el.classList.toggle('hidden', id !== m);
     const tabs = document.querySelectorAll('.mode-tab');
