@@ -3736,7 +3736,7 @@ function _logout() { _confirmLogout(''); }
 
 <script>
 // ═══════════ CONFIG ═══════════
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwj5tVqmMMt-HqMSY_HLf6JLW7wwl_DCtBf8IlrxG2OtSvyHf77jCVdN_SzZ9pYg4Q68w/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbx0yudIQWho57oAc7XHfE1hxJs7PvPymvcVqXRwXQFtchwNnSdGtuJG8hK2HZujrBQc-Q/exec";
 
 // ═══════════ MASTER DATA ═══════════
 let SALESMEN = [{"p":"83","n":"KARIUKI"},{"p":"77","n":"Kirimi"},{"p":"119","n":"Wambugu"},{"p":"102","n":"Kaloki"},{"p":"107","n":"Rotich"},{"p":"129","n":"Owiti"},{"p":"168","n":"Aluvanze"},{"p":"176","n":"Avanyi"},{"p":"178","n":"Juma Otela"},{"p":"208","n":"Andrew Mneria"},{"p":"210","n":"Njoroge"},{"p":"224","n":"Waithera"},{"p":"235","n":"Mukopi"},{"p":"244","n":"Onyango"},{"p":"247","n":"Bokoo"},{"p":"353","n":"Tanui"},{"p":"429","n":"Omondi"},{"p":"430","n":"Kiplimo"},{"p":"487","n":"Nginya Waringa"},{"p":"502","n":"Samson"},{"p":"510","n":"Ngochi Gitau"},{"p":"523","n":"Muthusi"},{"p":"571","n":"Ochieng Opon"},{"p":"684","n":"Daniel"},{"p":"794","n":"Ochieng Obilo"},{"p":"910","n":"Luke"},{"p":"974","n":"Cheruiyot"},{"p":"1403","n":"Chepkwony"},{"p":"1422","n":"Ndwiga"},{"p":"1431","n":"Kamoing"},{"p":"1493","n":"Otieno"},{"p":"1497","n":"Maina"},{"p":"1549","n":"Nyongesa"},{"p":"1554","n":"Nguli"},{"p":"1558","n":"Mwangangi"},{"p":"1568","n":"Otieno Odoyo"},{"p":"1583","n":"Nyawira Ndege"},{"p":"1587","n":"Nanjira Wanyangu"},{"p":"1594","n":"Roba Mamo"},{"p":"1599","n":"Musanga Katua"},{"p":"1612","n":"Mukami Kiriungi"},{"p":"1614","n":"Wanjiku Nyoro"},{"p":"1619","n":"Cheruiyot C."},{"p":"3112","n":"Adoyo Osumba"},{"p":"3176","n":"Langat Kipkemoi"},{"p":"3246","n":"Oloo Ogutu"},{"p":"3249","n":"Mulwa Musyoki"},{"p":"3308","n":"Holata Liban"},{"p":"3381","n":"Odhiambo Migwambo"},{"p":"3467","n":"Kasyoka Mitu"},{"p":"3479","n":"Mwenda Kiruki"},{"p":"3483","n":"Nyathama Wangu"},{"p":"3540","n":"Kosgei"},{"p":"3609","n":"Kinyanjui"},{"p":"3611","n":"Boit"},{"p":"3614","n":"Kungu"},{"p":"3616","n":"Kibiego"},{"p":"3634","n":"Muthaura"},{"p":"3691","n":"Ngumbau"},{"p":"3738","n":"Nzioka"},{"p":"3763","n":"Rukaria"},{"p":"3797","n":"Ruto"},{"p":"3810","n":"Langat"},{"p":"3815","n":"Kavita"},{"p":"3829","n":"Cyprian"},{"p":"3833","n":"Mwanyasi"},{"p":"3835","n":"Akala"},{"p":"3852","n":"Maigwa"},{"p":"3918","n":"Kibet"},{"p":"4051","n":"Karimi"},{"p":"3669","n":"Chepkoriri"},{"p":"4063","n":"Kiruki"},{"p":"4110","n":"Koech"},{"p":"4130","n":"Omollo"},{"p":"4215","n":"Duncan"},{"p":"4217","n":"Wacuka"},{"p":"4221","n":"Makocha"},{"p":"4262","n":"Cherotich"},{"p":"4275","n":"Kiprotich"},{"p":"4324","n":"Mutuku"},{"p":"4328","n":"Ndirangu"},{"p":"4420","n":"Ndonj"},{"p":"4421","n":"Makau"},{"p":"4422","n":"Waihura"},{"p":"4438","n":"Oruru"},{"p":"4442","n":"Wachera"},{"p":"4443","n":"Muiruri"},{"p":"4446","n":"Kinuthia"},{"p":"4456","n":"Wilfred"},{"p":"4467","n":"Ochieng"},{"p":"4519","n":"Ngerechi"},{"p":"4571","n":"Halake"},{"p":"4575","n":"Barasa"},{"p":"4599","n":"Kinyuru"},{"p":"4602","n":"Theuri"},{"p":"4648","n":"Tanui B"},{"p":"4661","n":"Omboyo"},{"p":"4662","n":"Obondo"},{"p":"4663","n":"Cheruiyot B"},{"p":"4664","n":"Wambui"},{"p":"4665","n":"Muturia"},{"p":"4666","n":"Mutwiri"},{"p":"4667","n":"Lechamakany"},{"p":"4670","n":"Kitumbui"},{"p":"4672","n":"Kibet B"},{"p":"4673","n":"Mugo"},{"p":"4678","n":"Musyoki"},{"p":"4679","n":"Nzioki"},{"p":"4682","n":"Kipkirui"},{"p":"4684","n":"Mburugu"},{"p":"4742","n":"Mwita"},{"p":"4764","n":"Kalunda"},{"p":"4768","n":"Maithya"},{"p":"4770","n":"Kemboi"},{"p":"4838","n":"Too"},{"p":"4843","n":"Kimeu"},{"p":"4844","n":"Ronoh"},{"p":"4848","n":"Koros"},{"p":"4873","n":"Gumbo"},{"p":"701349","n":"Wahome"},{"p":"702078","n":"Mukopi B"},{"p":"702130","n":"Kibandi Gitau"},{"p":"702137","n":"Mideva Andwati"},{"p":"900834","n":"Oyara"},{"p":"900835","n":"Otieno Rading"},{"p":"900836","n":"Mwangi"},{"p":"901002","n":"Njoroge B"},{"p":"901006","n":"Chate"},{"p":"901017","n":"Otieno B"},{"p":"901103","n":"Muchina"},{"p":"901224","n":"Mbogo"},{"p":"901268","n":"Kipchirchir"},{"p":"901306","n":"Murithi"},{"p":"901377","n":"Kamau"},{"p":"907612","n":"Mwanyefa"},{"p":"907634","n":"Ngatia"},{"p":"907638","n":"Kaburu"},{"p":"907646","n":"Kiura"},{"p":"907668","n":"Patrick"},{"p":"908190","n":"Mathu"},{"p":"908647","n":"Ngeno"},{"p":"908930","n":"Wanyama"},{"p":"908941","n":"Maua"},{"p":"908950","n":"Ouko"},{"p":"908952","n":"Masadia"},{"p":"908989","n":"Mita"},{"p":"137","n":"Welemba"},{"p":"255","n":"Momanyi"},{"p":"500","n":"Daudi Anyona"}];
@@ -3803,7 +3803,7 @@ let PRODUCTS = [{"c":"20","d":"GOLD CROWN TFA 1/2LT 1x 12","k":"TFA","w":6,"pk":
 
 
 // ── Dynamic Products Loader ───────────────────────────────────────────────────
-// Fetches live product list from the 'Products' sheet on every page load.
+// Fetches live product list from the 'Products_Packaging_Price' sheet on every page load.
 // New/updated products in the sheet are picked up automatically.
 // Falls back to the hardcoded PRODUCTS array above if the sheet or network
 // is unavailable — so the app always works even offline.
@@ -3822,14 +3822,29 @@ let PRODUCTS = [{"c":"20","d":"GOLD CROWN TFA 1/2LT 1x 12","k":"TFA","w":6,"pk":
   function applyProducts(list) {
     if (!list || !list.length) return;
     PRODUCTS = list;
-    // Invalidate category filter so it rebuilds on next open
-    if (typeof dashFLists !== 'undefined') {
-      dashFLists.cat   = null;
-      dashFLists.cat2  = null; // comparison view
+    // Rebuild PRICES lookup from sheet data (keeps PRICES in sync)
+    if (typeof PRICES !== 'undefined') {
+      list.forEach(function(p) {
+        if (p.c && p.p) PRICES[String(p.c)] = { trade: p.p, unit: 'per ' + (p.pk || 'unit').toLowerCase() };
+      });
     }
-    if (typeof dbLists  !== 'undefined') dbLists.cat  = null;
-    if (typeof expLists !== 'undefined') expLists.cat = null;
-    console.log('[Products] Loaded ' + list.length + ' products from sheet.');
+    // Rebuild PRODUCT_MAPPING + SAP lookups if SAP codes present
+    if (typeof PRODUCT_MAPPING !== 'undefined' && typeof SAP_TO_CODE !== 'undefined') {
+      list.forEach(function(p) {
+        if (!p.sap) return;
+        var entry = { sap: p.sap, code: p.c, desc: p.d, pkg: p.pk, wt: p.w, price: p.p };
+        // Add to mapping if not already there
+        var exists = PRODUCT_MAPPING.some(function(m) { return m.code === p.c; });
+        if (!exists) PRODUCT_MAPPING.push(entry);
+        SAP_TO_CODE[p.sap] = entry;
+        CODE_TO_SAP[p.c]   = entry;
+      });
+    }
+    // Invalidate category filter caches so dropdowns rebuild with new data
+    if (typeof dashFLists !== 'undefined') { dashFLists.cat = null; dashFLists.cat2 = null; }
+    if (typeof dbLists    !== 'undefined') dbLists.cat  = null;
+    if (typeof expLists   !== 'undefined') expLists.cat = null;
+    console.log('[Products] Loaded ' + list.length + ' products from Products_Packaging_Price sheet.');
   }
 
   var url = GAS_URL + '?action=getProducts&t=' + Date.now();
@@ -3860,7 +3875,7 @@ let PRODUCTS = [{"c":"20","d":"GOLD CROWN TFA 1/2LT 1x 12","k":"TFA","w":6,"pk":
     });
 })();
 
-const CUSTOMERS = [
+let CUSTOMERS = [
   {a:"500857",n:"27-MAJID AL FUTTAIM -UNITED MALL",ch:"CARREFOUR",loc:"KISUMU"},
   {a:"500831",n:"28-MAJID AL FUTTAIM HYPERMARKETS",ch:"CARREFOUR",loc:"MOMBASA"},
   {a:"501076",n:"23-MAJID AL FUTTAIM HYPERMARKETS-WA",ch:"CARREFOUR",loc:"NAIROBI"},
@@ -9020,9 +9035,9 @@ const CUSTOMERS = [
 ];
 
 
-const ROUTES = ["KIAMBU GT","KIAMBU MT","MURANGA","THIKA","HURUMA GT","RUARAKA","GITHURAI","KASARANI","HURLINGUM","NGONG ROAD","CBD UPPER","UPPER HILL","CBD CENTRAL","PARKLANDS","CBD 5","DAGORETI","WESTLANDS","RONGAI","KAREN","NAIROBI WEST","INDUSTRIAL","INSTITUTIONS SOUTH C","INSTITUTIONS KITENGELA MT","KITENGELA GT","NAMANGA GT","MACHAKOS","UMOJA GT","TALA","UMOJA MT","DANDORA","CENTEEN","UTAWALA MT","UTAWALA GT","PIPELINE","BURUBURU","EASTLEIGH GT","GARISSA FRESH","GARISSA","KITUI-MWINGI FERM","KITUI","MWINGI","MOMBASA RD DP","OLOITOKITOK","MOMBASA RD FERM","MUTOMO","WOTE","KATHIANI","CARREFOUR NORTH"];
+let ROUTES = ["KIAMBU GT","KIAMBU MT","MURANGA","THIKA","HURUMA GT","RUARAKA","GITHURAI","KASARANI","HURLINGUM","NGONG ROAD","CBD UPPER","UPPER HILL","CBD CENTRAL","PARKLANDS","CBD 5","DAGORETI","WESTLANDS","RONGAI","KAREN","NAIROBI WEST","INDUSTRIAL","INSTITUTIONS SOUTH C","INSTITUTIONS KITENGELA MT","KITENGELA GT","NAMANGA GT","MACHAKOS","UMOJA GT","TALA","UMOJA MT","DANDORA","CENTEEN","UTAWALA MT","UTAWALA GT","PIPELINE","BURUBURU","EASTLEIGH GT","GARISSA FRESH","GARISSA","KITUI-MWINGI FERM","KITUI","MWINGI","MOMBASA RD DP","OLOITOKITOK","MOMBASA RD FERM","MUTOMO","WOTE","KATHIANI","CARREFOUR NORTH"];
 
-const PRICES = {"9":{"trade":1350,"unit":"per carton"},"10":{"trade":175,"unit":"per carton"},"12":{"trade":525,"unit":"per carton"},"13":{"trade":445.2,"unit":"per carton"},"14":{"trade":564.5999999999999,"unit":"per carton"},"15":{"trade":1072.92,"unit":"per carton"},"17":{"trade":900,"unit":"per carton"},"18":{"trade":1920,"unit":"per carton"},"20":{"trade":636,"unit":"per carton"},"21":{"trade":624,"unit":"per carton"},"23":{"trade":525,"unit":"per carton"},"24":{"trade":612,"unit":"per carton"},"27":{"trade":504,"unit":"per carton"},"28":{"trade":860,"unit":"per carton"},"29":{"trade":678.48,"unit":"per carton"},"30":{"trade":540,"unit":"per carton"},"36":{"trade":200,"unit":"per carton"},"40":{"trade":1612.16,"unit":"per carton"},"41":{"trade":1612.16,"unit":"per carton"},"50":{"trade":2000,"unit":"per carton"},"51":{"trade":4500,"unit":"per carton"},"54":{"trade":360,"unit":"per carton"},"55":{"trade":936,"unit":"per carton"},"59":{"trade":945,"unit":"per carton"},"60":{"trade":561.5999999999999,"unit":"per carton"},"63":{"trade":85,"unit":"per carton"},"65":{"trade":956.28,"unit":"per carton"},"68":{"trade":65,"unit":"per carton"},"69":{"trade":165,"unit":"per carton"},"70":{"trade":956.16,"unit":"per carton"},"71":{"trade":1644,"unit":"per carton"},"75":{"trade":1440,"unit":"per carton"},"77":{"trade":1440,"unit":"per carton"},"79":{"trade":1440,"unit":"per carton"},"81":{"trade":732,"unit":"per carton"},"83":{"trade":612,"unit":"per carton"},"84":{"trade":936,"unit":"per carton"},"85":{"trade":900,"unit":"per carton"},"86":{"trade":900,"unit":"per carton"},"88":{"trade":85,"unit":"per carton"},"97":{"trade":70,"unit":"per carton"},"98":{"trade":70,"unit":"per carton"},"100":{"trade":130,"unit":"per carton"},"101":{"trade":250,"unit":"per carton"},"102":{"trade":390,"unit":"per carton"},"103":{"trade":130,"unit":"per carton"},"104":{"trade":250,"unit":"per carton"},"105":{"trade":390,"unit":"per carton"},"106":{"trade":250,"unit":"per carton"},"107":{"trade":390,"unit":"per carton"},"108":{"trade":580,"unit":"per carton"},"110":{"trade":165,"unit":"per carton"},"120":{"trade":777,"unit":"per carton"},"121":{"trade":777,"unit":"per carton"},"122":{"trade":777,"unit":"per carton"},"134":{"trade":1260,"unit":"per carton"},"135":{"trade":630,"unit":"per carton"},"200":{"trade":540,"unit":"per carton"},"201":{"trade":696,"unit":"per carton"},"202":{"trade":647.28,"unit":"per carton"},"203":{"trade":540,"unit":"per carton"},"204":{"trade":696,"unit":"per carton"},"205":{"trade":647.28,"unit":"per carton"},"210":{"trade":696,"unit":"per carton"},"211":{"trade":647.28,"unit":"per carton"},"216":{"trade":696,"unit":"per carton"},"217":{"trade":647.28,"unit":"per carton"},"218":{"trade":540,"unit":"per carton"},"219":{"trade":756,"unit":"per carton"},"220":{"trade":647.28,"unit":"per carton"},"430":{"trade":450,"unit":"per carton"},"432":{"trade":280,"unit":"per carton"},"433":{"trade":785,"unit":"per carton"},"436":{"trade":1345,"unit":"per carton"},"500":{"trade":456,"unit":"per carton"},"501":{"trade":576,"unit":"per carton"},"502":{"trade":528,"unit":"per carton"},"503":{"trade":768,"unit":"per carton"},"600":{"trade":16516.62,"unit":"per carton"},"601":{"trade":12945.599999999999,"unit":"per carton"},"602":{"trade":16516.62,"unit":"per carton"},"603":{"trade":12945.599999999999,"unit":"per carton"},"604":{"trade":18351.8,"unit":"per carton"},"605":{"trade":21576,"unit":"per carton"},"606":{"trade":7807.68,"unit":"per carton"},"646":{"trade":18351.8,"unit":"per carton"},"709":{"trade":32532,"unit":"per carton"},"757":{"trade":19400,"unit":"per carton"},"758":{"trade":19400,"unit":"per carton"},"851":{"trade":17280,"unit":"per carton"},"876":{"trade":12327,"unit":"per carton"},"877":{"trade":8574,"unit":"per carton"},"882":{"trade":10284,"unit":"per carton"},"885":{"trade":9440,"unit":"per carton"},"1021":{"trade":21000,"unit":"per carton"},"1031":{"trade":22000,"unit":"per carton"},"1036":{"trade":6408,"unit":"per carton"},"1037":{"trade":14652,"unit":"per carton"},"1038":{"trade":17670,"unit":"per carton"},"26a":{"trade":512,"unit":"per carton"},"73C":{"trade":458,"unit":"per carton"},"73B":{"trade":1308,"unit":"per carton"}};
+let PRICES = {"9":{"trade":1350,"unit":"per carton"},"10":{"trade":175,"unit":"per carton"},"12":{"trade":525,"unit":"per carton"},"13":{"trade":445.2,"unit":"per carton"},"14":{"trade":564.5999999999999,"unit":"per carton"},"15":{"trade":1072.92,"unit":"per carton"},"17":{"trade":900,"unit":"per carton"},"18":{"trade":1920,"unit":"per carton"},"20":{"trade":636,"unit":"per carton"},"21":{"trade":624,"unit":"per carton"},"23":{"trade":525,"unit":"per carton"},"24":{"trade":612,"unit":"per carton"},"27":{"trade":504,"unit":"per carton"},"28":{"trade":860,"unit":"per carton"},"29":{"trade":678.48,"unit":"per carton"},"30":{"trade":540,"unit":"per carton"},"36":{"trade":200,"unit":"per carton"},"40":{"trade":1612.16,"unit":"per carton"},"41":{"trade":1612.16,"unit":"per carton"},"50":{"trade":2000,"unit":"per carton"},"51":{"trade":4500,"unit":"per carton"},"54":{"trade":360,"unit":"per carton"},"55":{"trade":936,"unit":"per carton"},"59":{"trade":945,"unit":"per carton"},"60":{"trade":561.5999999999999,"unit":"per carton"},"63":{"trade":85,"unit":"per carton"},"65":{"trade":956.28,"unit":"per carton"},"68":{"trade":65,"unit":"per carton"},"69":{"trade":165,"unit":"per carton"},"70":{"trade":956.16,"unit":"per carton"},"71":{"trade":1644,"unit":"per carton"},"75":{"trade":1440,"unit":"per carton"},"77":{"trade":1440,"unit":"per carton"},"79":{"trade":1440,"unit":"per carton"},"81":{"trade":732,"unit":"per carton"},"83":{"trade":612,"unit":"per carton"},"84":{"trade":936,"unit":"per carton"},"85":{"trade":900,"unit":"per carton"},"86":{"trade":900,"unit":"per carton"},"88":{"trade":85,"unit":"per carton"},"97":{"trade":70,"unit":"per carton"},"98":{"trade":70,"unit":"per carton"},"100":{"trade":130,"unit":"per carton"},"101":{"trade":250,"unit":"per carton"},"102":{"trade":390,"unit":"per carton"},"103":{"trade":130,"unit":"per carton"},"104":{"trade":250,"unit":"per carton"},"105":{"trade":390,"unit":"per carton"},"106":{"trade":250,"unit":"per carton"},"107":{"trade":390,"unit":"per carton"},"108":{"trade":580,"unit":"per carton"},"110":{"trade":165,"unit":"per carton"},"120":{"trade":777,"unit":"per carton"},"121":{"trade":777,"unit":"per carton"},"122":{"trade":777,"unit":"per carton"},"134":{"trade":1260,"unit":"per carton"},"135":{"trade":630,"unit":"per carton"},"200":{"trade":540,"unit":"per carton"},"201":{"trade":696,"unit":"per carton"},"202":{"trade":647.28,"unit":"per carton"},"203":{"trade":540,"unit":"per carton"},"204":{"trade":696,"unit":"per carton"},"205":{"trade":647.28,"unit":"per carton"},"210":{"trade":696,"unit":"per carton"},"211":{"trade":647.28,"unit":"per carton"},"216":{"trade":696,"unit":"per carton"},"217":{"trade":647.28,"unit":"per carton"},"218":{"trade":540,"unit":"per carton"},"219":{"trade":756,"unit":"per carton"},"220":{"trade":647.28,"unit":"per carton"},"430":{"trade":450,"unit":"per carton"},"432":{"trade":280,"unit":"per carton"},"433":{"trade":785,"unit":"per carton"},"436":{"trade":1345,"unit":"per carton"},"500":{"trade":456,"unit":"per carton"},"501":{"trade":576,"unit":"per carton"},"502":{"trade":528,"unit":"per carton"},"503":{"trade":768,"unit":"per carton"},"600":{"trade":16516.62,"unit":"per carton"},"601":{"trade":12945.599999999999,"unit":"per carton"},"602":{"trade":16516.62,"unit":"per carton"},"603":{"trade":12945.599999999999,"unit":"per carton"},"604":{"trade":18351.8,"unit":"per carton"},"605":{"trade":21576,"unit":"per carton"},"606":{"trade":7807.68,"unit":"per carton"},"646":{"trade":18351.8,"unit":"per carton"},"709":{"trade":32532,"unit":"per carton"},"757":{"trade":19400,"unit":"per carton"},"758":{"trade":19400,"unit":"per carton"},"851":{"trade":17280,"unit":"per carton"},"876":{"trade":12327,"unit":"per carton"},"877":{"trade":8574,"unit":"per carton"},"882":{"trade":10284,"unit":"per carton"},"885":{"trade":9440,"unit":"per carton"},"1021":{"trade":21000,"unit":"per carton"},"1031":{"trade":22000,"unit":"per carton"},"1036":{"trade":6408,"unit":"per carton"},"1037":{"trade":14652,"unit":"per carton"},"1038":{"trade":17670,"unit":"per carton"},"26a":{"trade":512,"unit":"per carton"},"73C":{"trade":458,"unit":"per carton"},"73B":{"trade":1308,"unit":"per carton"}};
 
 // ═══════════ STATE ═══════════
 let orderLines = [], currentSalesman = null, currentRoute = null;
@@ -9043,10 +9058,126 @@ let actualsPeriod = '';
 let charts = {};
 let currentLocation = null;
 let currentOrderType = null; // 'projection' | 'order'
-const LOCATIONS = [
+let LOCATIONS = [
   'NAIROBI','MOMBASA','NAKURU','KISUMU',
   'SOTIK','ELDORET','NANYUKI','NYAHURURU'
 ];
+
+// ── Dynamic Customers Loader ──────────────────────────────────────────────────
+// Fetches live customer list from the 'Customers' sheet on every page load.
+// New customers added to the sheet appear in search/filters automatically.
+// Falls back to the hardcoded CUSTOMERS array above if network is unavailable.
+(function loadCustomersFromSheet() {
+  var FALLBACK_CUSTOMERS = CUSTOMERS.slice();
+
+  function mergeCustomers(sheetList) {
+    var map = {};
+    FALLBACK_CUSTOMERS.forEach(function(c) { map[String(c.a)] = c; });
+    sheetList.forEach(function(c) { map[String(c.a)] = c; }); // sheet wins
+    return Object.keys(map).map(function(a) { return map[a]; });
+  }
+
+  function applyCustomers(list) {
+    if (!list || !list.length) return;
+    CUSTOMERS = list;
+    // Invalidate channel/location filter caches
+    if (typeof dashFLists !== 'undefined') { dashFLists.ch = null; dashFLists.loc = null; }
+    if (typeof dbLists    !== 'undefined') { dbLists.ch  = null;   dbLists.loc  = null; }
+    if (typeof expLists   !== 'undefined') { expLists.ch = null;   expLists.loc = null; }
+    console.log('[Customers] Loaded ' + list.length + ' customers from sheet.');
+  }
+
+  var url = GAS_URL + '?action=getCustomers&t=' + Date.now();
+  fetch(url, { method: 'GET', mode: 'cors' })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data && data.success && data.customers && data.customers.length) {
+        applyCustomers(mergeCustomers(data.customers));
+      }
+    })
+    .catch(function() {
+      var cb = '__custCb_' + Date.now();
+      var script = document.createElement('script');
+      script.onerror = function() { console.warn('[Customers] JSONP failed — using hardcoded list.'); script.remove(); };
+      window[cb] = function(data) {
+        delete window[cb]; script.remove();
+        if (data && data.success && data.customers && data.customers.length) {
+          applyCustomers(mergeCustomers(data.customers));
+        }
+      };
+      script.src = GAS_URL + '?action=getCustomers&callback=' + cb + '&t=' + Date.now();
+      document.head.appendChild(script);
+    });
+})();
+
+// ── Dynamic Routes & Locations Loader ────────────────────────────────────────
+// Fetches live routes and locations from the 'Routes' sheet on every page load.
+// Merges with hardcoded fallbacks — sheet entries take precedence.
+(function loadRoutesFromSheet() {
+  var FALLBACK_ROUTES    = ROUTES.slice();
+  var FALLBACK_LOCATIONS = LOCATIONS.slice();
+
+  function applyRoutes(routes, locations) {
+    if (routes && routes.length) {
+      // Merge: union of sheet + fallback, deduplicated, original order preserved
+      var seen = {};
+      var merged = [];
+      routes.concat(FALLBACK_ROUTES).forEach(function(r) {
+        if (!seen[r]) { seen[r] = true; merged.push(r); }
+      });
+      ROUTES = merged;
+    }
+    if (locations && locations.length) {
+      var seen2 = {};
+      var merged2 = [];
+      locations.concat(FALLBACK_LOCATIONS).forEach(function(l) {
+        if (!seen2[l]) { seen2[l] = true; merged2.push(l); }
+      });
+      LOCATIONS = merged2;
+    }
+    // Invalidate route filter caches
+    if (typeof dashFLists !== 'undefined') dashFLists.route = null;
+    if (typeof dbLists    !== 'undefined') dbLists.route    = null;
+    if (typeof expLists   !== 'undefined') expLists.route   = null;
+    // Repopulate route <select> elements in export/timing panels
+    _repopulateRouteSelects();
+    console.log('[Routes] Loaded ' + ROUTES.length + ' routes, ' + LOCATIONS.length + ' locations from sheet.');
+  }
+
+  function _repopulateRouteSelects() {
+    ['routeFilterSelect', 'expRoute'].forEach(function(id) {
+      var sel = document.getElementById(id);
+      if (!sel) return;
+      var cur = sel.value;
+      while (sel.options.length > 1) sel.remove(1);
+      ROUTES.forEach(function(r) {
+        var o = document.createElement('option');
+        o.value = r; o.textContent = r;
+        sel.appendChild(o);
+      });
+      if (cur) sel.value = cur;
+    });
+  }
+
+  var url = GAS_URL + '?action=getRoutes&t=' + Date.now();
+  fetch(url, { method: 'GET', mode: 'cors' })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data && data.success) applyRoutes(data.routes, data.locations);
+    })
+    .catch(function() {
+      var cb = '__rtCb_' + Date.now();
+      var script = document.createElement('script');
+      script.onerror = function() { console.warn('[Routes] JSONP failed — using hardcoded list.'); script.remove(); };
+      window[cb] = function(data) {
+        delete window[cb]; script.remove();
+        if (data && data.success) applyRoutes(data.routes, data.locations);
+      };
+      script.src = GAS_URL + '?action=getRoutes&callback=' + cb + '&t=' + Date.now();
+      document.head.appendChild(script);
+    });
+})();
+
 const DEV_PASSWORD = 'Festoo';
 let devUnlocked = false;
 let devSalesmen = [], devRoutes = [], devProducts = [], devCustomers = [], devLocations = [];
@@ -9086,18 +9217,9 @@ function populateSmSelects() {
     if (cur) sel.value = cur; // restore selection if still valid
   }
 
-  function repopulate(data) {
-  // ADD THIS LINE: If data is missing or not an array, stop here.
-  if (!data || !Array.isArray(data)) {
-    console.warn("Repopulate called with invalid data:", data);
-    return; 
-  }
-
-  // Your existing loop continues here...
-  for (var i = 0; i < data.length; i++) {
-    // ... rest of your code
-  }
-}
+  repopulate('timingSmFilter');
+  repopulate('rvSmFilter');
+  repopulate('expSalesman');
 }
 
 // ═══════════ INIT ═══════════
@@ -9386,12 +9508,12 @@ function initDashFilterDropdowns() {
 
   // Always rebuild the salesperson list (new recruits / order data may have changed)
   dashFLists.sm    = _buildSmFilterList();
-  dashFLists.route = ROUTES.map(r=>({val:r, label:r}));
+  dashFLists.route = dashFLists.route || ROUTES.map(r=>({val:r, label:r}));
   dashFLists.cat   = dashFLists.cat || [...new Set(PRODUCTS.map(p=>p.k))].sort().map(c=>({val:c, label:c}));
-  dashFLists.ch    = [...new Set(
+  dashFLists.ch    = dashFLists.ch || [...new Set(
     typeof CUSTOMERS!=='undefined' ? CUSTOMERS.map(c=>c.ch).filter(Boolean) : []
   )].sort().map(c=>({val:c, label:c}));
-  dashFLists.loc   = (typeof LOCATIONS!=='undefined' ? [...LOCATIONS].sort() :
+  dashFLists.loc   = dashFLists.loc || (typeof LOCATIONS!=='undefined' ? [...LOCATIONS].sort() :
     [...new Set(typeof CUSTOMERS!=='undefined' ? CUSTOMERS.map(c=>c.loc).filter(Boolean) : [])].sort()
   ).map(l=>({val:l, label:l}));
 
@@ -9623,10 +9745,13 @@ function loadData() {
       if (_dfrom && !_dfrom.value) _dfrom.value = '2020-01-01';
       if (_dto   && !_dto.value)   _dto.value   = _today;
 
-      // Invalidate sm + cat filters so they rebuild from fresh data
-      if (typeof dashFLists !== 'undefined') { dashFLists.sm = null; dashFLists.cat = null; }
-      if (typeof dbLists    !== 'undefined') dbLists.cat  = null;
-      if (typeof expLists   !== 'undefined') expLists.cat = null;
+      // Invalidate ALL filter caches so they rebuild from fresh sheet data
+      if (typeof dashFLists !== 'undefined') {
+        dashFLists.sm = null; dashFLists.cat = null;
+        dashFLists.route = null; dashFLists.ch = null; dashFLists.loc = null;
+      }
+      if (typeof dbLists  !== 'undefined') { dbLists.cat  = null; dbLists.ch  = null; dbLists.loc  = null; }
+      if (typeof expLists !== 'undefined') { expLists.cat = null; expLists.ch = null; expLists.loc = null; }
       // Repopulate <select> dropdowns with any new payrolls seen in order data
       if (typeof populateSmSelects === 'function') populateSmSelects();
       initDashFilterDropdowns();
